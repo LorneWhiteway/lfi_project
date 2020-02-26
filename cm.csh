@@ -1,0 +1,8 @@
+cd /share/splinter/ucapwhi/lfa_project/
+##git clone https://bitbucket.org/dpotter/pkdgrav3.git
+cd ./pkdgrav3
+rm -rf ./build
+mkdir build
+cd ./build
+cmake -DFFTW_ROOT=$FFTW_ROOT ..
+make
