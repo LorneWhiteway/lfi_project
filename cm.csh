@@ -1,4 +1,5 @@
 cd /share/splinter/ucapwhi/lfa_project/
+source ./set_environment
 ##git clone https://bitbucket.org/dpotter/pkdgrav3.git
 cd ./pkdgrav3
 rm -rf ./build
