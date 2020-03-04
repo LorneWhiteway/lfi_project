@@ -5,7 +5,7 @@
     Author: Lorne Whiteway.
 """
     
-
+# The file to be read by this routine can be created by running PKDGRAV3 and piping the output to file.
 def read_one_output_file(filename):
     
     import numpy as np
