@@ -30,11 +30,10 @@ def read_one_output_file(filename):
 
 
             
-def main():
+def main(filename):
 
     import matplotlib.pyplot as plt
 
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/output.txt"
     (s_arr, t_arr, z_arr) = read_one_output_file(filename)
     
     if False:
@@ -52,6 +51,11 @@ def main():
     
 
 if __name__ == '__main__':
-    main()
+    import sys
+    if len(sys.argv) != 2:
+        print("Usage: read_output_file.py filename")
+        print("Here filename can be created by piping the console output from PKDGRAV3 to a text file")
+        
+    main(sys.argv[1])
     
 
