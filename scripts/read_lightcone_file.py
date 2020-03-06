@@ -52,7 +52,7 @@ def read_lightcone(filespec, time_indices, num_digits_for_time_index, nside):
         basefilename = filespec.format(str(t).zfill(num_digits_for_time_index))
         map_t = read_one_healpix_map(basefilename, nside)
         num_objects_t = np.sum(map_t)
-        if showHealpixFiles and num_objects_t > 0 and t == 99:
+        if showHealpixFiles and num_objects_t > 0 and t == 100:
             hp.mollview(map_t, title=str(t), xsize=400, badcolor="grey")
             hp.graticule(dpar=30.0)
             plt.show()
