@@ -42,12 +42,20 @@ def read_lightcone(filespec, time_indices, num_digits_for_time_index, nside):
     import numpy as np
     import glob
     import sys
+    import healpy as hp
+    import matplotlib.pyplot as plt
+    
+    showHealpixFiles = True
     
     total_num_objects = 0
     for t in sorted(time_indices):
         basefilename = filespec.format(str(t).zfill(num_digits_for_time_index))
         map_t = read_one_healpix_map(basefilename, nside)
         num_objects_t = np.sum(map_t)
+        if showHealpixFiles and num_objects_t > 0 and t == 99:
+            hp.mollview(map_t, title=str(t), xsize=400, badcolor="grey")
+            hp.graticule(dpar=30.0)
+            plt.show()
         print(t, num_objects_t)
         total_num_objects += num_objects_t
     print("======")
