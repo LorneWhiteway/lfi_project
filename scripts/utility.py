@@ -161,6 +161,26 @@ def show_one_shell_example():
     nside = 16
     show_one_shell(file_name, shell_low, shell_high, nside)
     
+    
+def match_points_between_boxes():
+
+    import numpy as np
+
+    file_names = ["/share/splinter/ucapwhi/lfi_project/experiments/example.00051", "/share/splinter/ucapwhi/lfi_project/experiments/example.00052"]
+
+    d0 = read_one_box(file_names[0])
+    d1 = read_one_box(file_names[1])
+    
+    dist = np.sqrt((d0['x']-d1['x'])**2 + (d0['y']-d1['y'])**2 + (d0['z']-d1['z'])**2)
+    
+    print(np.mean(dist))
+    
+    
+    
+    
+    
+    
+    
 # ======================== End of code for reading boxes ========================
 
 
@@ -224,5 +244,6 @@ if __name__ == '__main__':
     
     #lightcone_example()
     #show_one_output_file_example()
-    show_one_shell_example()
+    #show_one_shell_example()
+    match_points_between_boxes()
 
