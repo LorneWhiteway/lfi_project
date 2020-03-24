@@ -293,7 +293,7 @@ def show_one_output_file(filename):
         print(s,t,z)
     
 def show_one_output_file_example():
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/simple/output.txt"
+    filename = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example_output.txt"
     show_one_output_file(filename)
     
     
@@ -306,7 +306,7 @@ if __name__ == '__main__':
     #show_one_output_file_example()
     #show_one_shell_example()
     #match_points_between_boxes()
-    plot_one_lightcone()
-    #save_all_lightcone_files()
+    #plot_one_lightcone()
+    save_all_lightcone_files()
     #save_all_lightcone_files_test_harness()
 

@@ -1,1 +1,1 @@
-../pkdgrav3/build/pkdgrav3 -healpix 16 +lc ./experiment.par
+../../pkdgrav3/build/pkdgrav3 ./experiment.par > example_output.txt
