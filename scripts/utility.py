@@ -167,23 +167,18 @@ def match_points_between_boxes():
     import numpy as np
     import matplotlib.pyplot as plt
 
-    file_names = ["/share/splinter/ucapwhi/lfi_project/experiments/example.00051", "/share/splinter/ucapwhi/lfi_project/experiments/example.00061"]
+    file_names = ["/share/splinter/ucapwhi/lfi_project/experiments/example.00001", "/share/splinter/ucapwhi/lfi_project/experiments/example.00100"]
 
     d0 = read_one_box(file_names[0])
     d1 = read_one_box(file_names[1])
 	
-    #print(np.sum(np.where(np.abs(d0['x']-d1['x'])>0.8,1,0)))
-    #print(np.sum(np.where(np.abs(d0['y']-d1['y'])>0.8,1,0)))
-    #print(np.sum(np.where(np.abs(d0['z']-d1['z'])>0.8,1,0)))
-	
-	
     
-    dist = np.sqrt((d0['x']-d1['x'])**2 + (d0['y']-d1['y'])**2 + (d0['z']-d1['z'])**2)
+    #dist = np.sqrt((d0['x']-d1['x'])**2 + (d0['y']-d1['y'])**2 + (d0['z']-d1['z'])**2)
     
     #print(np.mean(dist))
     
-    for i in range(len(d0['x'])):
-        print(d0['x'][i], d0['y'][i], d0['y'][i], d1['x'][i], d1['y'][i], d1['y'][i], (d0['x'][i] - d1['x'][i]), (d0['y'][i] - d1['y'][i]), (d0['z'][i] - d1['z'][i]))
+    #for i in range(len(d0['x'])):
+    #    print(d0['x'][i], d0['y'][i], d0['y'][i], d1['x'][i], d1['y'][i], d1['y'][i], (d0['x'][i] - d1['x'][i]), (d0['y'][i] - d1['y'][i]), (d0['z'][i] - d1['z'][i]))
     
     #for s in ['x', 'y', 'z']:
     #    data = d0[s] - d1[s]
@@ -198,6 +193,9 @@ def match_points_between_boxes():
     plt.scatter(d1['x'], d1['y'], s=1, c='blue')
     plt.show()
     
+    plt.scatter(d0['x'], d0['z'], s=1, c='red')
+    plt.scatter(d1['x'], d1['z'], s=1, c='blue')
+    plt.show()
     
     
 # ======================== End of code for reading boxes ========================
