@@ -1,7 +1,7 @@
 # Project-specific files
 pkdgrav3/
-experiments/example*
-experiments/.lockfile
+experiments/simple/example*
+experiments/simple/.lockfile
 
 
 
