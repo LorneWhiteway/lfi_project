@@ -12,7 +12,7 @@
 # ======================== Start of code for reading lightcone files ========================
 
 
-# basefilename will be something like "/share/splinter/ucapwhi/lfi_project/experiments/example.00001.hpb"
+# basefilename will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00001.hpb"
 def one_healpix_map_from_name(basefilename, nside):
 
     import glob
@@ -43,7 +43,7 @@ def one_healpix_map_from_name(basefilename, nside):
     
 
 
-# filespec will be something like "/share/splinter/ucapwhi/lfi_project/experiments/example.{}.hpb"
+# filespec will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.{}.hpb"
 # time index will be an integer
 def one_healpix_map_from_time_index(filespec, time_index, num_digits_for_time_index, nside):
     basefilename = filespec.format(str(time_index).zfill(num_digits_for_time_index))
@@ -54,7 +54,7 @@ def num_objects_in_lightcones():
 
     import numpy as np
 
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/example.{}.hpb"
+    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.{}.hpb"
     time_indices = 1 + np.arange(100)
     num_digits_for_time_index = 5
     nside = 16
@@ -74,7 +74,7 @@ def plot_one_lightcone():
     import matplotlib.pyplot as plt
     import healpy as hp
     
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/example.{}.hpb"
+    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.{}.hpb"
     t = 89
     num_digits_for_time_index = 5
     nside = 16
@@ -89,7 +89,7 @@ def save_all_lightcone_files():
 
     import numpy as np
 
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/example.{}.hpb"
+    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.{}.hpb"
     time_indices = 1 + np.arange(100)
     num_digits_for_time_index = 5
     nside = 16
@@ -109,7 +109,7 @@ def save_all_lightcone_files_test_harness():
     # Save all...
     save_all_lightcone_files()
     # ... then retrieve one and plot it
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/example.089.lightcone.npy"
+    filename = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.089.lightcone.npy"
     map_t = np.load(filename)
     hp.mollview(map_t, title="save_all_lightcone_files_test_harness", xsize=400, badcolor="grey")
     hp.graticule(dpar=30.0)
@@ -139,7 +139,7 @@ def get_dark_type():
     return np.dtype([('mass','>f4'),('x','>f4'),('y','>f4'),('z','>f4'),('vx','>f4'),('vy','>f4'),('vz','>f4'),('eps','>f4'),('phi','>f4')])
 
 
-# file_name will be something like "/share/splinter/ucapwhi/lfi_project/experiments/example.00100"
+# file_name will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00100"
 # This is an edited version the code in the readtipsy.py file distributed with PKDGRAV3.
 # Returns an array with elements of type get_dark_type()
 def read_one_box(file_name):
@@ -152,7 +152,7 @@ def read_one_box(file_name):
         return np.fromfile(in_file, dtype=get_dark_type(), count=header['Ndark']) # Just dark matter (not gas or stars)
     
 
-# File_name will be something like "/share/splinter/ucapwhi/lfi_project/experiments/example.00100"
+# File_name will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00100"
 def show_one_shell(file_name, shell_low, shell_high, nside):
     import numpy as np
     import healpy as hp
@@ -199,7 +199,7 @@ def show_one_shell(file_name, shell_low, shell_high, nside):
     
 def show_one_shell_example():
 
-    file_name = "/share/splinter/ucapwhi/lfi_project/experiments/example.00099"
+    file_name = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00099"
     shell_low = 0.1137
     shell_high = 0.228
     nside = 16
@@ -211,7 +211,7 @@ def match_points_between_boxes():
     import numpy as np
     import matplotlib.pyplot as plt
 
-    file_names = ["/share/splinter/ucapwhi/lfi_project/experiments/example.00001", "/share/splinter/ucapwhi/lfi_project/experiments/example.00100"]
+    file_names = ["/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00001", "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00100"]
 
     d0 = read_one_box(file_names[0])
     d1 = read_one_box(file_names[1])
@@ -293,7 +293,7 @@ def show_one_output_file(filename):
         print(s,t,z)
     
 def show_one_output_file_example():
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/output.txt"
+    filename = "/share/splinter/ucapwhi/lfi_project/experiments/simple/output.txt"
     show_one_output_file(filename)
     
     
@@ -306,7 +306,7 @@ if __name__ == '__main__':
     #show_one_output_file_example()
     #show_one_shell_example()
     #match_points_between_boxes()
-    #plot_one_lightcone()
-    save_all_lightcone_files()
+    plot_one_lightcone()
+    #save_all_lightcone_files()
     #save_all_lightcone_files_test_harness()
 
