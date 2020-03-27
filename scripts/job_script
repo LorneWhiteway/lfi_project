@@ -1,14 +1,14 @@
 #!/bin/tcsh
 
 #SBATCH --partition CORES16
-#SBATCH -N3
-#SBATCH -n48
+#SBATCH -N1
+#SBATCH -n12
 #SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
 #SBATCH --mail-type=FAIL
 #SBATCH --job-name=pkdgrav3
 #SBATCH --time=18:00:00
 
-source /share/splinter/ucapwhi/lfa_project/set_environment.csh
-cd /share/splinter/ucapwhi/lfa_project/experiments
-srun ../pkdgrav3/build/pkdgrav3 ./experiment.par
+source /share/splinter/ucapwhi/lfi_project/set_environment.csh
+cd /share/splinter/ucapwhi/lfi_project/experiments/computenode_32_32
+srun /share/splinter/ucapwhi/lfi_project/pkdgrav3/build/pkdgrav3 ./control.par > ./example_output.txt
 
