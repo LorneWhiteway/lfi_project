@@ -57,7 +57,7 @@ def num_objects_in_lightcones():
     filespec = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.{}.hpb"
     time_indices = 1 + np.arange(100)
     num_digits_for_time_index = 5
-    nside = 16
+    nside = 128
     
     total_num_objects = 0
     for t in time_indices:
@@ -77,7 +77,7 @@ def plot_one_lightcone():
     filespec = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.{}.hpb"
     t = 89
     num_digits_for_time_index = 5
-    nside = 16
+    nside = 128
     
     map_t = one_healpix_map_from_time_index(filespec, t, num_digits_for_time_index, nside)
     hp.mollview(map_t, title=str(t), xsize=400, badcolor="grey")
@@ -92,7 +92,7 @@ def save_all_lightcone_files():
     filespec = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.{}.hpb"
     time_indices = 1 + np.arange(100)
     num_digits_for_time_index = 5
-    nside = 16
+    nside = 128
     for t in time_indices:
         map_t = one_healpix_map_from_time_index(filespec, t, num_digits_for_time_index, nside)
         if np.sum(map_t) > 0:
@@ -202,7 +202,7 @@ def show_one_shell_example():
     file_name = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00099"
     shell_low = 0.1137
     shell_high = 0.228
-    nside = 16
+    nside = 128
     show_one_shell(file_name, shell_low, shell_high, nside)
     
     

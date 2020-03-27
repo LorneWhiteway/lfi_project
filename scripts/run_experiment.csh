@@ -1,0 +1,1 @@
+../../pkdgrav3/build/pkdgrav3 ./experiment.par > example_output.txt
