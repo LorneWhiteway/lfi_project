@@ -1,6 +1,7 @@
 # Project-specific files
 pkdgrav3/
 experiments/
+scripts/slurm*
 
 
 
