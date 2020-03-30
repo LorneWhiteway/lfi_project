@@ -69,30 +69,32 @@ def num_objects_in_lightcones():
     print(total_num_objects)
 
 
-def plot_one_lightcone():
+# Good code but not needed
+#def plot_one_lightcone():
+#
+#    import matplotlib.pyplot as plt
+#    import healpy as hp
+#    
+#    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.{}.hpb"
+#    t = 89
+#    num_digits_for_time_index = 5
+#    nside = 128
+#    
+#    map_t = one_healpix_map_from_time_index(filespec, t, num_digits_for_time_index, nside)
+#    hp.mollview(map_t, title=str(t), xsize=400, badcolor="grey")
+#    hp.graticule(dpar=30.0)
+#    plt.show()
 
-    import matplotlib.pyplot as plt
-    import healpy as hp
     
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.{}.hpb"
-    t = 89
-    num_digits_for_time_index = 5
-    nside = 128
-    
-    map_t = one_healpix_map_from_time_index(filespec, t, num_digits_for_time_index, nside)
-    hp.mollview(map_t, title=str(t), xsize=400, badcolor="grey")
-    hp.graticule(dpar=30.0)
-    plt.show()
 
     
-def save_all_lightcone_files():
+def save_all_lightcone_files(filespec, nside, plot_one_example):
 
     import numpy as np
 
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.{}.hpb"
     time_indices = 1 + np.arange(100)
     num_digits_for_time_index = 5
-    nside = 128
+
     for t in time_indices:
         map_t = one_healpix_map_from_time_index(filespec, t, num_digits_for_time_index, nside)
         if np.sum(map_t) > 0:
@@ -100,22 +102,41 @@ def save_all_lightcone_files():
             print("Writing file {}...".format(output_file_name))
             np.save(output_file_name, map_t)
     
-def save_all_lightcone_files_test_harness():
+    if plot_one_example:
+        filename = filespec.replace(".{}.hpb", ".089.lightcone.npy")
+        plot_lightcone_files([filename])
 
+
+def save_all_lightcone_files_caller():
+    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/computenode_32_32/example.{}.hpb"
+    nside = 32
+    save_all_lightcone_files(filespec, nside, False)
+
+    
+def plot_lightcone_files(list_of_npy_filenames):
+    
     import numpy as np
-    import matplotlib.pyplot as plt
     import healpy as hp
-
-    # Save all...
-    save_all_lightcone_files()
-    # ... then retrieve one and plot it
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.089.lightcone.npy"
-    map_t = np.load(filename)
-    hp.mollview(map_t, title="save_all_lightcone_files_test_harness", xsize=400, badcolor="grey")
-    hp.graticule(dpar=30.0)
+    import matplotlib.pyplot as plt
+    
+    for filename in list_of_npy_filenames:
+        map_t = np.load(filename)
+        hp.mollview(map_t, title=filename.replace("/share/splinter/ucapwhi/lfi_project/experiments/", ""), xsize=400, badcolor="grey")
+        hp.graticule(dpar=30.0)
     plt.show()
+            
     
     
+def show_two_lightcones():
+    import numpy as np
+    filenames = ["/share/splinter/ucapwhi/lfi_project/experiments/simple_32_32/example.088.lightcone.npy",
+        "/share/splinter/ucapwhi/lfi_project/experiments/computenode_32_32/example.088.lightcone.npy"]
+    #plot_lightcone_files(filenames)
+    maps = [np.load(f) for f in filenames]
+    for (i, c0, c1) in zip(range(len(maps[0])), maps[0], maps[1]):
+        if c0 != c1:
+            print(i, c0, c1)
+        
     
     
 
@@ -293,7 +314,7 @@ def show_one_output_file(filename):
         print(s,t,z)
     
 def show_one_output_file_example():
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example_output.txt"
+    filename = "/share/splinter/ucapwhi/lfi_project/experiments/simple_32_32/example_output.txt"
     show_one_output_file(filename)
     
     
@@ -306,7 +327,7 @@ if __name__ == '__main__':
     #show_one_output_file_example()
     #show_one_shell_example()
     #match_points_between_boxes()
-    #plot_one_lightcone()
-    save_all_lightcone_files()
-    #save_all_lightcone_files_test_harness()
+    #save_all_lightcone_files_caller()
+    show_two_lightcones()
+    
 
