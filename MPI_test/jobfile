@@ -1,0 +1,27 @@
+#!/bin/bash
+
+######PBS -S /bin/bash
+######PBS -o ./log_mpi_test.txt
+######PBS -j oe
+
+#SBATCH --partition COMPUTE
+#SBATCH -N2
+#SBATCH -n4
+#SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
+#SBATCH --mail-type=FAIL
+#SBATCH --job-name=MPI test
+#SBATCH --time=00:01:00
+
+# Run the program.
+
+###module purge
+###module load compilers/intel/15.1/133
+###module load mpi/intel/4.1.3
+
+mpirun /share/splinter/ucapwhi/lfi_project/MPI_test/mpi_test
+
+
+
+
+
+
