@@ -1,0 +1,17 @@
+#!/bin/tcsh
+
+#SBATCH -p GPU
+#requesting one node
+#SBATCH -N1
+#requesting 12 cpus
+#SBATCH -n12
+#requesting 1 V100 GPU
+#SBATCH --job-name=pkdgrav3
+#SBATCH --gres=gpu:v100:1
+#SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
+#SBATCH --mail-type=FAIL
+
+source /share/splinter/ucapwhi/lfi_project/set_environment.csh
+cd /share/splinter/ucapwhi/lfi_project/experiments/gpu_256_256
+/share/splinter/ucapwhi/lfi_project/pkdgrav3/build/pkdgrav3 ./control.par > ./example_output.txt
+
