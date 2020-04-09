@@ -3,6 +3,8 @@ pkdgrav3/
 experiments/
 scripts/slurm*
 MPI_test/mpi_test
+AVX_test/avx_test
+
 
 
 

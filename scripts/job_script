@@ -12,5 +12,6 @@
 source /share/splinter/ucapwhi/lfi_project/set_environment.csh
 cd /share/splinter/ucapwhi/lfi_project/experiments/computenode_128_128
 
-mpirun /share/splinter/ucapwhi/lfi_project/pkdgrav3/build/pkdgrav3 -sz 24 ./control.par > ./example_output.txt
+###mpirun /share/splinter/ucapwhi/lfi_project/pkdgrav3/build/pkdgrav3 -sz 24 ./control.par > ./example_output.txt
+mpirun /share/splinter/ucapwhi/lfi_project/pkdgrav3/build/pkdgrav3 ./control.par > ./example_output.txt
 
