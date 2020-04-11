@@ -9,9 +9,24 @@
 #SBATCH --job-name=pkdgrav3
 #SBATCH --gres=gpu:v100:1
 #SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
-#SBATCH --mail-type=FAIL
+#SBATCH --mail-type=ALL
 
 source /share/splinter/ucapwhi/lfi_project/set_environment.csh
-cd /share/splinter/ucapwhi/lfi_project/experiments/gpu_256_256
-/share/splinter/ucapwhi/lfi_project/pkdgrav3/build/pkdgrav3 ./control.par > ./example_output.txt
+
+cd /state/partition1/
+ls .
+mkdir -p ucapwhi
+cd ./ucapwhi
+mkdir -p lfi_project
+cd ./lfi_project
+mkdir -p experiments
+cd ./experiments
+mkdir -p gpu_512_1024_1000
+cd ./gpu_512_1024
+
+cp /share/splinter/ucapwhi/lfi_project/experiments/gpu_512_1024_1000/control.par .
+
+/share/splinter/ucapwhi/lfi_project/pkdgrav3/build/pkdgrav3 -sz 5 ./control.par > ./example_output.txt
+
+
 
