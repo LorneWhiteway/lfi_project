@@ -97,10 +97,12 @@ def save_all_lightcone_files(filespec, nside, plot_one_example):
 
     for t in time_indices:
         map_t = one_healpix_map_from_time_index(filespec, t, num_digits_for_time_index, nside)
+        output_file_name = filespec.replace(".hpb", ".lightcone.npy").format(str(t).zfill(3))
         if np.sum(map_t) > 0:
-            output_file_name = filespec.replace(".hpb", ".lightcone.npy").format(str(t).zfill(3))
             print("Writing file {}...".format(output_file_name))
             np.save(output_file_name, map_t)
+        else:
+            print("Not writing file {} as it would have no objects.".format(output_file_name))
     
     if plot_one_example:
         filename = filespec.replace(".{}.hpb", ".089.lightcone.npy")
@@ -108,8 +110,8 @@ def save_all_lightcone_files(filespec, nside, plot_one_example):
 
 
 def save_all_lightcone_files_caller():
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/computenode_32_32/example.{}.hpb"
-    nside = 32
+    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_1024_1000/example.{}.hpb"
+    nside = 1024
     save_all_lightcone_files(filespec, nside, False)
 
     
@@ -125,6 +127,10 @@ def plot_lightcone_files(list_of_npy_filenames):
         hp.graticule(dpar=30.0)
     plt.show()
             
+def show_one_lightcone():
+    import numpy as np
+    filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_1024_1000/example.068.lightcone.npy"
+    plot_lightcone_files([filename,])
     
     
 def show_two_lightcones():
@@ -314,7 +320,7 @@ def show_one_output_file(filename):
         print(s,t,z)
     
 def show_one_output_file_example():
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/simple_32_32/example_output.txt"
+    filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_1024_1000/example_output.txt"
     show_one_output_file(filename)
     
     
@@ -328,6 +334,6 @@ if __name__ == '__main__':
     #show_one_shell_example()
     #match_points_between_boxes()
     #save_all_lightcone_files_caller()
-    show_two_lightcones()
+    show_one_lightcone()
+    #show_two_lightcones()
     
-
