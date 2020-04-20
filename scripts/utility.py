@@ -13,7 +13,8 @@
 
 
 # basefilename will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00001.hpb"
-def one_healpix_map_from_name(basefilename, nside):
+# The actual files to be read will then have names like "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00001.hpb.0"
+def one_healpix_map_from_basefilename(basefilename, nside):
 
     import glob
     import numpy as np
@@ -44,59 +45,39 @@ def one_healpix_map_from_name(basefilename, nside):
 
 
 # filespec will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.{}.hpb"
-# time index will be an integer
-def one_healpix_map_from_time_index(filespec, time_index, num_digits_for_time_index, nside):
-    basefilename = filespec.format(str(time_index).zfill(num_digits_for_time_index))
-    return one_healpix_map_from_name(basefilename, nside)
+# Output will be a list like ["/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00001.hpb", etc.]
+def basefilename_list_from_filespec(filespec):
+    import glob
+    return [f[:-2] for f in sorted(glob.glob(filespec.replace("{}", "*") + ".0"))]
 
     
 def num_objects_in_lightcones():
 
     import numpy as np
 
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.{}.hpb"
-    time_indices = 1 + np.arange(100)
-    num_digits_for_time_index = 5
-    nside = 128
+    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_1024_1000/example.{}.hpb"
+    nside = 1024
     
     total_num_objects = 0
-    for t in time_indices:
-        map_t = one_healpix_map_from_time_index(filespec, t, num_digits_for_time_index, nside)
-        num_objects_t = np.sum(map_t)
-        print(t, num_objects_t)
-        total_num_objects += num_objects_t
+    for b in basefilename_list_from_filespec(filespec):
+        map_b = one_healpix_map_from_basefilename(b, nside)
+        num_objects_b = np.sum(map_b)
+        print(b, num_objects_b)
+        total_num_objects += num_objects_b
     print("======")
     print(total_num_objects)
 
 
-# Good code but not needed
-#def plot_one_lightcone():
-#
-#    import matplotlib.pyplot as plt
-#    import healpy as hp
-#    
-#    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.{}.hpb"
-#    t = 89
-#    num_digits_for_time_index = 5
-#    nside = 128
-#    
-#    map_t = one_healpix_map_from_time_index(filespec, t, num_digits_for_time_index, nside)
-#    hp.mollview(map_t, title=str(t), xsize=400, badcolor="grey")
-#    hp.graticule(dpar=30.0)
-#    plt.show()
 
     
 
-    
-def save_all_lightcone_files(filespec, nside, plot_one_example):
+# Example filespec: "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/example.{}.hpb"    
+def save_all_lightcone_files_caller_core(filespec, nside, plot_one_example):
 
     import numpy as np
 
-    time_indices = 1 + np.arange(100)
-    num_digits_for_time_index = 5
-
-    for t in time_indices:
-        map_t = one_healpix_map_from_time_index(filespec, t, num_digits_for_time_index, nside)
+    for b in basefilename_list_from_filespec(filespec):
+        map_t = one_healpix_map_from_basefilename(b, nside)
         output_file_name = filespec.replace(".hpb", ".lightcone.npy").format(str(t).zfill(3))
         if np.sum(map_t) > 0:
             print("Writing file {}...".format(output_file_name))
@@ -109,10 +90,10 @@ def save_all_lightcone_files(filespec, nside, plot_one_example):
         plot_lightcone_files([filename])
 
 
-def save_all_lightcone_files_caller():
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_1024_1000/example.{}.hpb"
+def save_all_lightcone_files():
+    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_1024_1000/example.{}.hpb"
     nside = 1024
-    save_all_lightcone_files(filespec, nside, False)
+    save_all_lightcone_files_caller_core(filespec, nside, True)
 
     
 def plot_lightcone_files(list_of_npy_filenames):
@@ -123,13 +104,21 @@ def plot_lightcone_files(list_of_npy_filenames):
     
     for filename in list_of_npy_filenames:
         map_t = np.load(filename)
-        hp.mollview(map_t, title=filename.replace("/share/splinter/ucapwhi/lfi_project/experiments/", ""), xsize=400, badcolor="grey")
-        hp.graticule(dpar=30.0)
+        if True:
+            map_t = np.log10(map_t) - np.log10(np.mean(map_t)) # log10(1+\delta)
+        cmap=plt.get_cmap('magma')
+        if False:
+            hp.mollview(map_t, title=filename.replace("/share/splinter/ucapwhi/lfi_project/experiments/", ""), cmap=cmap)
+            hp.graticule(dpar=30.0)
+        else:
+            rot = (0.0, 0.0, 0.0)
+            hp.gnomview(map_t, rot=rot, reso=0.4, xsize=500, cmap=cmap)
+        
     plt.show()
             
 def show_one_lightcone():
     import numpy as np
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_1024_1000/example.068.lightcone.npy"
+    filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_1024_1000/example.068.lightcone.npy"
     plot_lightcone_files([filename,])
     
     
@@ -320,7 +309,7 @@ def show_one_output_file(filename):
         print(s,t,z)
     
 def show_one_output_file_example():
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_1024_1000/example_output.txt"
+    filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_1024_1000/example_output.txt"
     show_one_output_file(filename)
     
     
@@ -333,7 +322,8 @@ if __name__ == '__main__':
     #show_one_output_file_example()
     #show_one_shell_example()
     #match_points_between_boxes()
-    #save_all_lightcone_files_caller()
-    show_one_lightcone()
+    #save_all_lightcone_files()
+    #show_one_lightcone()
     #show_two_lightcones()
+    num_objects_in_lightcones()
     
