@@ -7,7 +7,6 @@ set SZIP_REQUIRED    = $FALSE # Set to $TRUE when compiling on the SMP server; $
 set PYTHON_REQUIRED  = $FALSE # Set to $TRUE if you want to use Python when _using_ PKDGRAV3. Set to $FALSE when _building_ PKDGRAV3 (at least on the CORES16 nodes).
 
 module purge
-#module use /share/apps/modulefiles/old
 
 # For building pkdgrav3. A subset of these (e.g. at least gsl) is needed for running.
 set MPI_MODULE                 = rocks-openmpi

@@ -4,14 +4,14 @@
 #SBATCH -N2
 #SBATCH -n24
 #SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
-#SBATCH --mail-type=FAIL
+#SBATCH --mail-type=ALL
 #SBATCH --job-name=pkdgrav3
 #SBATCH --time=18:00:00
 #SBATCH --mem=96000
 
 source /share/splinter/ucapwhi/lfi_project/set_environment.csh
-cd /share/splinter/ucapwhi/lfi_project/experiments/computenode_128_128
+cd /share/splinter/ucapwhi/lfi_project/experiments/computenode_256_256_1000
 
 ###mpirun /share/splinter/ucapwhi/lfi_project/pkdgrav3/build/pkdgrav3 -sz 24 ./control.par > ./example_output.txt
-mpirun /share/splinter/ucapwhi/lfi_project/pkdgrav3/build/pkdgrav3 ./control.par > ./example_output.txt
+mpirun /share/splinter/ucapwhi/lfi_project/pkdgrav3/build_cores16/pkdgrav3 ./control.par > ./example_output.txt
 

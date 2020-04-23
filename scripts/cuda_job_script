@@ -37,7 +37,7 @@ cd ./$experiment_name
 cp /share/splinter/ucapwhi/lfi_project/experiments/$experiment_name/control.par .
 
 # Run pkdgrav3
-/share/splinter/ucapwhi/lfi_project/pkdgrav3/build/pkdgrav3 -sz 5 ./control.par > ./example_output.txt
+/share/splinter/ucapwhi/lfi_project/pkdgrav3/build/pkdgrav3 -sz 9 ./control.par > ./example_output.txt
 
 # Copy output files back to splinter
 cp ./example* /share/splinter/ucapwhi/lfi_project/experiments/$experiment_name
