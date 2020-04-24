@@ -78,7 +78,7 @@ def save_all_lightcone_files_caller_core(filespec, nside, plot_one_example):
 
     for b in basefilename_list_from_filespec(filespec):
         map_t = one_healpix_map_from_basefilename(b, nside)
-        output_file_name = filespec.replace(".hpb", ".lightcone.npy").format(str(t).zfill(3))
+        output_file_name = b.replace(".hpb", ".lightcone.npy")
         if np.sum(map_t) > 0:
             print("Writing file {}...".format(output_file_name))
             np.save(output_file_name, map_t)
@@ -91,8 +91,8 @@ def save_all_lightcone_files_caller_core(filespec, nside, plot_one_example):
 
 
 def save_all_lightcone_files():
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_1024_1000/example.{}.hpb"
-    nside = 1024
+    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/computenode_256_256_1000/example.{}.hpb"
+    nside = 256
     save_all_lightcone_files_caller_core(filespec, nside, True)
 
     
@@ -313,6 +313,22 @@ def show_one_output_file_example():
     show_one_output_file(filename)
     
     
+def build_z_values_file():
+
+    import numpy as np
+    
+    directory = "/share/splinter/ucapwhi/lfi_project/experiments/computenode_256_256_1000"
+    input_filename = directory + "/example_output.txt"
+    output_filename = directory + "/z_values.txt"
+    
+    (s_arr, t_arr, z_arr) = read_one_output_file(input_filename)
+    np.savetxt(output_filename, np.column_stack((s_arr, z_arr)), fmt=["%i", "%f6"], delimiter=",")
+    
+    
+    
+
+    
+    
 # ======================== End of code for reading PKDGRAV3 output ========================    
 
 
@@ -325,5 +341,6 @@ if __name__ == '__main__':
     #save_all_lightcone_files()
     #show_one_lightcone()
     #show_two_lightcones()
-    num_objects_in_lightcones()
+    #num_objects_in_lightcones()
+    build_z_values_file()
     
