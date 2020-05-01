@@ -19,10 +19,10 @@
 
 
 # Load the module files
-source /share/splinter/ucapwhi/lfi_project/set_environment.csh
+source /share/splinter/ucapwhi/lfi_project/set_environment.csh USE
 
 # Make directory for this experiment on the gpu node, if necessary
-# Note that $experiment_name will have been set on the command line.
+# Note that $experiment_name will have been set on the 'sbatch' command line
 cd /state/partition1/
 mkdir -p ucapwhi
 cd ./ucapwhi
