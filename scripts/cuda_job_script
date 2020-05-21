@@ -17,6 +17,10 @@
 ## Call this job script using syntax like this:
 ## sbatch --export=ALL,experiment_name='gpu_1024_1024_1000' cuda_job_script
 
+## To go to the GPU node, do:
+## srun -p GPU --gres=gpu:v100:1 --pty tcsh
+## From there you might want to do:
+## cd /state/partition1/ucapwhi/lfi_project/experiments
 
 # Load the module files
 source /share/splinter/ucapwhi/lfi_project/set_environment.csh USE
