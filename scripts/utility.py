@@ -108,11 +108,11 @@ def plot_lightcone_files(list_of_npy_filenames):
             map_t = np.log10(map_t) - np.log10(np.mean(map_t)) # log10(1+\delta)
         cmap=plt.get_cmap('magma')
         if False:
-            hp.mollview(map_t, title=filename.replace("/share/splinter/ucapwhi/lfi_project/experiments/", ""), cmap=cmap)
+            hp.mollview(map_t, title=filename.replace("/share/splinter/ucapwhi/lfi_project/experiments/", ""), cbar=True, cmap=cmap)
             hp.graticule(dpar=30.0)
         else:
             rot = (0.0, 0.0, 0.0)
-            hp.gnomview(map_t, rot=rot, reso=0.4, xsize=500, cmap=cmap)
+            hp.gnomview(map_t, rot=rot, reso=0.4, xsize=500, cbar=True, cmap=cmap)
         
     plt.show()
             
