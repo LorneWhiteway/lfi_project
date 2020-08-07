@@ -11,7 +11,7 @@ fi
 echo "Build directory is " $BUILD_DIR
 echo "Proceed? (y/n)"
 
-read -n1 ans
+read ans
 
 if [[ $ans == "y" ]]; then
 	cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project
@@ -21,7 +21,6 @@ if [[ $ans == "y" ]]; then
 	rm -rf ./$BUILD_DIR
 	mkdir $BUILD_DIR
 	cd ./$BUILD_DIR
-	#cmake -DFFTW_ROOT=$FFTW_ROOT ..
-	cmake -DHDF5_ROOT=$HDF5_ROOT -DCMAKE_POLICY_DEFAULT_CMP0074=NEW ..
+	cmake ..
 	make
 fi
