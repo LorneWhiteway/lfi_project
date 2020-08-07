@@ -1,0 +1,2 @@
+gcc -c -Wall small_test.c 
+gcc -v -o small_test small_test.o -lhdf5

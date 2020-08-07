@@ -19,13 +19,17 @@ else
 	echo "Setting environment variables for USING pkdgrav3..."
 fi	
 
-MPI_MODULE=openmpi-3.1.3-gcc-5.4.0-irkkta7
+MPI_MODULE=openmpi-3.1.3-gcc-5.4.0-to5hchq
 COMPILER_MODULE=gcc-5.4.0-gcc-4.8.5-fis24gg # On splinter nvcc insists on gcc version <= 8
-CUDA_MODULE=cuda-9.0.176-gcc-5.4.0-csxlv6z
+export CC=/usr/local/software/spack/spack-0.11.2/opt/spack/linux-rhel7-x86_64/gcc-4.8.5/gcc-5.4.0-fis24ggupugiobii56fesif2y3qulpdr/bin/gcc
+export CXX=/usr/local/software/spack/spack-0.11.2/opt/spack/linux-rhel7-x86_64/gcc-4.8.5/gcc-5.4.0-fis24ggupugiobii56fesif2y3qulpdr/bin/g++
+export FC=/usr/local/software/spack/spack-0.11.2/opt/spack/linux-rhel7-x86_64/gcc-4.8.5/gcc-5.4.0-fis24ggupugiobii56fesif2y3qulpdr/bin/gfortran
+CUDA_MODULE=cuda-9.0.176-gcc-5.4.0-n22ctry
 CMAKE_MODULE=cmake/latest
 GSL_MODULE=gsl-2.4-gcc-5.4.0-z4fspad
 FFTW_MODULE=fftw-3.3.8-gcc-5.4.0-cypgfyw
-HDF5_MODULE=hdf5-1.10.1-gcc-5.4.0-3dwdydr
+# Don't use hdf5-1.10.1-gcc-5.4.0-3dwdydr as it doesn't have HF
+HDF5_MODULE=hdf5-1.10.1-gcc-5.4.0-z7bre2k
 PYTHON_MODULE=dev_tools/oct2018/python-Anaconda-3-5.3.0
 
 module purge
