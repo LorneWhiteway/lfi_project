@@ -91,8 +91,8 @@ def save_all_lightcone_files_caller_core(filespec, nside, plot_one_example):
 
 
 def save_all_lightcone_files():
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_256_1000/example.{}.hpb"
-    nside = 256
+    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_768_900_2048/example.{}.hpb"
+    nside = 2048
     save_all_lightcone_files_caller_core(filespec, nside, False)
 
     
@@ -317,7 +317,7 @@ def build_z_values_file():
 
     import numpy as np
     
-    directory = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_256_1000"
+    directory = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_768_900_2048"
     input_filename = directory + "/example_output.txt"
     output_filename = directory + "/z_values.txt"
     
@@ -338,9 +338,9 @@ if __name__ == '__main__':
     #show_one_output_file_example()
     #show_one_shell_example()
     #match_points_between_boxes()
-    #save_all_lightcone_files()
+    save_all_lightcone_files()
     #show_one_lightcone()
     #show_two_lightcones()
     #num_objects_in_lightcones()
-    build_z_values_file()
+    #build_z_values_file()
     
