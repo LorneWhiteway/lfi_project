@@ -32,7 +32,7 @@ FFTW_MODULE=fftw-3.3.8-gcc-5.4.0-cypgfyw
 HDF5_MODULE=hdf5-1.10.1-gcc-5.4.0-z7bre2k
 PYTHON_MODULE=dev_tools/oct2018/python-Anaconda-3-5.3.0
 
-module purge
+####module purge
 
 module load $MPI_MODULE
 module load $COMPILER_MODULE
