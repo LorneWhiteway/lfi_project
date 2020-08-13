@@ -1,10 +1,13 @@
 # Project-specific files
-pkdgrav3/
-experiments/
 scripts/slurm*
 MPI_test/mpi_test
 AVX_test/avx_test
 
+
+experiments/*/example*
+experiments/*/.lockfile
+experiments/*/z_values.txt
+experiments/*/slurm*
 
 
 
