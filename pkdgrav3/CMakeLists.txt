@@ -44,12 +44,6 @@ find_package(CUDA) # An alternative to this would be to replace the 'project' li
 find_package(GSL REQUIRED)      # GNU Scientific Library
 find_package(HDF5 COMPONENTS C HL)
 
-message(STATUS =============================================)
-message(STATUS =============================================)
-message(STATUS ${HDF5_LIBRARIES})
-message(STATUS =============================================)
-message(STATUS =============================================)
-
 
 find_package(FFTW REQUIRED)
 #find_package(PythonLibs)
