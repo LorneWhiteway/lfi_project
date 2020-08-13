@@ -6,7 +6,8 @@ if(POLICY CMP0060)
   cmake_policy(SET CMP0060 NEW)
 endif()
 
-set( CMAKE_VERBOSE_MAKEFILE on )
+# Uncomment this line for more information during building.
+# set( CMAKE_VERBOSE_MAKEFILE on )
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/mdl2)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
