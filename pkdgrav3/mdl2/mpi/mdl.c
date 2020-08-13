@@ -1829,15 +1829,6 @@ void mdlLaunch(int argc,char **argv,void (*fcnMaster)(MDL,void *),void * (*fcnWo
 /* All GPU work is funneled through the MPI thread */
 #ifdef USE_CUDA
     mpi->inCudaBufSize = mpi->outCudaBufSize = 0;
-	
-	///////////////////
-	printf("Second call\n");
-	printf("nCores = \t%d\n", 0);
-	printf("iCore = \t%d\n", -1);
-	exit(0);
-	///////////////////
-	
-	
     mpi->cudaCtx = CUDA_initialize(0,-1,NULL,NULL);
     OPA_Queue_init(&mpi->queueCUDA);
 #endif
