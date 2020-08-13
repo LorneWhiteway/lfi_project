@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.1)
 project(pkdgrav3 VERSION 3.0.4)
 
+# Added by LW to so that incorrect old version of HDF5 library is not found (for Wilkes machine).
+if(POLICY CMP0060)
+  cmake_policy(SET CMP0060 NEW)
+endif()
+
 set( CMAKE_VERBOSE_MAKEFILE on )
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/mdl2)

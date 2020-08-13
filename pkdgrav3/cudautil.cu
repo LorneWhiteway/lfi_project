@@ -216,7 +216,9 @@ void *CUDA_initialize(int nCores, int iCore, OPA_Queue_info_t *queueWORK, OPA_Qu
 
     cudaError_t rc = cudaGetDeviceCount(&nDevices);
     if (rc!=cudaSuccess || nDevices == 0 ) return NULL;
-    CUDA_CHECK(cudaSetDevice,(iCore % nDevices));
+
+	
+    CUDA_CHECK(cudaSetDevice,((iCore < 0) ? 0 : (iCore % nDevices)));
     CUDACTX ctx = reinterpret_cast<CUDACTX>(malloc(sizeof(struct cuda_ctx)));
     assert(ctx!=NULL);
     ctx->nCores = nCores;
@@ -257,7 +259,7 @@ void *CUDA_initialize(int nCores, int iCore, OPA_Queue_info_t *queueWORK, OPA_Qu
     if (gethostname(ctx->hostname,MAXHOSTNAMELEN))
 #endif
         strcpy(ctx->hostname,"unknown");
-    CUDA_CHECK(cudaGetDeviceProperties,(&ctx->prop,iCore % nDevices));
+    CUDA_CHECK(cudaGetDeviceProperties,(&ctx->prop,((iCore < 0) ? 0 : (iCore % nDevices))));
 
 #ifdef USE_NVML
     nvmlReturn_t result;
