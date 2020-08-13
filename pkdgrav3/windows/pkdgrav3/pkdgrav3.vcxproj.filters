@@ -1,0 +1,299 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\main.c" />
+    <ClCompile Include="..\..\ilp.c" />
+    <ClCompile Include="..\..\analysis.c" />
+    <ClCompile Include="..\..\cl.c" />
+    <ClCompile Include="..\..\ewald.c" />
+    <ClCompile Include="..\..\fio.c" />
+    <ClCompile Include="..\..\fof.c" />
+    <ClCompile Include="..\..\grav2.c" />
+    <ClCompile Include="..\..\group.c" />
+    <ClCompile Include="..\..\groupstats.c" />
+    <ClCompile Include="..\..\healpix.c" />
+    <ClCompile Include="..\..\hop.c" />
+    <ClCompile Include="..\..\iomodule.c" />
+    <ClCompile Include="..\..\lst.c" />
+    <ClCompile Include="..\..\master.c" />
+    <ClCompile Include="..\..\moments.c" />
+    <ClCompile Include="..\..\output.c" />
+    <ClCompile Include="..\..\outtype.c" />
+    <ClCompile Include="..\..\param.c" />
+    <ClCompile Include="..\..\pkd.c" />
+    <ClCompile Include="..\..\pst.c" />
+    <ClCompile Include="..\..\smooth.c" />
+    <ClCompile Include="..\..\smoothfcn.c" />
+    <ClCompile Include="..\..\tree.c" />
+    <ClCompile Include="..\..\walk2.c" />
+    <ClCompile Include="..\..\cosmo.c" />
+    <ClCompile Include="..\..\ilc.c" />
+    <ClCompile Include="..\..\romberg.c" />
+    <ClCompile Include="..\..\illinois.c" />
+    <ClCompile Include="..\..\rbtree.c" />
+    <ClCompile Include="..\..\listcomp.c" />
+    <ClCompile Include="..\..\vmoments.cxx" />
+    <ClCompile Include="..\..\mdl2\mdlbase.c">
+      <Filter>mdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mdl2\mpi\mdl.c">
+      <Filter>mdl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\clewald.cxx" />
+    <ClCompile Include="..\..\clutil.cxx" />
+    <ClCompile Include="..\..\RngStream.c" />
+    <ClCompile Include="..\gsl-2.1\integration\qag.c">
+      <Filter>gsl\integration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gsl-2.1\integration\qk.c">
+      <Filter>gsl\integration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gsl-2.1\integration\qk15.c">
+      <Filter>gsl\integration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gsl-2.1\integration\qk21.c">
+      <Filter>gsl\integration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gsl-2.1\integration\qk31.c">
+      <Filter>gsl\integration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gsl-2.1\integration\qk41.c">
+      <Filter>gsl\integration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gsl-2.1\integration\qk51.c">
+      <Filter>gsl\integration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gsl-2.1\integration\qk61.c">
+      <Filter>gsl\integration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gsl-2.1\integration\workspace.c">
+      <Filter>gsl\integration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gsl-2.1\interpolation\spline.c">
+      <Filter>gsl\interpolation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gsl-2.1\interpolation\cspline.c">
+      <Filter>gsl\interpolation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gsl-2.1\interpolation\interp.c">
+      <Filter>gsl\interpolation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gsl-2.1\interpolation\accel.c">
+      <Filter>gsl\interpolation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gsl-2.1\linalg\tridiag.c">
+      <Filter>gsl\linalg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gsl-2.1\err\error.c">
+      <Filter>gsl\err</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gsl-2.1\err\stream.c">
+      <Filter>gsl\err</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gsl-2.1\vector\view.c">
+      <Filter>gsl\vector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ic.cxx" />
+    <ClCompile Include="..\..\openpa\src\opa_primitives.c">
+      <Filter>opa</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\openpa\src\opa_queue.c">
+      <Filter>opa</Filter>
+    </ClCompile>
+    <ClCompile Include="..\pthread.c">
+      <Filter>mdl</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\mdl2\mdlbase.h">
+      <Filter>mdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\mdl2\mpi\mdl.h">
+      <Filter>mdl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\cudautil.h">
+      <Filter>cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="..\opa_config.h">
+      <Filter>opa</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\avx_mathfun.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\basetype.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bt.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\clutil.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\config.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\cosmo.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\fof.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\grav.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\group.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ilc.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ilp.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\vqsort.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\cl.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\cycle.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ewald.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\fio.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\groupstats.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\healpix.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\hop.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ic.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\illinois.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\iomodule.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\listcomp.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lst.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\master.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\meval.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\moments.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\output.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\outtype.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\param.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\parameters.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pkd.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pkdpython.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pst.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\qeval.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\rbtree.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\RngStream.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\simd.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\smooth.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\smoothfcn.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sse_mathfun.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tipsydefs.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\vmoments.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\walk.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\pthread.h">
+      <Filter>mdl</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="mdl">
+      <UniqueIdentifier>{ce717cee-c603-44c5-8af4-c623dc971106}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gsl">
+      <UniqueIdentifier>{1c7bfcfe-cdd8-4488-af29-f3afbf2b4d34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gsl\integration">
+      <UniqueIdentifier>{fa27cd25-458f-40d7-be58-31b9724fae82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gsl\interpolation">
+      <UniqueIdentifier>{b47ae140-fae8-49cd-9453-0944873f829c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gsl\linalg">
+      <UniqueIdentifier>{dba5cb63-61dd-45c0-84fb-2001a25af5f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gsl\vector">
+      <UniqueIdentifier>{36436171-69c8-4cd0-853d-56d16fd6c2c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gsl\err">
+      <UniqueIdentifier>{cfde7693-1274-4b54-bca0-0109cfd47ec3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cuda">
+      <UniqueIdentifier>{e8485492-3692-4c2d-b846-e6f79e8b71b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="opa">
+      <UniqueIdentifier>{5bc297d2-9d2a-4fb8-b451-e518d3fff2cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="headers">
+      <UniqueIdentifier>{944976bd-18d4-4670-a5a6-61f234214bae}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="..\..\cudautil.cu">
+      <Filter>cuda</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\cudaewald.cu">
+      <Filter>cuda</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\cudapppc.cu">
+      <Filter>cuda</Filter>
+    </CudaCompile>
+  </ItemGroup>
+</Project>

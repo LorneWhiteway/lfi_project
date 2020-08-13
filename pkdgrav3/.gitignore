@@ -1,0 +1,9 @@
+*~
+\.lockfile
+\.tipsy_history
+/config\.h\.in
+/windows*/x64/*
+/windows*/*\.filters
+/windows*/*\.user
+/windows*/*\.filters
+build_*
