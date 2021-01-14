@@ -5,8 +5,10 @@
 #SBATCH -N1
 #requesting 12 cpus
 #SBATCH -n12
-#requesting 1 V100 GPU
-#SBATCH --gres=gpu:v100:1
+#requesting 1 GPU
+#        If you want to insist on using the XX GPU (XX=v100 or k80), then change this to
+#        #SBATCH --gres=gpu:XX:1
+#SBATCH --gres=gpu:1
 #SBATCH --job-name=pkdgrav3
 #SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
 #SBATCH --mail-type=ALL
@@ -18,7 +20,8 @@
 ## sbatch --export=ALL,experiment_name='gpu_1024_1024_1000' cuda_job_script
 
 ## To go to the GPU node, do:
-## srun -p GPU --gres=gpu:v100:1 --pty tcsh
+## srun -p GPU --gres=gpu:XX:1 --pty tcsh
+## where XX=v100 or k80, depending on which GPU you wish to go to.
 ## From there you might want to do:
 ## cd /state/partition1/ucapwhi/lfi_project/experiments
 
