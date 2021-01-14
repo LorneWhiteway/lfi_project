@@ -8,6 +8,8 @@ experiments/*/example*
 experiments/*/.lockfile
 experiments/*/z_values.txt
 experiments/*/slurm*
+experiments/*/machine*
+experiments/*/output*
 
 
 
