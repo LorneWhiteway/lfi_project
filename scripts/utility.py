@@ -6,6 +6,11 @@
     Author: Lorne Whiteway.
 """
 
+import glob
+import numpy as np
+import healpy as hp
+import matplotlib.pyplot as plt
+from astropy.cosmology import WMAP9 as cosmo
 
 
 
@@ -15,10 +20,6 @@
 # basefilename will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00001.hpb"
 # The actual files to be read will then have names like "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00001.hpb.0"
 def one_healpix_map_from_basefilename(basefilename, nside):
-
-    import glob
-    import numpy as np
-    import healpy as hp
     
     hpb_type = np.dtype([('grouped', '=i4'),('ungrouped', '=i4'), ('potential', '=f4')])
     
@@ -47,13 +48,11 @@ def one_healpix_map_from_basefilename(basefilename, nside):
 # filespec will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.{}.hpb"
 # Output will be a list like ["/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00001.hpb", etc.]
 def basefilename_list_from_filespec(filespec):
-    import glob
     return [f[:-2] for f in sorted(glob.glob(filespec.replace("{}", "*") + ".0"))]
 
     
 def num_objects_in_lightcones():
 
-    import numpy as np
 
     filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_1024_1000/example.{}.hpb"
     nside = 1024
@@ -73,8 +72,6 @@ def num_objects_in_lightcones():
 
 # Example filespec: "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/example.{}.hpb"    
 def save_all_lightcone_files_caller_core(filespec, nside, plot_one_example):
-
-    import numpy as np
 
     for b in basefilename_list_from_filespec(filespec):
         map_t = one_healpix_map_from_basefilename(b, nside)
@@ -98,9 +95,7 @@ def save_all_lightcone_files():
     
 def plot_lightcone_files(list_of_npy_filenames):
     
-    import numpy as np
-    import healpy as hp
-    import matplotlib.pyplot as plt
+
     
     for filename in list_of_npy_filenames:
         map_t = np.load(filename)
@@ -117,13 +112,13 @@ def plot_lightcone_files(list_of_npy_filenames):
     plt.show()
             
 def show_one_lightcone():
-    import numpy as np
+
     filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_1024_1000/example.068.lightcone.npy"
     plot_lightcone_files([filename,])
     
     
 def show_two_lightcones():
-    import numpy as np
+
     filenames = ["/share/splinter/ucapwhi/lfi_project/experiments/simple_32_32/example.088.lightcone.npy",
         "/share/splinter/ucapwhi/lfi_project/experiments/computenode_32_32/example.088.lightcone.npy"]
     #plot_lightcone_files(filenames)
@@ -147,11 +142,11 @@ def show_two_lightcones():
 # ======================== Start of code for reading boxes ========================
 
 def get_header_type():
-    import numpy as np
+
     return np.dtype([('time','>f8'),('N','>i4'),('Dims','>i4'),('Ngas','>i4'),('Ndark', '>i4'),('Nstar','>i4'),('pad','>i4')])
 
 def get_dark_type():
-    import numpy as np
+
     return np.dtype([('mass','>f4'),('x','>f4'),('y','>f4'),('z','>f4'),('vx','>f4'),('vy','>f4'),('vz','>f4'),('eps','>f4'),('phi','>f4')])
 
 
@@ -160,7 +155,7 @@ def get_dark_type():
 # Returns an array with elements of type get_dark_type()
 def read_one_box(file_name):
 
-    import numpy as np
+
     with open(file_name, 'rb') as in_file:
 
         header = np.fromfile(in_file, dtype=get_header_type(), count=1)
@@ -170,10 +165,7 @@ def read_one_box(file_name):
 
 # File_name will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00100"
 def show_one_shell(file_name, shell_low, shell_high, nside):
-    import numpy as np
-    import healpy as hp
-    import matplotlib.pyplot as plt
-    
+
     d = read_one_box(file_name)
     ra_list = []
     dec_list = []
@@ -224,9 +216,6 @@ def show_one_shell_example():
     
 def match_points_between_boxes():
 
-    import numpy as np
-    import matplotlib.pyplot as plt
-
     file_names = ["/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00001", "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00100"]
 
     d0 = read_one_box(file_names[0])
@@ -271,7 +260,7 @@ def match_points_between_boxes():
 # The file to be read by this routine can be created by running PKDGRAV3 and piping the output to file.
 def read_one_output_file(filename):
     
-    import numpy as np
+
     
     step_list = []
     time_list = []
@@ -295,8 +284,6 @@ def read_one_output_file(filename):
             
 def show_one_output_file(filename):
 
-    import matplotlib.pyplot as plt
-
     (s_arr, t_arr, z_arr) = read_one_output_file(filename)
     
     if False:
@@ -315,9 +302,8 @@ def show_one_output_file_example():
     
 def build_z_values_file():
 
-    import numpy as np
     
-    directory = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_768_900_2048"
+    directory = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_4096_900"
     input_filename = directory + "/example_output.txt"
     output_filename = directory + "/z_values.txt"
     
@@ -338,9 +324,9 @@ if __name__ == '__main__':
     #show_one_output_file_example()
     #show_one_shell_example()
     #match_points_between_boxes()
-    save_all_lightcone_files()
+    #save_all_lightcone_files()
     #show_one_lightcone()
     #show_two_lightcones()
     #num_objects_in_lightcones()
-    #build_z_values_file()
+    build_z_values_file()
     
