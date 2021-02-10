@@ -10,7 +10,7 @@ import glob
 import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
-from astropy.cosmology import WMAP9 as cosmo
+from astropy.cosmology import FlatLambdaCDM
 
 
 
@@ -37,9 +37,9 @@ def one_healpix_map_from_basefilename(basefilename, nside):
     
     
     n_pixels = hp.nside2npix(nside)
-    assert len(healpix_map) >= n_pixels, "{} yields {} elements, which is too few for nside{}".format(filespec, len(healpix_map), nside)
+    assert len(healpix_map) >= n_pixels, "{} yields {} elements, which is too few for nside{}".format(basefilename, len(healpix_map), nside)
     # Has padding at end; ensure that this padding is empty
-    assert np.all(healpix_map[n_pixels:] == 0), "{} yields non-zero elements in the padding area".format(filespec)
+    assert np.all(healpix_map[n_pixels:] == 0), "{} yields non-zero elements in the padding area".format(basefilename)
     
     return healpix_map[:n_pixels]
     
@@ -54,8 +54,8 @@ def basefilename_list_from_filespec(filespec):
 def num_objects_in_lightcones():
 
 
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_1024_1000/example.{}.hpb"
-    nside = 1024
+    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_4096_900/example.{}.hpb"
+    nside = 4096
     
     total_num_objects = 0
     for b in basefilename_list_from_filespec(filespec):
@@ -88,21 +88,33 @@ def save_all_lightcone_files_caller_core(filespec, nside, plot_one_example):
 
 
 def save_all_lightcone_files():
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_768_900_2048/example.{}.hpb"
-    nside = 2048
+    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_4096_900/example.{}.hpb"
+    nside = 4096
     save_all_lightcone_files_caller_core(filespec, nside, False)
 
     
 def plot_lightcone_files(list_of_npy_filenames):
     
-
-    
     for filename in list_of_npy_filenames:
+        print("Using file {}".format(filename))
+        
         map_t = np.load(filename)
+        
+        print("Number of objects = {}".format(np.sum(map_t)))
+        print("Number of pixels = {}".format(map_t.shape))
+        
+        # Histogram of pixel values
+        if True:
+            plt.hist(map_t, bins=np.max(map_t)+1)
+            plt.yscale('log', nonposy='clip') # See https://stackoverflow.com/questions/17952279/logarithmic-y-axis-bins-in-python
+            plt.show()
+        
         if True:
             map_t = np.log10(map_t) - np.log10(np.mean(map_t)) # log10(1+\delta)
+        
         cmap=plt.get_cmap('magma')
-        if False:
+        
+        if True:
             hp.mollview(map_t, title=filename.replace("/share/splinter/ucapwhi/lfi_project/experiments/", ""), cbar=True, cmap=cmap)
             hp.graticule(dpar=30.0)
         else:
@@ -113,7 +125,7 @@ def plot_lightcone_files(list_of_npy_filenames):
             
 def show_one_lightcone():
 
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_1024_1000/example.068.lightcone.npy"
+    filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_4096_900/example.00078.lightcone.npy"
     plot_lightcone_files([filename,])
     
     
@@ -286,24 +298,38 @@ def show_one_output_file(filename):
 
     (s_arr, t_arr, z_arr) = read_one_output_file(filename)
     
-    if False:
-        plt.plot(s_arr, t_arr)
-        plt.plot(s_arr, z_arr)
+    hubble_constant = 0.67
+    
+    cosmo = FlatLambdaCDM(H0=100*hubble_constant, Om0=0.32)
+    c_arr = cosmo.comoving_distance(z_arr).value # In Mpc
+
+    if True:
+        c_arr_diffs = c_arr[:-1] - c_arr[1:] #This way around as the arrays go from high z to low z
+        z_arr_diffs = z_arr[:-1] - z_arr[1:] #This way around as the arrays go from high z to low z
+        if False:
+            plt.scatter(z_arr[:-1], c_arr_diffs[:]*hubble_constant, s=5)
+            plt.ylabel('Shell thickness (Mpc/h)')
+        else:
+            plt.scatter(z_arr[:-1], z_arr_diffs[:], s=5)
+            plt.ylabel('Shell thickness (delta redshift)')
+        
+        plt.xlabel('Redshift')
         plt.show()
     
     
-    for (s, t, z) in zip(s_arr, t_arr, z_arr):
-        print(s,t,z)
+    print("Step\tTime\tRedshift\tComoving r(Mpc)\tComoving r(Mpc/h)")
+    for (s, t, z, c) in zip(s_arr, t_arr, z_arr, c_arr):
+        print(s,t,z,c,c*hubble_constant)
+        pass
     
 def show_one_output_file_example():
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_1024_1000/example_output.txt"
+    filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_32_512_900/example_output.txt"
     show_one_output_file(filename)
     
     
 def build_z_values_file():
 
-    
-    directory = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_4096_900"
+    directory = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_xx_4096_900"
     input_filename = directory + "/example_output.txt"
     output_filename = directory + "/z_values.txt"
     
@@ -321,12 +347,12 @@ def build_z_values_file():
 
 if __name__ == '__main__':
     
-    #show_one_output_file_example()
+    show_one_output_file_example()
     #show_one_shell_example()
     #match_points_between_boxes()
     #save_all_lightcone_files()
     #show_one_lightcone()
     #show_two_lightcones()
     #num_objects_in_lightcones()
-    build_z_values_file()
+    #build_z_values_file()
     
