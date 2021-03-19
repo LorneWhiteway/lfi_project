@@ -39,6 +39,9 @@ if ($BUILD_MODE) then
 	module load $CMAKE_MODULE
 else
 	module load $PYTHON_MODULE
+	# For cosmic_web_utilities. Note that this gets rid of other settings in PYTHONPATH - this might be a problem
+	echo Setting PYTHONPATH to /share/splinter/ucapwhi/cosmic_web/hong_dey
+	setenv PYTHONPATH /share/splinter/ucapwhi/cosmic_web/hong_dey
 endif
 
 
