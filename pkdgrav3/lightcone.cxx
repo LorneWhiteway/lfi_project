@@ -160,9 +160,9 @@ void pkdProcessLightCone(PKD pkd,PARTICLE *p,float fPot,double dLookbackFac,doub
 	for (j=0;j<3;++j) r1[j] = r0[j] + dt*v[j];
 	for(int iOct=0; iOct<nBox; ++iOct) {
 	    dvec off0, off1, off2;
-	    off0.load(pkd->lcOffset0+iOct*4);
-	    off1.load(pkd->lcOffset1+iOct*4);
-	    off2.load(pkd->lcOffset2+iOct*4);
+	    off0.load(pkd->lcOffset0+iOct*dvec::width());
+	    off1.load(pkd->lcOffset1+iOct*dvec::width());
+	    off2.load(pkd->lcOffset2+iOct*dvec::width());
 	    dvec vrx0 = off0 + r0[0];
 	    dvec vry0 = off1 + r0[1];
 	    dvec vrz0 = off2 + r0[2];
