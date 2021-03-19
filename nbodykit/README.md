@@ -34,3 +34,5 @@ k = 0.00001
 t = cosmology.power.transfers.CLASS(cosmology.Planck15,0.0)(k)
 print(t) # Should be 1.0
 ```
+
+Python code that interacts with nbodykit is located in nbody_utility.py.
