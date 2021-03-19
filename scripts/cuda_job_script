@@ -6,12 +6,15 @@
 #requesting 12 cpus
 #SBATCH -n12
 #requesting 1 GPU
-#        If you want to insist on using the XX GPU (XX=v100 or k80), then change this to
+#        If you want to insist on using the XX GPU (XX=v100 or k80), then set the next command to
 #        #SBATCH --gres=gpu:XX:1
-#SBATCH --gres=gpu:1
+#        If you are indifferent then set it to
+#        #SBATCH --gres=gpu:1
+#        Beware - also need to change directory for executable (in the main body of this script).
+#SBATCH --gres=gpu:k80:1
 #SBATCH --job-name=pkdgrav3
 #SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
-#SBATCH --mail-type=ALL
+#SBATCH --mail-type=END,FAIL
 #SBATCH --time=16-00:00:00
 #SBATCH --mem=128000
 
@@ -28,26 +31,41 @@
 # Load the module files
 source /share/splinter/ucapwhi/lfi_project/set_environment.csh USE
 
-# Make directory for this experiment on the gpu node, if necessary
-# Note that $experiment_name will have been set on the 'sbatch' command line
-cd /state/partition1/
-mkdir -p ucapwhi
-cd ./ucapwhi
-mkdir -p lfi_project
-cd ./lfi_project
-mkdir -p experiments
-cd ./experiments
-mkdir -p $experiment_name
-cd ./$experiment_name
+if (0) then
 
-# Copy the control file from /share/splinter...
-cp /share/splinter/ucapwhi/lfi_project/experiments/$experiment_name/control.par .
+	# This branch writes output files locally on gpu node, then copies them when done.
 
-# Run pkdgrav3
-/share/splinter/ucapwhi/lfi_project/pkdgrav3/build/pkdgrav3 -sz 9 ./control.par > ./example_output.txt
+	# Make directory for this experiment on the gpu node, if necessary
+	# Note that $experiment_name will have been set on the 'sbatch' command line
+	cd /state/partition1/
+	mkdir -p ucapwhi
+	cd ./ucapwhi
+	mkdir -p lfi_project
+	cd ./lfi_project
+	mkdir -p experiments
+	cd ./experiments
+	mkdir -p $experiment_name
+	cd ./$experiment_name
 
-# Copy output files back to splinter
-cp ./example* /share/splinter/ucapwhi/lfi_project/experiments/$experiment_name
+	# Copy the control file from /share/splinter...
+	cp /share/splinter/ucapwhi/lfi_project/experiments/$experiment_name/control.par .
+
+	# Run pkdgrav3
+	/share/splinter/ucapwhi/lfi_project/pkdgrav3/build_gpu_k80/pkdgrav3 -sz 9 ./control.par > ./example_output.txt
+
+	# Copy output files back to splinter
+	cp ./example* /share/splinter/ucapwhi/lfi_project/experiments/$experiment_name
+
+else
+
+	# This branch writes output files directly to splinter.
+
+	# Go to the output directory
+	cd /share/splinter/ucapwhi/lfi_project/experiments/$experiment_name/
+	
+	# Run pkdgrav3
+	/share/splinter/ucapwhi/lfi_project/pkdgrav3/build_gpu_k80/pkdgrav3 -sz 9 ./control.par > ./example_output.txt
 
 
+endif
 
