@@ -11,6 +11,8 @@ experiments/*/slurm*
 experiments/*/machine*
 experiments/*/output*
 
+nbodykit/*
+
 
 
 # Byte-compiled / optimized / DLL files

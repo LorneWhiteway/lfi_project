@@ -2,7 +2,7 @@ This directory was created on 9 Feb 2021 by LW to allow me to use nbodykit.
 
 See https://nbodykit.readthedocs.io/en/latest/index.html for info on nbodykit.
 
-Installation used the instructions at https://nbodykit.readthedocs.io/en/latest/getting-started/install.html#installing-nbodykit-with-anaconda, togehter with information from the splinter user manual.
+Installation used the instructions at https://nbodykit.readthedocs.io/en/latest/getting-started/install.html#installing-nbodykit-with-anaconda, together with information from the splinter user manual.
 
 To install, I did this:
 bash
