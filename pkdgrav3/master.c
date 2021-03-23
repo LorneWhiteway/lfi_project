@@ -2245,12 +2245,12 @@ void msrAllNodeWrite(MSR msr, const char *pszFileName, double dTime, double dvFa
     in.iIndex = 0;
 
     if (msr->csm->val.bComove) {
-        in.dTime = csmTime2Exp(msr->csm,dTime);
-        in.dvFac = 1.0/(in.dTime*in.dTime);
+	in.dTime = csmTime2Exp(msr->csm,dTime);
+	in.dvFac = 1.0/(in.dTime*in.dTime);
 	}
     else {
-        in.dTime = dTime;
-        in.dvFac = 1.0;
+	in.dTime = dTime;
+	in.dvFac = 1.0;
 	}
 
     /* We need to enforce periodic boundaries (when applicable) */
@@ -2258,18 +2258,18 @@ void msrAllNodeWrite(MSR msr, const char *pszFileName, double dTime, double dvFa
 	    msr->param.dxPeriod < FLOAT_MAXVAL &&
 	    msr->param.dyPeriod < FLOAT_MAXVAL &&
 	    msr->param.dzPeriod < FLOAT_MAXVAL) {
-        for (j=0;j<3;++j) {
-            in.bnd.fCenter[j] = msr->fCenter[j];
-        }
-        in.bnd.fMax[0] = 0.5*msr->param.dxPeriod;
-        in.bnd.fMax[1] = 0.5*msr->param.dyPeriod;
-        in.bnd.fMax[2] = 0.5*msr->param.dzPeriod;
+	for (j=0;j<3;++j) {
+	    in.bnd.fCenter[j] = msr->fCenter[j];
+	    }
+	in.bnd.fMax[0] = 0.5*msr->param.dxPeriod;
+	in.bnd.fMax[1] = 0.5*msr->param.dyPeriod;
+	in.bnd.fMax[2] = 0.5*msr->param.dzPeriod;
 	}
     else {
-        for (j=0;j<3;++j) {
-            in.bnd.fCenter[j] = 0.0;
-            in.bnd.fMax[j] = FLOAT_MAXVAL;
-        }
+	for (j=0;j<3;++j) {
+	    in.bnd.fCenter[j] = 0.0;
+	    in.bnd.fMax[j] = FLOAT_MAXVAL;
+	    }
 	}
 
     in.dEcosmo    = msr->dEcosmo;
@@ -2293,24 +2293,25 @@ void msrAllNodeWrite(MSR msr, const char *pszFileName, double dTime, double dvFa
 	| (msr->param.bMemSoft?0:FIO_FLAG_COMPRESS_SOFT);
 
     if (!msr->param.bHDF5 && strstr(in.achOutFile,"&I")==0) {
-        FIO fio;
-        fio = fioTipsyCreate(in.achOutFile,
-                     in.mFlags&FIO_FLAG_CHECKPOINT,
-                     in.bStandard,in.dTime,
-                     in.nSph, in.nDark, in.nStar);
-        fioClose(fio);
+	FIO fio;
+	fio = fioTipsyCreate(in.achOutFile,
+			     in.mFlags&FIO_FLAG_CHECKPOINT,
+			     in.bStandard,in.dTime,
+			     in.nSph, in.nDark, in.nStar);
+	fioClose(fio);
 	}
     in.iLower = 0;
     in.iUpper = msr->nThreads;
     in.iIndex = 0;
     in.nProcessors = nProcessors;
+    // Change made by LW - suppress writing snapshot file except in specific cases.
 	if (strstr(pszFileName, ".00160") != NULL) {
-		pstWrite(msr->pst,&in,sizeof(in),NULL,0);    /* Disable this line to switch off writing the snapshot files.*/
-	}
-	else {
-		fprintf(stdout, "Suppressed writing to file %s\n", pszFileName);
-	}
-}
+        pstWrite(msr->pst,&in,sizeof(in),NULL,0);    /* Disable this line to switch off writing the snapshot files.*/
+    }
+    else {
+        fprintf(stdout, "Suppressed writing to file %s\n", pszFileName);
+    }
+    }
 
 
 uint64_t msrCalcWriteStart(MSR msr) {
@@ -2358,37 +2359,37 @@ void msrWrite(MSR msr,const char *pszFileName,double dTime,int bCheckpoint) {
     nProcessors = msr->param.bParaWrite==0?1:(msr->param.nParaWrite<=1 ? msr->nThreads:msr->param.nParaWrite);
 
     if (msr->csm->val.bComove) {
-        dExp = csmTime2Exp(msr->csm,dTime);
-        dvFac = 1.0/(dExp*dExp);
+	dExp = csmTime2Exp(msr->csm,dTime);
+	dvFac = 1.0/(dExp*dExp);
 	}
     else {
-        dExp = dTime;
-        dvFac = 1.0;
+	dExp = dTime;
+	dvFac = 1.0;
 	}
     if ( !msr->param.bParaWrite ) {
-        msrprintf(msr,"Writing %s in %s format serially ...\n",
-            achOutFile, (msr->param.bHDF5?"HDF5":"Tipsy"));
+	msrprintf(msr,"Writing %s in %s format serially ...\n",
+		  achOutFile, (msr->param.bHDF5?"HDF5":"Tipsy"));
 	}
     else {
-        if ( msr->param.nParaWrite > 1 )
-            msrprintf(msr,"Writing %s in %s format in parallel (but limited to %d processors) ...\n",
-                  achOutFile, (msr->param.bHDF5?"HDF5":"Tipsy"), nProcessors);
-        else
-            msrprintf(msr,"Writing %s in %s format in parallel ...\n",
-                  achOutFile, (msr->param.bHDF5?"HDF5":"Tipsy"));
+	if ( msr->param.nParaWrite > 1 )
+	    msrprintf(msr,"Writing %s in %s format in parallel (but limited to %d processors) ...\n",
+		      achOutFile, (msr->param.bHDF5?"HDF5":"Tipsy"), nProcessors);
+	else
+	    msrprintf(msr,"Writing %s in %s format in parallel ...\n",
+		      achOutFile, (msr->param.bHDF5?"HDF5":"Tipsy"));
 	}
 
     if (msr->csm->val.bComove)
-        msrprintf(msr,"Time:%g Redshift:%g\n",dTime,(1.0/dExp - 1.0));
+	msrprintf(msr,"Time:%g Redshift:%g\n",dTime,(1.0/dExp - 1.0));
     else
-        msrprintf(msr,"Time:%g\n",dTime);
+	msrprintf(msr,"Time:%g\n",dTime);
 
     sec = msrTime();
     msrAllNodeWrite(msr, achOutFile, dTime, dvFac, bCheckpoint);
     dsec = msrTime() - sec;
 
     msrprintf(msr,"Output file has been successfully written, Wallclock: %f secs.\n", dsec);
-}
+    }
 
 
 void msrSetSoft(MSR msr,double dSoft) {

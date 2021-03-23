@@ -101,7 +101,6 @@ int pstOutputSend(PST pst,void *vin,int nIn,void *vout,int nOut) {
 
 void pkdOutput(PKD pkd, outType eOutputType, int iProcessor,int nProcessor,
     int iPartner,int nPartner, const char *fname ) {
-    
     struct packCtx ctx = {pkd,0};
     mdlPack unpack;
     asyncFileInfo info;
@@ -109,40 +108,37 @@ void pkdOutput(PKD pkd, outType eOutputType, int iProcessor,int nProcessor,
     strcpy(achOutFile,fname);
     sprintf(achOutFile+strlen(achOutFile),".%d",iProcessor);
     io_init(&info,4,1024*1024);
-    if (io_create(&info,achOutFile) < 0) {
-        perror(fname);
-        abort();
-    }
+    if (io_create(&info,achOutFile) < 0) { perror(fname); abort(); }
 
     switch(eOutputType) {
     case OUT_TINY_GROUP:
-        io_write(&info,pkd->tinyGroupTable+1,sizeof(TinyGroupTable)*pkd->nLocalGroups);
-        unpack = unpackWrite;
-        break;
+	io_write(&info,pkd->tinyGroupTable+1,sizeof(TinyGroupTable)*pkd->nLocalGroups);
+	unpack = unpackWrite;
+	break;
     case OUT_KGRID:
-        {
-            size_t nLocal = 1ul * pkd->fft->kgrid->a1 * pkd->fft->kgrid->n2 * pkd->fft->kgrid->nSlab;
-            io_write(&info,pkd->pLite,sizeof(COMPLEX)*nLocal);
+	{
+	    size_t nLocal = 1ul * pkd->fft->kgrid->a1 * pkd->fft->kgrid->n2 * pkd->fft->kgrid->nSlab;
+	    io_write(&info,pkd->pLite,sizeof(COMPLEX)*nLocal);
 	    }
-        unpack = unpackWrite;
-        break;
+	unpack = unpackWrite;
+	break;
     default:
-        unpack = NULL;
-        fprintf(stderr,"ERROR: invalid output type %d\n", eOutputType);
-        abort();
+	unpack = NULL;
+	fprintf(stderr,"ERROR: invalid output type %d\n", eOutputType);
+	abort();
 	}
     while(--nPartner) {
-        struct inOutputSend send;
-        send.iPartner = pkd->idSelf;
-        send.eOutputType = eOutputType;
-        ++iPartner;
-        int rID = mdlReqService(pkd->mdl,iPartner,PST_OUTPUT_SEND,&send,sizeof(send));
-        mdlRecv(pkd->mdl,iPartner,unpack,&info);
-        mdlGetReply(pkd->mdl,rID,NULL,NULL);
+	struct inOutputSend send;
+	send.iPartner = pkd->idSelf;
+	send.eOutputType = eOutputType;
+	++iPartner;
+	int rID = mdlReqService(pkd->mdl,iPartner,PST_OUTPUT_SEND,&send,sizeof(send));
+	mdlRecv(pkd->mdl,iPartner,unpack,&info);
+	mdlGetReply(pkd->mdl,rID,NULL,NULL);
 	}
     io_close(&info);
     io_free(&info);
-}
+    }
 
 int pstOutput(PST pst,void *vin,int nIn,void *vout,int nOut) {
     struct inOutput *in = vin;
