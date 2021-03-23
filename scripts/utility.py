@@ -9,7 +9,7 @@
 import glob
 import numpy as np
 import matplotlib
-#matplotlib.use('Agg') # See http://stackoverflow.com/questions/2801882/generating-a-png-with-matplotlib-when-display-is-undefined
+matplotlib.use('Agg') # See http://stackoverflow.com/questions/2801882/generating-a-png-with-matplotlib-when-display-is-undefined
 import matplotlib.pyplot as plt
 import healpy as hp
 from astropy.cosmology import FlatLambdaCDM
@@ -50,7 +50,7 @@ def one_healpix_map_from_basefilename(basefilename, nside):
     
     return healpix_map[:n_pixels]
     
-
+    
 
 # filespec will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.{}.hpb"
 # Output will be a list like ["/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00001.hpb", etc.]
@@ -100,8 +100,8 @@ def save_all_lightcone_files_caller_core(filespec, nside, plot_one_example, new_
 
 
 def save_all_lightcone_files():
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_4096_900/example.{}.hpb"
-    nside = 16
+    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/example.00067{}.hpb"
+    nside = 4096
     save_all_lightcone_files_caller_core(filespec, nside, False)
 
     
@@ -178,7 +178,7 @@ def save_all_lightcone_image_files(directory):
     
 
 def save_all_lightcone_image_files_caller():
-    directory = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_1024_1536/"
+    directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/example.0006*.lightcone"
     save_all_lightcone_image_files(directory)
     
     
@@ -486,7 +486,7 @@ def build_z_values_file(directory):
 
 
 def build_z_values_file_caller():
-    directory = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_4096_900"
+    directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900"
     build_z_values_file(directory)
     
 
@@ -513,9 +513,9 @@ def display_z_values_file(directory):
 def post_run_process():
     
     # Set directory and nside to the appropriate values...
-    directory = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_probtest/"
-    nside = 64
-    new_nside = 64
+    directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/"
+    nside = 4096
+    new_nside = 4096
     
     print("Processing {} with nside {}".format(directory, nside))
     
@@ -567,6 +567,32 @@ def intersection_of_shell_and_cells():
     
     plt.show()
     
+    
+def compare_two_lightcones_by_power_spectra():
+    file_name_array = ["/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/example.00067.lightcone.npy", "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/example.00130.lightcone.npy"]
+    
+    delta_array = [(m/np.mean(m))-1.0 for m in [np.load(f) for f in file_name_array]]
+
+    lmax = 1000
+    
+    af = [hp.anafast(d, lmax=lmax, pol=False) for d in delta_array]
+    
+    if False:
+        plt.plot(af[0][1:])
+        plt.plot(af[1][1:])
+        plt.yscale("log")
+    else:
+        plt.plot(af[1][1:]/af[0][1:])
+    
+    
+    
+    plt.savefig("/share/splinter/ucapwhi/lfi_project/scripts/foo.png")
+    
+    
+    
+    
+
+    
 
                         
 
@@ -585,10 +611,12 @@ if __name__ == '__main__':
     #show_two_lightcones()
     #num_objects_in_lightcones()
     #display_z_values_file("/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_4096_900/")
-    post_run_process()
+    #post_run_process()
     #read_one_box_example()
     #count_objects_in_many_lightcone_files()
     #string_between_strings_test_harness()
-    #save_all_lightcone_image_files_caller()
+    save_all_lightcone_image_files_caller()
     #intersection_of_shell_and_cells()
     #build_z_values_file_caller()
+    #save_all_lightcone_image_files("/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/")
+    #compare_two_lightcones_by_power_spectra()
