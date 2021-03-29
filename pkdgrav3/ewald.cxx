@@ -40,8 +40,6 @@
 
 /* Added by LW */
 
-#define __AVX__ 1
-
 #if defined(__AVX512F__)
 #pragma message ("__AVX512F__ defined")
 #endif
