@@ -9,7 +9,7 @@
 import glob
 import numpy as np
 import matplotlib
-matplotlib.use('Agg') # See http://stackoverflow.com/questions/2801882/generating-a-png-with-matplotlib-when-display-is-undefined
+#matplotlib.use('Agg') # See http://stackoverflow.com/questions/2801882/generating-a-png-with-matplotlib-when-display-is-undefined
 import matplotlib.pyplot as plt
 import healpy as hp
 from astropy.cosmology import FlatLambdaCDM
@@ -18,6 +18,41 @@ import re
 from numpy import random
 import cosmic_web_utilities as cwu 
 import configparser
+import os
+
+
+# ======================== Start of code for reporting on the status of an 'experiments' directory ========================
+
+
+# Helper function for 'status' routine
+def report_whether_file_exists(file_description, file_name):
+    print("File {} {} '{}'".format(("exists:" if os.path.isfile(file_name) else "DOES NOT exist: no"), file_description, file_name))
+    
+def report_whether_several_files_exist(file_description, filespec):
+    num_files = len(glob.glob(filespec))
+    if num_files > 0:
+        print("Files exist: {} {} file{}".format(num_files, file_description, plural_suffix(num_files)))
+    else:
+        print("Files DO NOT exist: no {} files".format(file_description))
+
+def plural_suffix(count):
+    return ("" if count==1 else "s")
+
+def status(directory):
+    
+    # date and time
+    print("Status as of {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    report_whether_file_exists("control file", os.path.abspath(os.path.join(directory, "control.par")))
+    report_whether_file_exists("log file", os.path.abspath(os.path.join(directory, "example.log")))
+    report_whether_file_exists("output file", os.path.abspath(os.path.join(directory, "example_output.txt")))
+    report_whether_several_files_exist("partial lightcone", os.path.join(directory, "*.hpb*"))
+    report_whether_several_files_exist("full lightcone", os.path.join(directory, "*.npy"))
+    report_whether_several_files_exist("lightcone image (orthview)", os.path.join(directory, "*.lightcone.png"))
+    report_whether_several_files_exist("lightcone image (mollview)", os.path.join(directory, "*.lightcone.mollview.png"))
+    report_whether_file_exists("z_values file", os.path.abspath(os.path.join(directory, "z_values.txt")))
+
+
+# ======================== End of code for reporting on the status of an 'experiments' directory ========================
 
 
 
@@ -127,11 +162,11 @@ def plot_lightcone_files(list_of_npy_filenames, do_show = True, do_save = False)
         cmap=plt.get_cmap('magma')
         
         
-        if True:
+        if False:
             hp.mollview(map_t, title=filename.replace("/share/splinter/ucapwhi/lfi_project/experiments/", ""), cbar=True, cmap=cmap)
             #hp.graticule(dpar=30.0)
             save_file_extension = "mollview.png"
-        elif False:
+        elif True:
             rot = (50.0, -40.0, 0.0)
             hp.orthview(map_t, rot=rot, title=filename.replace("/share/splinter/ucapwhi/lfi_project/experiments/", ""), cbar=True, cmap=cmap)
             save_file_extension = "png"
@@ -153,11 +188,11 @@ def plot_lightcone_files(list_of_npy_filenames, do_show = True, do_save = False)
             
 def show_one_lightcone():
 
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_1024_900/example.00115.lightcone.npy"
+    filename = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/example.00072.lightcone.npy"
     plot_lightcone_files([filename,])
     
 def save_one_lightcone():
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_1024_1536/example.00115.lightcone.npy"
+    filename = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/example.00072.lightcone.npy"
     plot_lightcone_files([filename,], False, True)
 
     
@@ -178,7 +213,7 @@ def save_all_lightcone_image_files(directory):
     
 
 def save_all_lightcone_image_files_caller():
-    directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/example.0006*.lightcone"
+    directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/example.00072.lightcone"
     save_all_lightcone_image_files(directory)
     
     
@@ -504,8 +539,12 @@ def display_z_values_file(directory):
     d_arr = d[:,5]
     d_over_boxsize_arr = d[:,6]
     
+    y_data_to_ploy = z_arr[:-1] - z_arr[1:]
+    x_data_to_plot = (s_arr[:-1] + s_arr[1:]) * 0.5
     
-    plt.scatter(s_arr[0:], inverse_a_arr[0:])
+    
+    plt.scatter(x_data_to_plot[277:], y_data_to_ploy[277:])
+    
     plt.show()
     
 
@@ -513,9 +552,9 @@ def display_z_values_file(directory):
 def post_run_process():
     
     # Set directory and nside to the appropriate values...
-    directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/"
-    nside = 4096
-    new_nside = 4096
+    directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_freqtimeslicing/"
+    nside = 64
+    new_nside = 64
     
     print("Processing {} with nside {}".format(directory, nside))
     
@@ -610,13 +649,14 @@ if __name__ == '__main__':
     #show_one_lightcone()
     #show_two_lightcones()
     #num_objects_in_lightcones()
-    #display_z_values_file("/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_4096_900/")
+    #display_z_values_file("/share/splinter/ucapwhi/lfi_project/experiments/v100_freqtimeslicing/")
     #post_run_process()
     #read_one_box_example()
     #count_objects_in_many_lightcone_files()
     #string_between_strings_test_harness()
-    save_all_lightcone_image_files_caller()
+    #save_all_lightcone_image_files_caller()
     #intersection_of_shell_and_cells()
     #build_z_values_file_caller()
     #save_all_lightcone_image_files("/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/")
     #compare_two_lightcones_by_power_spectra()
+    status("/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/")
