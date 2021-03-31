@@ -23,8 +23,9 @@ import os
 
 # ======================== Start of code for reporting on the status of an 'experiments' directory ========================
 
+# This functionality is exposed through 'status.py'.
 
-# Helper function for 'status' routine
+# Helper functions
 def report_whether_file_exists(file_description, file_name):
     print("File {} {} '{}'".format(("exists:" if os.path.isfile(file_name) else "DOES NOT exist: no"), file_description, file_name))
     
@@ -39,10 +40,9 @@ def plural_suffix(count):
     return ("" if count==1 else "s")
 
 def status(directory):
-    
-    # date and time
+    control_file_name = os.path.abspath(os.path.join(directory, "control.par"))
     print("Status as of {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-    report_whether_file_exists("control file", os.path.abspath(os.path.join(directory, "control.par")))
+    report_whether_file_exists("control file", control_file_name)
     report_whether_file_exists("log file", os.path.abspath(os.path.join(directory, "example.log")))
     report_whether_file_exists("output file", os.path.abspath(os.path.join(directory, "example_output.txt")))
     report_whether_several_files_exist("partial lightcone", os.path.join(directory, "*.hpb*"))
@@ -536,16 +536,33 @@ def display_z_values_file(directory):
     t_arr = d[:,2]
     a_arr = d[:,3]
     inverse_a_arr = d[:,4]
-    d_arr = d[:,5]
-    d_over_boxsize_arr = d[:,6]
+    c_arr = d[:,5]  # Comoving distance (Mpc/h)
+    c_over_boxsize_arr = d[:,6]
     
-    y_data_to_ploy = z_arr[:-1] - z_arr[1:]
-    x_data_to_plot = (s_arr[:-1] + s_arr[1:]) * 0.5
+    if True:
+        y_data_to_ploy = c_arr[:-1] - c_arr[1:]
+        y_data_label = "Shell thickness (comoving) Mpc/h"
+        x_data_to_plot = (z_arr[:-1] + z_arr[1:]) * 0.5
+        x_data_label = "Redshift"
+    else:
+        y_data_to_ploy = c_arr
+        y_data_label = "Shell distance (Mpc/h)"
+        x_data_to_plot = s_arr
+        x_data_label = "Slice number"
     
     
-    plt.scatter(x_data_to_plot[277:], y_data_to_ploy[277:])
+    start_point = 351 # TODO unhardcode this
     
-    plt.show()
+    plt.scatter(x_data_to_plot[start_point:], y_data_to_ploy[start_point:],s=1)
+    plt.xlabel(x_data_label)
+    plt.ylabel(y_data_label)
+    
+    if False:
+        plt.show()
+    else:
+        save_file_name = directory + "/shell_thickness.png"
+        print("Saving {}...".format(save_file_name))    
+        plt.savefig(save_file_name)
     
 
 # Run this after PKDGRAV3 has finished to do all the postprocessing
@@ -649,7 +666,7 @@ if __name__ == '__main__':
     #show_one_lightcone()
     #show_two_lightcones()
     #num_objects_in_lightcones()
-    #display_z_values_file("/share/splinter/ucapwhi/lfi_project/experiments/v100_freqtimeslicing/")
+    display_z_values_file("/share/splinter/ucapwhi/lfi_project/experiments/v100_freqtimeslicing/")
     #post_run_process()
     #read_one_box_example()
     #count_objects_in_many_lightcone_files()
@@ -659,4 +676,3 @@ if __name__ == '__main__':
     #build_z_values_file_caller()
     #save_all_lightcone_image_files("/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/")
     #compare_two_lightcones_by_power_spectra()
-    status("/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/")
