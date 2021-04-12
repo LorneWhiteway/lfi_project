@@ -2304,9 +2304,10 @@ void msrAllNodeWrite(MSR msr, const char *pszFileName, double dTime, double dvFa
     in.iUpper = msr->nThreads;
     in.iIndex = 0;
     in.nProcessors = nProcessors;
-    // Change made by LW - suppress writing snapshot file except in specific cases.
-	if (strstr(pszFileName, ".00160") != NULL) {
-        pstWrite(msr->pst,&in,sizeof(in),NULL,0);    /* Disable this line to switch off writing the snapshot files.*/
+    // Change made by LW - suppress writing snapshot file (except perhaps in specific cases).
+	// The next line shows what the code needs to look like to allow writing of the snapshot file in certain cases.
+	if (0 && strstr(pszFileName, ".00160") != NULL) {
+        pstWrite(msr->pst,&in,sizeof(in),NULL,0); // This will write the snapshot file.
     }
     else {
         fprintf(stdout, "Suppressed writing to file %s\n", pszFileName);
