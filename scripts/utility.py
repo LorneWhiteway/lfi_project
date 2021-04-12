@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """ 
     Routines for analyzing PKDGRAV3 output.
@@ -17,8 +16,28 @@ import datetime
 import re
 from numpy import random
 import cosmic_web_utilities as cwu 
-import configparser
 import os
+
+
+# ======================== Start of code for reading control file ========================
+
+def get_float_from_control_file(control_file_name, key):
+    with open(control_file_name, "r") as f:
+        for line in f:
+            if key == line.split("#")[0].split("=")[0].strip():
+                return float(line.split("#")[0].split("=")[1].strip())
+            
+    raise SystemError("Could not find key {} in ini file {}".format(key, control_file_name))
+
+
+
+def get_float_from_control_file_test_harness():
+    control_file_name = "/share/splinter/ucapwhi/lfi_project/experiments/v100_foo/control.par"
+    key = "dBoxSize"
+    print(get_float_from_control_file(control_file_name, key))
+    
+# ======================== End of code for reading control file ========================
+
 
 
 # ======================== Start of code for reporting on the status of an 'experiments' directory ========================
@@ -498,30 +517,36 @@ def show_one_output_file_example():
 def build_z_values_file(directory):
 
     input_filename = directory + "/example_output.txt"
+    control_file_name = directory + "/control.par"
     output_filename = directory + "/z_values.txt"
+    
     
     (s_arr, t_arr, z_arr) = read_one_output_file(input_filename)
     
-    header = "Step,z,t,a,1/a,d(Mpc/h),d/BoxSize"
-    
-    a_arr = 1.0 / (1.0 + z_arr)
-
-    config = configparser.ConfigParser(inline_comment_prefixes="#", comment_prefixes=("#", "import"))
-    # See https://stackoverflow.com/questions/2885190/using-configparser-to-read-a-file-without-section-name
-    with open(directory + "/control.par") as stream:
-        config.read_string("[top]\n" + stream.read())
-    Om0 = config['top']["dOmega0"]
+    Om0 = get_float_from_control_file(control_file_name, "dOmega0")
     cosmo = FlatLambdaCDM(H0=100.0, Om0=Om0)
-    c_arr = cosmo.comoving_distance(z_arr).value # In Mpc/h
     
-    box_size = float(config['top']["dBoxSize"])
     
-    np.savetxt(output_filename, np.column_stack((s_arr, z_arr, t_arr, a_arr, 1.0/a_arr, c_arr, c_arr/box_size)), fmt=["%i", "%f6", "%f6", "%f6", "%f6", "%f6", "%f6"], delimiter=",", header=header)
+    box_size = get_float_from_control_file(control_file_name, "dBoxSize")
+
+    # Prepand step 0 values
+    starting_z = get_float_from_control_file(control_file_name, "dRedFrom")
+    s_arr = np.concatenate(([0], s_arr))
+    z_arr = np.concatenate(([starting_z], z_arr))
+    
+    cmd_arr = cosmo.comoving_distance(z_arr).value # In Mpc/h
+    cmd_over_box_arr = cmd_arr / box_size # Unitless
+    
+    
+    header = "Step,z_far,z_near,delta_z,cmd_far(Mpc/h),cmd_near(Mpc/h),delta_cmd(Mpc/h),cmd/box_far,cmd/box_near,delta_cmd/box"
+    
+    
+    np.savetxt(output_filename, np.column_stack((s_arr[1:], z_arr[:-1], z_arr[1:], (z_arr[:-1]-z_arr[1:]), cmd_arr[:-1], cmd_arr[1:], (cmd_arr[:-1]-cmd_arr[1:]), cmd_over_box_arr[:-1], cmd_over_box_arr[1:], (cmd_over_box_arr[:-1]-cmd_over_box_arr[1:]))), fmt=["%i", "%.6f", "%.6f", "%.6f", "%.6f", "%.6f", "%.6f", "%.6f", "%.6f", "%.6f"], delimiter=",", header=header)
     
 
 
 def build_z_values_file_caller():
-    directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900"
+    directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_freqtimeslicing"
     build_z_values_file(directory)
     
 
@@ -570,15 +595,16 @@ def post_run_process():
     
     # Set directory and nside to the appropriate values...
     directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_freqtimeslicing/"
-    nside = 64
-    new_nside = 64
+    nside = int(get_float_from_control_file(directory + "/control.par", "nSideHealpix"))
+    new_nside = nside
     
     print("Processing {} with nside {}".format(directory, nside))
     
     filespec = directory + "example.{}.hpb"
     save_all_lightcone_files_caller_core(filespec, nside, False, new_nside)
     
-    save_all_lightcone_image_files(directory)
+    if False:
+        save_all_lightcone_image_files(directory)
     
     build_z_values_file(directory)
     
@@ -645,10 +671,42 @@ def compare_two_lightcones_by_power_spectra():
     plt.savefig("/share/splinter/ucapwhi/lfi_project/scripts/foo.png")
     
     
-    
-    
+def compare_two_time_spacings():
 
+    file_1 = "/share/splinter/ucapwhi/lfi_project/experiments/v100_freqtimeslicing/z_values.txt"
+    file_2 = "/share/splinter/ucapwhi/lfi_project/mice/steps.N4096.L3072.zrange.dat"
     
+    d_1 = np.loadtxt(file_1, skiprows=1, delimiter=",")
+    z_avg_1 = (d_1[:,1] + d_1[:,2]) * 0.5
+    delta_z_1 = d_1[:,3]
+    
+    d_2 = np.loadtxt(file_2, skiprows=1, delimiter=",")
+    z_avg_2 = (d_2[:,1] + d_2[:,2]) * 0.5
+    delta_z_2 = d_2[:,2] - d_2[:,1]
+    
+    plt.yscale("log")
+    
+    plt.scatter(z_avg_1, delta_z_1, c="b", s=1, label="PKDGRAV3")
+    plt.scatter(z_avg_2, delta_z_2, c="r", s=1, label="MICE")
+    plt.scatter(z_avg_2, delta_z_2*0.5, c="g", s=1, label="MICE*0.5")
+    
+    
+    plt.legend(loc="upper left")
+    
+    plt.xlabel('z')
+    plt.ylabel('$\Delta z$')
+    
+    plt.xlim(0.0, 10.0)
+    
+    
+    if False:
+        plt.show()
+    else:
+        num_steps = int(get_float_from_control_file(file_1.replace("z_values.txt", "control.par"), "nSteps"))
+        save_file_name = "/share/splinter/ucapwhi/lfi_project/experiments/v100_freqtimeslicing/z_values_comp_{}.png".format(num_steps)
+        print("Saving {}...".format(save_file_name))    
+        plt.savefig(save_file_name)
+
 
                         
 
@@ -666,8 +724,8 @@ if __name__ == '__main__':
     #show_one_lightcone()
     #show_two_lightcones()
     #num_objects_in_lightcones()
-    display_z_values_file("/share/splinter/ucapwhi/lfi_project/experiments/v100_freqtimeslicing/")
-    #post_run_process()
+    #display_z_values_file("/share/splinter/ucapwhi/lfi_project/experiments/v100_freqtimeslicing/")
+    post_run_process()
     #read_one_box_example()
     #count_objects_in_many_lightcone_files()
     #string_between_strings_test_harness()
@@ -676,3 +734,5 @@ if __name__ == '__main__':
     #build_z_values_file_caller()
     #save_all_lightcone_image_files("/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/")
     #compare_two_lightcones_by_power_spectra()
+    #get_float_from_control_file_test_harness()
+    compare_two_time_spacings()
