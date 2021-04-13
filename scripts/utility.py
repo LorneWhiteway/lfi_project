@@ -17,6 +17,7 @@ import re
 from numpy import random
 import cosmic_web_utilities as cwu 
 import os
+import contextlib
 
 
 # ======================== Start of code for reading control file ========================
@@ -132,10 +133,13 @@ def num_objects_in_lightcones():
     
 
 # Example filespec: "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/example.{}.hpb"
-def save_all_lightcone_files_caller_core(filespec, nside, plot_one_example, new_nside = None):
+def save_all_lightcone_files_caller_core(filespec, nside, new_nside = None, delete_hpb_files_when_done = None):
 
     if new_nside is None:
         new_nside = nside
+        
+    if delete_hpb_files_when_done is None:
+        delete_hpb_files_when_done = False
 
     for b in basefilename_list_from_filespec(filespec):
         map_t = one_healpix_map_from_basefilename(b, nside)
@@ -147,16 +151,21 @@ def save_all_lightcone_files_caller_core(filespec, nside, plot_one_example, new_
             np.save(output_file_name, map_t)
         else:
             print("Not writing file {} as it would have no objects.".format(output_file_name))
+            
+        if delete_hpb_files_when_done:
+            filespec_to_delete = b + ".*"
+            print("Deleting files matching{}...".format(filespec_to_delete))
+            for f in glob.glob(filespec_to_delete):
+                with contextlib.suppress(FileNotFoundError):
+                    os.remove(f)
+                    
+        
     
-    if plot_one_example:
-        filename = filespec.replace(".{}.hpb", ".089.lightcone.npy")
-        plot_lightcone_files([filename])
-
 
 def save_all_lightcone_files():
     filespec = "/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/example.00067{}.hpb"
     nside = 4096
-    save_all_lightcone_files_caller_core(filespec, nside, False)
+    save_all_lightcone_files_caller_core(filespec, nside)
 
     
 def plot_lightcone_files(list_of_npy_filenames, do_show = True, do_save = False):
@@ -601,7 +610,7 @@ def post_run_process():
     print("Processing {} with nside {}".format(directory, nside))
     
     filespec = directory + "example.{}.hpb"
-    save_all_lightcone_files_caller_core(filespec, nside, False, new_nside)
+    save_all_lightcone_files_caller_core(filespec, nside, new_nside)
     
     if False:
         save_all_lightcone_image_files(directory)
@@ -708,7 +717,24 @@ def compare_two_time_spacings():
         plt.savefig(save_file_name)
 
 
-                        
+def create_dummy_output_file():
+    # create dmmy output files to reserve disk space
+    directory = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_probtest"
+    control_file_name = directory + "/control.par"
+    nside = int(get_float_from_control_file(control_file_name, "nSideHealpix"))
+    num_steps = int(get_float_from_control_file(control_file_name, "nSteps"))
+    
+    n_pixels = hp.nside2npix(nside)
+    empty_map = np.zeros(n_pixels)
+    
+    print("Writing {} dummy output files each with {} pixels".format(num_steps, n_pixels))
+    
+    for i in range(num_steps):
+        output_file_name = directory + "/dummy.{}.npy".format(str(i+1).zfill(5))
+        print("Writing {}".format(output_file_name))
+        hp.write_map(output_file_name, empty_map, overwrite=True)
+    
+    
 
 
 # ======================== End of other utilities ========================    
@@ -725,7 +751,7 @@ if __name__ == '__main__':
     #show_two_lightcones()
     #num_objects_in_lightcones()
     #display_z_values_file("/share/splinter/ucapwhi/lfi_project/experiments/v100_freqtimeslicing/")
-    post_run_process()
+    #post_run_process()
     #read_one_box_example()
     #count_objects_in_many_lightcone_files()
     #string_between_strings_test_harness()
@@ -735,4 +761,7 @@ if __name__ == '__main__':
     #save_all_lightcone_image_files("/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/")
     #compare_two_lightcones_by_power_spectra()
     #get_float_from_control_file_test_harness()
-    compare_two_time_spacings()
+    #compare_two_time_spacings()
+    create_dummy_output_file()
+    
+    
