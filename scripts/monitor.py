@@ -29,15 +29,13 @@ def sorted_list_of_steps_for_which_there_are_partial_files(directory):
     
 
 # If be_conservative then we don't process a step until the files in the next step are being written.
-def monitor(directory, be_conservative):
+def monitor(directory, be_conservative, time_in_seconds_to_wait_until_next_pass):
     
     control_file_name = directory + "/control.par"
     nside = int(utility.get_float_from_control_file(control_file_name, "nSideHealpix"))
     
-    print("Monitoring {} with be_conservative set to {}".format(directory, be_conservative))
+    print("Monitoring directory = {} with be_conservative = {} and seconds_to_wait = {}".format(directory, be_conservative, time_in_seconds_to_wait_until_next_pass))
     print("nside = {}".format(nside))
-    
-    time_in_seconds_to_wait_until_next_pass = 60
     
     while True:
     
@@ -58,6 +56,7 @@ def monitor(directory, be_conservative):
                 print("Deleting {}...".format(dummy_filename))
                 os.remove(dummy_filename)
     
+        print("Waiting {} seconds...".format(time_in_seconds_to_wait_until_next_pass))
         time.sleep(time_in_seconds_to_wait_until_next_pass)
     
     
@@ -65,10 +64,12 @@ def monitor(directory, be_conservative):
 
 if __name__ == '__main__':
 
-    if len(sys.argv) < 3:
-        print("Usage: monitor directory be_conservative")
+    if len(sys.argv) < 4:
+        print("Usage: monitor directory be_conservative seconds_to_wait")
     else:
         directory = sys.argv[1]
         be_conservative = bool(sys.argv[2].lower() == "true")
-        monitor(directory, be_conservative)
+        time_in_seconds_to_wait_until_next_pass = int(sys.argv[3])
+        
+        monitor(directory, be_conservative, time_in_seconds_to_wait_until_next_pass)
     
