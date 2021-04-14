@@ -133,13 +133,16 @@ def num_objects_in_lightcones():
     
 
 # Example filespec: "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/example.{}.hpb"
-def save_all_lightcone_files_caller_core(filespec, nside, new_nside = None, delete_hpb_files_when_done = None):
+def save_all_lightcone_files_caller_core(filespec, nside, new_nside = None, delete_hpb_files_when_done = None, save_image_files = None):
 
     if new_nside is None:
         new_nside = nside
         
     if delete_hpb_files_when_done is None:
         delete_hpb_files_when_done = False
+        
+    if save_image_files is None:
+        save_image_files = False
 
     for b in basefilename_list_from_filespec(filespec):
         map_t = one_healpix_map_from_basefilename(b, nside)
@@ -149,6 +152,8 @@ def save_all_lightcone_files_caller_core(filespec, nside, new_nside = None, dele
         if np.sum(map_t) > 0:
             print("Writing file {}...".format(output_file_name))
             np.save(output_file_name, map_t)
+            if save_image_files:
+                plot_lightcone_files([output_file_name,], do_show=False, do_save=False, mollview_format=True)
         else:
             print("Not writing file {} as it would have no objects.".format(output_file_name))
             
@@ -159,6 +164,7 @@ def save_all_lightcone_files_caller_core(filespec, nside, new_nside = None, dele
                 with contextlib.suppress(FileNotFoundError):
                     os.remove(f)
                     
+                    
         
     
 
@@ -168,7 +174,10 @@ def save_all_lightcone_files():
     save_all_lightcone_files_caller_core(filespec, nside)
 
     
-def plot_lightcone_files(list_of_npy_filenames, do_show = True, do_save = False):
+def plot_lightcone_files(list_of_npy_filenames, do_show = True, do_save = False, mollview_format = None):
+
+    if mollview_format is None:
+        mollview_format = False
     
     for filename in list_of_npy_filenames:
         print("Using file {}".format(filename))
@@ -190,18 +199,14 @@ def plot_lightcone_files(list_of_npy_filenames, do_show = True, do_save = False)
         cmap=plt.get_cmap('magma')
         
         
-        if False:
+        if mollview_format:
             hp.mollview(map_t, title=filename.replace("/share/splinter/ucapwhi/lfi_project/experiments/", ""), cbar=True, cmap=cmap)
             #hp.graticule(dpar=30.0)
             save_file_extension = "mollview.png"
-        elif True:
+        else:
             rot = (50.0, -40.0, 0.0)
             hp.orthview(map_t, rot=rot, title=filename.replace("/share/splinter/ucapwhi/lfi_project/experiments/", ""), cbar=True, cmap=cmap)
             save_file_extension = "png"
-        else:
-            rot = (0.0, 0.0, 0.0)
-            hp.gnomview(map_t, rot=rot, reso=0.4, xsize=500, cbar=True, cmap=cmap)
-            save_file_extension = "gnomview.png"
 
         if do_save:
             save_file_name = filename.replace("npy", save_file_extension)

@@ -23,8 +23,6 @@ def sorted_list_of_steps_for_which_there_are_partial_files(directory):
     list_of_steps = [int(utility.string_between_strings(f, "example.", ".hpb")) for f in glob.glob(directory + "/example.*.hpb.*")]
     list_of_steps = list(set(list_of_steps)) # Remove duplicates
     list_of_steps.sort()
-    print("List of steps for which there are partial files:")
-    print(list_of_steps)
     return list_of_steps
     
 
@@ -40,17 +38,17 @@ def monitor(directory, be_conservative, time_in_seconds_to_wait_until_next_pass)
     while True:
     
         active_steps = sorted_list_of_steps_for_which_there_are_partial_files(directory)
-        #print("len(active_steps) = {}".format(len(active_steps)))
-        #print("test condition = {}".format((2 if be_conservative else 1)))
+        print("Steps for which there are partial files: {}".format(active_steps))
+
         if len(active_steps) >= (2 if be_conservative else 1):
             step_to_process = active_steps[0]
             step_to_process_as_str = str(step_to_process).zfill(5)
             print("Processing step {}".format(step_to_process))
             
             filespec = directory + "/example.{}.hpb".format(step_to_process_as_str)
-            utility.save_all_lightcone_files_caller_core(filespec, nside, nside, delete_hpb_files_when_done=True)
+            utility.save_all_lightcone_files_caller_core(filespec, nside, nside, delete_hpb_files_when_done=True, save_image_files=True)
 
-            # Now delete any corresponding dummy file
+            # Delete any corresponding dummy file
             dummy_filename = directory + "/dummy.{}.npy".format(step_to_process_as_str)
             if os.path.isfile(dummy_filename):
                 print("Deleting {}...".format(dummy_filename))
