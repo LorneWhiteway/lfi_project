@@ -8,7 +8,7 @@
 import glob
 import numpy as np
 import matplotlib
-#matplotlib.use('Agg') # See http://stackoverflow.com/questions/2801882/generating-a-png-with-matplotlib-when-display-is-undefined
+matplotlib.use('Agg') # See http://stackoverflow.com/questions/2801882/generating-a-png-with-matplotlib-when-display-is-undefined
 import matplotlib.pyplot as plt
 import healpy as hp
 from astropy.cosmology import FlatLambdaCDM
@@ -153,7 +153,7 @@ def save_all_lightcone_files_caller_core(filespec, nside, new_nside = None, dele
             print("Writing file {}...".format(output_file_name))
             np.save(output_file_name, map_t)
             if save_image_files:
-                plot_lightcone_files([output_file_name,], do_show=False, do_save=False, mollview_format=True)
+                plot_lightcone_files([output_file_name,], do_show=False, do_save=True, mollview_format=True)
         else:
             print("Not writing file {} as it would have no objects.".format(output_file_name))
             
@@ -225,8 +225,8 @@ def show_one_lightcone():
     plot_lightcone_files([filename,])
     
 def save_one_lightcone():
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/example.00072.lightcone.npy"
-    plot_lightcone_files([filename,], False, True)
+    filename = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_1070/example.00236.lightcone.npy"
+    plot_lightcone_files([filename,], False, True, True)
 
     
 def show_two_lightcones():
@@ -739,8 +739,30 @@ def create_dummy_output_file():
         print("Writing {}".format(output_file_name))
         hp.write_map(output_file_name, empty_map, overwrite=True)
     
+def compress_lightcone_file(input_file_name):
+    print("Compressing {}...".format(input_file_name))
+    d = np.load(input_file_name)
+    max_pixel_value = np.max(d)
+    print("Max pixel value = {}".format(np.max(d)))
+    output_file_name = input_file_name.replace(".npy", ".compressed.npy")
+    if max_pixel_value < 65535:
+        print("Saving to {}...".format(output_file_name))
+        np.save(output_file_name, d.astype(np.uint16))
+    else:
+        print("NOT saving to {} as pixel values are too large.".format(output_file_name))
+        
     
-
+def test_compression():
+    file_name_1 = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_1070/example.00237.lightcone.npy"
+    file_name_2 = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_1070/example.00237.lightcone.compressed.npy"
+    
+    print(file_name_1)
+    print(file_name_2)
+    
+    d1 = np.load(file_name_1)
+    d2 = np.load(file_name_2)
+    
+    print(np.all(d1.astype(float)==d2.astype(float)))
 
 # ======================== End of other utilities ========================    
 
@@ -767,6 +789,10 @@ if __name__ == '__main__':
     #compare_two_lightcones_by_power_spectra()
     #get_float_from_control_file_test_harness()
     #compare_two_time_spacings()
-    create_dummy_output_file()
+    #create_dummy_output_file()
+    #save_one_lightcone()
+    #compress_lightcone_file("/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_1070/example.00237.lightcone.npy")
+    test_compression()
     
+
     
