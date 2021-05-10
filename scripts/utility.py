@@ -18,7 +18,7 @@ from numpy import random
 import cosmic_web_utilities as cwu 
 import os
 import contextlib
-
+import sys
 
 # ======================== Start of code for reading control file ========================
 
@@ -49,24 +49,42 @@ def get_float_from_control_file_test_harness():
 def report_whether_file_exists(file_description, file_name):
     print("File {} {} '{}'".format(("exists:" if os.path.isfile(file_name) else "DOES NOT exist: no"), file_description, file_name))
     
+# Returns True if there are file, else False
 def report_whether_several_files_exist(file_description, filespec):
     num_files = len(glob.glob(filespec))
     if num_files > 0:
         print("Files exist: {} {} file{}".format(num_files, file_description, plural_suffix(num_files)))
+        return True
     else:
         print("Files DO NOT exist: no {} files".format(file_description))
+        return False
 
 def plural_suffix(count):
     return ("" if count==1 else "s")
+    
+def npy_file_data_type(file_name):
+    d = np.load(file_name)
+    return d.dtype.name
+    
 
 def status(directory):
+
+    # Deal recursively with subdirectories
+    dir_name_list = glob.glob(os.path.join(directory, "*/"))
+    dir_name_list.sort()
+    for d in dir_name_list:
+        status(d)
+
+    # Then deal with this directory
+    print("========================================================================")
+    print("Status of {} as of {}".format(directory, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
     control_file_name = os.path.abspath(os.path.join(directory, "control.par"))
-    print("Status as of {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
     report_whether_file_exists("control file", control_file_name)
     report_whether_file_exists("log file", os.path.abspath(os.path.join(directory, "example.log")))
     report_whether_file_exists("output file", os.path.abspath(os.path.join(directory, "example_output.txt")))
     report_whether_several_files_exist("partial lightcone", os.path.join(directory, "*.hpb*"))
-    report_whether_several_files_exist("full lightcone", os.path.join(directory, "*.npy"))
+    if report_whether_several_files_exist("full lightcone", os.path.join(directory, "*.npy")):
+        print("   Type of full lightcone files is {}".format(npy_file_data_type(glob.glob(os.path.join(directory, "*.npy"))[0])))
     report_whether_several_files_exist("lightcone image (orthview)", os.path.join(directory, "*.lightcone.png"))
     report_whether_several_files_exist("lightcone image (mollview)", os.path.join(directory, "*.lightcone.mollview.png"))
     report_whether_file_exists("z_values file", os.path.abspath(os.path.join(directory, "z_values.txt")))
@@ -149,9 +167,11 @@ def save_all_lightcone_files_caller_core(filespec, nside, new_nside = None, dele
         if new_nside != nside:
             map_t = hp.ud_grade(map_t, new_nside)
         output_file_name = b.replace(".hpb", ".lightcone.npy")
-        if np.sum(map_t) > 0:
+        max_pixel_value = np.max(map_t)
+        if max_pixel_value > 0:
             print("Writing file {}...".format(output_file_name))
-            np.save(output_file_name, map_t)
+            # We write in uint16 format if possible so as to get smaller files.
+            np.save(output_file_name, map_t.astype(np.uint16) if (max_pixel_value < 65535) else map_t)
             if save_image_files:
                 plot_lightcone_files([output_file_name,], do_show=False, do_save=True, mollview_format=True)
         else:
@@ -242,11 +262,12 @@ def show_two_lightcones():
     
 def save_all_lightcone_image_files(directory):
     file_list = glob.glob(directory + "*.npy")
-    plot_lightcone_files(file_list, False, True)
+    file_list.sort()
+    plot_lightcone_files(file_list, False, True, True)
     
 
 def save_all_lightcone_image_files_caller():
-    directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/example.00072.lightcone"
+    directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_1070/"
     save_all_lightcone_image_files(directory)
     
     
@@ -534,6 +555,8 @@ def build_z_values_file(directory):
     control_file_name = directory + "/control.par"
     output_filename = directory + "/z_values.txt"
     
+    print("Writing data to {}...".format(output_filename))
+    
     
     (s_arr, t_arr, z_arr) = read_one_output_file(input_filename)
     
@@ -560,7 +583,7 @@ def build_z_values_file(directory):
 
 
 def build_z_values_file_caller():
-    directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_freqtimeslicing"
+    directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_1070/"
     build_z_values_file(directory)
     
 
@@ -739,7 +762,12 @@ def create_dummy_output_file():
         print("Writing {}".format(output_file_name))
         hp.write_map(output_file_name, empty_map, overwrite=True)
     
-def compress_lightcone_file(input_file_name):
+
+
+############ Start of code for compressing files - no longer needed. ############
+
+def compress_lightcone_file(input_file_name, delete_input_file):
+    print("\n\n")
     print("Compressing {}...".format(input_file_name))
     d = np.load(input_file_name)
     max_pixel_value = np.max(d)
@@ -748,21 +776,47 @@ def compress_lightcone_file(input_file_name):
     if max_pixel_value < 65535:
         print("Saving to {}...".format(output_file_name))
         np.save(output_file_name, d.astype(np.uint16))
+        if delete_input_file:
+            if test_compression(input_file_name, output_file_name):
+                print("Deleting {}".format(input_file_name))
+                os.remove(input_file_name)
+                os.rename(output_file_name, input_file_name)
+            else:
+                raise SystemError("Files {} and {} are different!".format(input_file_name, output_file_name))
     else:
         print("NOT saving to {} as pixel values are too large.".format(output_file_name))
         
+
+def compress_all_lightcone_files_in_directory(directory):
+
+    file_name_list = glob.glob(os.path.join(directory, "example.*.lightcone.npy"))
+    file_name_list.sort()
+    for f in file_name_list:
+        compress_lightcone_file(f, True)
+        
+def compress_all_lightcone_files():
+
+    for d in ["computenode_256_256_1000", "computenode_32_32", "gpu_1024_1024_1000", "gpu_1024_1024_1536", "gpu_1100_1024_1536", "gpu_256_4096_900",
+        "gpu_32_512_900", "gpu_512_1024_1000", "gpu_512_256_1000", "gpu_768_2048_900", "gpu_fast", "gpu_fast_amendedtransfer", "gpu_probtest",
+        "k80_1024_4096_900", "simple_64_64", "v100_freqtimeslicing"]:
+        compress_all_lightcone_files_in_directory("/share/splinter/ucapwhi/lfi_project/experiments/" + d + "/")
+        
     
-def test_compression():
-    file_name_1 = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_1070/example.00237.lightcone.npy"
-    file_name_2 = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_1070/example.00237.lightcone.compressed.npy"
+def test_compression(file_name_1, file_name_2):
     
-    print(file_name_1)
-    print(file_name_2)
+    print("Comparing {} and {}".format(file_name_1, file_name_2))
     
     d1 = np.load(file_name_1)
     d2 = np.load(file_name_2)
     
-    print(np.all(d1.astype(float)==d2.astype(float)))
+    ret = np.all(d1.astype(float)==d2.astype(float))
+    
+    print("Files compared OK" if ret else "Files DID NOT compare OK")
+    
+    return ret
+    
+    
+############ End of code for compressing files - no longer needed. ############
 
 # ======================== End of other utilities ========================    
 
@@ -782,7 +836,6 @@ if __name__ == '__main__':
     #read_one_box_example()
     #count_objects_in_many_lightcone_files()
     #string_between_strings_test_harness()
-    #save_all_lightcone_image_files_caller()
     #intersection_of_shell_and_cells()
     #build_z_values_file_caller()
     #save_all_lightcone_image_files("/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/")
@@ -791,8 +844,9 @@ if __name__ == '__main__':
     #compare_two_time_spacings()
     #create_dummy_output_file()
     #save_one_lightcone()
-    #compress_lightcone_file("/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_1070/example.00237.lightcone.npy")
-    test_compression()
+    #save_all_lightcone_image_files_caller()
+    compress_all_lightcone_files()
+    
     
 
     
