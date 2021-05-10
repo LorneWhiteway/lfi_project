@@ -631,13 +631,13 @@ def display_z_values_file(directory):
 def post_run_process():
     
     # Set directory and nside to the appropriate values...
-    directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_freqtimeslicing/"
+    directory = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_fast/"
     nside = int(get_float_from_control_file(directory + "/control.par", "nSideHealpix"))
     new_nside = nside
     
     print("Processing {} with nside {}".format(directory, nside))
     
-    filespec = directory + "example.{}.hpb"
+    filespec = os.path.join(directory, "example.{}.hpb")
     save_all_lightcone_files_caller_core(filespec, nside, new_nside)
     
     if False:
@@ -832,7 +832,7 @@ if __name__ == '__main__':
     #show_two_lightcones()
     #num_objects_in_lightcones()
     #display_z_values_file("/share/splinter/ucapwhi/lfi_project/experiments/v100_freqtimeslicing/")
-    #post_run_process()
+    post_run_process()
     #read_one_box_example()
     #count_objects_in_many_lightcone_files()
     #string_between_strings_test_harness()
@@ -845,7 +845,7 @@ if __name__ == '__main__':
     #create_dummy_output_file()
     #save_one_lightcone()
     #save_all_lightcone_image_files_caller()
-    compress_all_lightcone_files()
+    #compress_all_lightcone_files()
     
     
 
