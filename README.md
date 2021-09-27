@@ -20,3 +20,9 @@ LW has made the following changes to this code:
 5. Amended lightcone.cxx to fix the 'holes in the lightcone' problem. This involved un-hard-coding an assumption that the SIMD data vector was of length 4 (as in some cases - e.g. the CPU that controls the V100 GPU on splinter - it is of length 2). Checked-in on 19 March 2021.
 
 6. Amended master.c to suppress the creation of output snapshot files. (This can be amended if necessary to allow certain snapshots to be written).
+
+## Information for LW about working with Wilkes cluster
+
+1. Project directory is `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`.
+
+2. Can use WebDrive to connect to login-gpu.hpc.cam.ac.uk as W drive. File Explorer will open and show the home directory; from here go to the 'Work' directory (which is a link to the project directory).
