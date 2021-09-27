@@ -1,4 +1,4 @@
-#import math
+import math
 
 achOutName      = "example"
 
@@ -8,23 +8,25 @@ bNewKDK         = 1    # No accelerations in the particle, dual tree possible
 bDualTree       = 1    # Use two trees
 
 # Initial Condition
-dBoxSize        = 1536       # Mpc/h
-nGrid           = 1024       # Simulation has nGrid^3 particles
+dBoxSize        = 900        # Mpc/h
+nGrid           = 256        # Simulation has nGrid^3 particles
 b2LPT           = 1          # second order IC
 iSeed           = 314159265  # Random seed
 dRedFrom        = 49         # Starting redshift
 
 # Cosmology
-achTfFile       = "/share/splinter/ucapwhi/lfi_project/data/euclid_z0_transfer_combined.dat"
-h               = 0.67
-dOmega0         = 0.32
-dLambda         = 0.68
-dSigma8         = 0.83
-dSpectral       = 0.96
+achTfFile       = "/share/splinter/ucapwhi/lfi_project/data/specific_cosmology_01_transfer_function.dat"
+h               = 0.6736
+dOmega0         = 0.26
+dLambda         = 0.74
+dSigma8         = 0.84
+dSpectral       = 0.9649
 
 iStartStep      = 0
-nSteps          = 100
+nSteps          = 150
 dRedTo          = 0
+nSteps10        = 8    # Base steps to z=10
+dRedshiftLCP    = 3.0  # Starting redshift to output light cone particles
 
 # Lightcone 
 bLightCone      = 1    # Output a lightcone
