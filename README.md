@@ -23,11 +23,13 @@ LW has made the following changes to this code:
 
 ## Information for LW about working with Wilkes cluster
 
-1. Project directory is `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`. Can use shortcut `s` to get to the parent of this directory.
+1. When logging on to Wilkes (<login-gpu.hpc.cam.ac.uk>), it seems to be necessary to type password from keyboard, rather than cutting-and-posting from password safe (despite PuTTY Window/Selection/Ctrl+Shift+{C,V} being set correctly). Not sure why.
 
-2. Can use WebDrive to connect to login-gpu.hpc.cam.ac.uk as W drive. File Explorer will open and show the home directory; from here go to the 'Work' directory (which is a link to the project directory).
+2. Project directory is `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`. Can use shortcut `s` to get to the parent of this directory.
 
-3. To set the environment on Wilkes, use `set_environment.sh` (and not `set_environment.csh`, which is for splinter).
+3. Can use WebDrive to connect to login-gpu.hpc.cam.ac.uk as W drive. File Explorer will open and show the home directory; from here go to the 'Work' directory (which is a link to the project directory).
+
+4. To set the environment on Wilkes, use `set_environment.sh` (and not `set_environment.csh`, which is for splinter).
 
 
 
