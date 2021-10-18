@@ -59,7 +59,6 @@ mpi_tasks_per_node=$(echo "$SLURM_TASKS_PER_NODE" | sed -e  's/^\([0-9][0-9]*\).
 module purge                               # Removes all modules still loaded
 module load rhel7/default-gpu              # REQUIRED - loads the basic environment
 
-
 #! Insert additional module load commands after this line if needed:
 source /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/set_environment.sh USE
 
