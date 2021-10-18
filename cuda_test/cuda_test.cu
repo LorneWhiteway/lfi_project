@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <cuda.h>
+#include "helper_cuda.h"
 
 
 
@@ -40,8 +41,11 @@ void example(float* h_data, int data_size) {
 
 int main(int argc, char *argv[]) {
 	
+	int devID = 0;
+	gpuDeviceInit(devID);
+	
 	// Allocate space for data.
-	int numData = 1024;
+	int numData = 16;
 	float* data = (float*)malloc(numData * sizeof(float));
 	
 	// Set the data.
