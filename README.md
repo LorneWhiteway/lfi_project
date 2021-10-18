@@ -31,6 +31,9 @@ LW has made the following changes to this code:
 
 4. To set the environment on Wilkes, use `set_environment.sh` (and not `set_environment.csh`, which is for splinter).
 
+5. To get an interactive session on one of the GPUs (e.g. to build pkdgrav3) run `sintr` e.g.:
+`sintr -A PROJECT-CODE-GPU -p partition -t 1:0:0 --exclusive` where `PROJECT-CODE-GPU` is our project code (contact LW to get this) and `partition` is e.g. `pascal` or`ampere`. For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-guide/interactive.html); the progam has the same interface as `sbatch` (so the example above requests an interactive session for one hour).
+
 
 
 
