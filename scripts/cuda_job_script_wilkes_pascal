@@ -1,12 +1,12 @@
 #!/bin/bash
 #!
-#! Example SLURM job script for Wilkes2 (Broadwell, ConnectX-4, P100)
+#! Example SLURM job script for Wilkes2 Pascal (Broadwell, ConnectX-4, P100)
 #! Last updated: Mon 13 Nov 12:06:57 GMT 2017
 #!
 
 #! Modified by LW
 #! Command line example:
-#! env EXPERIMENT=wilkes_test3 sbatch ../../scripts/cuda_job_script_wilkes
+#! env EXPERIMENT=wilkes_test3 sbatch ../../scripts/cuda_job_script_wilkes_pascal
 #! Run it from the directory in which the control file is located.
 
 #!#############################################################
@@ -64,7 +64,7 @@ module load rhel7/default-gpu              # REQUIRED - loads the basic environm
 source /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/set_environment.sh USE
 
 #! Full path to application executable: 
-application="/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/pkdgrav3/build/pkdgrav3"
+application="/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/pkdgrav3/build_pascal/pkdgrav3"
 
 #! Run options for the application:
 options="/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/${EXPERIMENT}/control.par > /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/${EXPERIMENT}/output.txt"
