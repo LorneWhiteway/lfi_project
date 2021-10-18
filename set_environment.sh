@@ -47,5 +47,12 @@ else
 	module load $PYTHON_MODULE
 fi
 
+# Added 18 October 2021 in attempt to allow direct compiling of cuda
+if [[ $BUILD_MODE == $TRUE ]]; then
+	# Got this from https://github.com/jetsonhacks/buildLibrealsense2TX/issues/13
+	export CUDA_HOME=/usr/local/cuda
+	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64
+	export PATH=$PATH:$CUDA_HOME/bin
+fi
 
 
