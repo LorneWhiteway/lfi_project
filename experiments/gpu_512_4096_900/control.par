@@ -15,7 +15,7 @@ iSeed           = 314159265  # Random seed
 dRedFrom        = 49         # Starting redshift
 
 # Cosmology
-achTfFile       = "/share/splinter/ucapwhi/lfi_project/data/euclid_z0_transfer_combined.dat"
+achTfFile       = "../../data/euclid_z0_transfer_combined.dat"
 h               = 0.6736
 dOmega0         = 0.3093
 dLambda         = 0.6907
