@@ -35,8 +35,8 @@ session for one hour).
 ## How to interact with the GPUs on Wilkes
 
 In what follows:
-- <partition> refers to either `pascal` (the old partition with [V100](https://en.wikipedia.org/wiki/Volta_(microarchitecture)) GPUs) or `ampere` (the new partition with [A100](https://en.wikipedia.org/wiki/Ampere_(microarchitecture)) GPUs.
-- <PROJECT-CODE-GPU> is the project code (contact LW or NJ to get this).
+- `<partition>` refers to either `pascal` (the old partition with [V100](https://en.wikipedia.org/wiki/Volta_(microarchitecture)) GPUs) or `ampere` (the new partition with [A100](https://en.wikipedia.org/wiki/Ampere_(microarchitecture)) GPUs.
+- `<PROJECT-CODE-GPU>` is the project code (contact LW or NJ to get this).
 
 ### How to log on to one of the GPU nodes
 ```
