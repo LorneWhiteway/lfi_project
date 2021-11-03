@@ -21,19 +21,41 @@ LW has made the following changes to this code:
 
 6. Amended master.c to suppress the creation of output snapshot files. (This can be amended if necessary to allow certain snapshots to be written).
 
-## Information for LW about working with Wilkes cluster
+## Information about working with Wilkes cluster
 
 1. When logging on to Wilkes (<login-gpu.hpc.cam.ac.uk>), it seems to be necessary to type password from keyboard, rather than cutting-and-posting from password safe (despite PuTTY Window/Selection/Ctrl+Shift+{C,V} being set correctly). Not sure why.
 
 2. Project directory is `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`. Can use shortcut `s` to get to the parent of this directory.
 
-3. Can use WebDrive to connect to login-gpu.hpc.cam.ac.uk as W drive. File Explorer will open and show the home directory; from here go to the 'Work' directory (which is a link to the project directory).
+3. Can use WebDrive to connect to login-gpu.hpc.cam.ac.uk as (for example) the W drive. It is convenient to set up a symbolic link (suggest calling it `work`) in the home directory to point to the project directory.
 
 4. To set the environment on Wilkes, use `set_environment.sh` (and not `set_environment.csh`, which is for splinter).
 
-5. To get an interactive session on one of the GPUs (e.g. to build pkdgrav3) run `sintr` e.g.:
-`sintr -A PROJECT-CODE-GPU -p partition -t 1:0:0 --exclusive` where `PROJECT-CODE-GPU` is our project code (contact LW to get this) and `partition` is e.g. `pascal` or`ampere`. For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-guide/interactive.html); the progam has the same interface as `sbatch` (so the example above requests an interactive session for one hour).
 
+## How to interact with the GPUs on Wilkes
+
+In what follows:
+- `<partition>` refers to either `pascal` (the old partition with [V100](https://en.wikipedia.org/wiki/Volta_(microarchitecture)) GPUs) or `ampere` (the new partition with [A100](https://en.wikipedia.org/wiki/Ampere_(microarchitecture)) GPUs.
+- `<PROJECT-CODE-GPU>` is the project code (contact LW or NJ to get this).
+- `<experiment>` denotes an 'experiment' i.e. a subdirectory of `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/` containing a control file `control.par`. Example: `gpu_256_1024_900`.
+
+### How to log on to one of the GPU nodes
+```
+sintr -A <PROJECT-CODE-GPU> -p <partition> -t 1:0:0 --exclusive
+```
+For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-guide/interactive.html#sintr); the progam has the same interface as `sbatch` (so the example above requests an interactive session for one hour).
+
+### How to build pkdgrav3 for use by the Wilkes GPUs
+- Log on to a GPU
+- Go to `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`
+- Run `./cm.sh build_<partition>`
+
+### How to run one of the experiments on the Wilkes GPUs
+- Log on to Wilkes (but don't log on to a GPU)
+- Go to `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`
+- `source set_environment.sh USE`
+- Go to `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/<experiment>`
+- `env EXPERIMENT=<experiment> sbatch ../../scripts/cuda_job_script_wilkes_<partition>`
 
 
 
