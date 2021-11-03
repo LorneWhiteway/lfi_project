@@ -9,7 +9,7 @@ Original version of pkdgrav3 was 3.0.4, master branch commit d908272.
 
 LW has made the following changes to this code:
 
-1. Amended the top level CMakeLists.txt to turn on policy CMP0060: did this so that an incorrect old version of HDF5 library is not found on the Wilkes machine.
+1. Amended the top level CMakeLists.txt to allow tostd and psout to see MPI include files.
 
 2. Amended cudautil.cu to fix calls to cudaSetDevice and to cudaGetDeviceProperties to handle the case in which iCore is negative. See my notes p. 69.
 
@@ -52,8 +52,6 @@ For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-g
 
 ### How to run one of the experiments on the Wilkes GPUs
 - Log on to Wilkes (but don't log on to a GPU)
-- Go to `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`
-- `source set_environment.sh USE`
 - Go to `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/<experiment>`
 - `env EXPERIMENT=<experiment> sbatch ../../scripts/cuda_job_script_wilkes_<partition>`
 
