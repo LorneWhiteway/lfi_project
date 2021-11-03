@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 project(pkdgrav3 VERSION 3.0.4)
-
-# Added by LW to so that incorrect old version of HDF5 library is not found (for Wilkes machine).
-if(POLICY CMP0060)
-  cmake_policy(SET CMP0060 NEW)
-endif()
+enable_language(Fortran)
 
 # Uncomment this line for more information during building.
 # set( CMAKE_VERBOSE_MAKEFILE on )
@@ -39,6 +35,8 @@ if (COMPILER_OPT_WARN_ALL_SUPPORTED)
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
   set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
 endif()
+
+find_package(MPI REQUIRED)      # Added by LW to get tostd and psout able to compile on Wilkes ampere.
 find_package(CUDA)
 find_package(GSL REQUIRED)      # GNU Scientific Library
 find_package(HDF5 COMPONENTS C HL)
@@ -228,10 +226,11 @@ target_link_libraries(${PROJECT_NAME} mdl2 openpa)
 target_include_directories(${PROJECT_NAME} PRIVATE ${GSL_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} ${GSL_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} blitz)
-
+target_include_directories(tostd PRIVATE ${MPI_C_INCLUDE_PATH}) # Added by LW to get tostd and psout able to compile on Wilkes ampere.
 target_include_directories(tostd PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(psout PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(psout PRIVATE ${GSL_INCLUDE_DIRS})
+target_include_directories(psout PUBLIC ${MPI_C_INCLUDE_PATH}) # Added by LW to get tostd and psout able to compile on Wilkes ampere.
 target_link_libraries(psout ${GSL_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME} tostd DESTINATION "bin")
