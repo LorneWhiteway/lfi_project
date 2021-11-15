@@ -1974,7 +1974,7 @@ void mdlLaunch(int argc,char **argv,void (*fcnMaster)(MDL,void *),void * (*fcnWo
 #ifdef USE_HWLOC
     hwloc_bitmap_free(set_thread);
     hwloc_bitmap_free(set_proc);
-    hwloc_topology_destroy(topology);
+    if (bDedicated == 1) hwloc_topology_destroy(topology);
 #endif
     if (!bDedicated) {
 	mdl->worker_ctx = (*mdl->fcnWorkerInit)(mdl);
