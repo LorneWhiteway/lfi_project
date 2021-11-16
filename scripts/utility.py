@@ -15,7 +15,6 @@ from astropy.cosmology import FlatLambdaCDM
 import datetime
 import re
 from numpy import random
-import cosmic_web_utilities as cwu 
 import os
 import contextlib
 import sys
@@ -41,64 +40,13 @@ def get_float_from_control_file_test_harness():
 
 
 
-# ======================== Start of code for reporting on the status of an 'experiments' directory ========================
-
-# This functionality is exposed through 'status.py'.
-
-# Helper functions
-def report_whether_file_exists(file_description, file_name):
-    print("File {} {} '{}'".format(("exists:" if os.path.isfile(file_name) else "DOES NOT exist: no"), file_description, file_name))
-    
-# Returns True if there are file, else False
-def report_whether_several_files_exist(file_description, filespec):
-    num_files = len(glob.glob(filespec))
-    if num_files > 0:
-        print("Files exist: {} {} file{}".format(num_files, file_description, plural_suffix(num_files)))
-        return True
-    else:
-        print("Files DO NOT exist: no {} files".format(file_description))
-        return False
-
-def plural_suffix(count):
-    return ("" if count==1 else "s")
-    
-def npy_file_data_type(file_name):
-    d = np.load(file_name)
-    return d.dtype.name
-    
-
-def status(directory):
-
-    # Deal recursively with subdirectories
-    dir_name_list = glob.glob(os.path.join(directory, "*/"))
-    dir_name_list.sort()
-    for d in dir_name_list:
-        status(d)
-
-    # Then deal with this directory
-    print("========================================================================")
-    print("Status of {} as of {}".format(directory, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-    control_file_name = os.path.abspath(os.path.join(directory, "control.par"))
-    report_whether_file_exists("control file", control_file_name)
-    report_whether_file_exists("log file", os.path.abspath(os.path.join(directory, "example.log")))
-    report_whether_file_exists("output file", os.path.abspath(os.path.join(directory, "example_output.txt")))
-    report_whether_several_files_exist("partial lightcone", os.path.join(directory, "*.hpb*"))
-    if report_whether_several_files_exist("full lightcone", os.path.join(directory, "*.npy")):
-        print("   Type of full lightcone files is {}".format(npy_file_data_type(glob.glob(os.path.join(directory, "*.npy"))[0])))
-    report_whether_several_files_exist("lightcone image (orthview)", os.path.join(directory, "*.lightcone.png"))
-    report_whether_several_files_exist("lightcone image (mollview)", os.path.join(directory, "*.lightcone.mollview.png"))
-    report_whether_file_exists("z_values file", os.path.abspath(os.path.join(directory, "z_values.txt")))
-
-
-# ======================== End of code for reporting on the status of an 'experiments' directory ========================
-
 
 
 # ======================== Start of code for reading lightcone files ========================
 
 
-# basefilename will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00001.hpb"
-# The actual files to be read will then have names like "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00001.hpb.0"
+# basefilename will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/run.00001.hpb"
+# The actual files to be read will then have names like "/share/splinter/ucapwhi/lfi_project/experiments/simple/run.00001.hpb.0"
 def one_healpix_map_from_basefilename(basefilename, nside):
     
     hpb_type = np.dtype([('grouped', '=i4'),('ungrouped', '=i4'), ('potential', '=f4')])
@@ -125,8 +73,8 @@ def one_healpix_map_from_basefilename(basefilename, nside):
     
     
 
-# filespec will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.{}.hpb"
-# Output will be a list like ["/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00001.hpb", etc.]
+# filespec will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/run.{}.hpb"
+# Output will be a list like ["/share/splinter/ucapwhi/lfi_project/experiments/simple/run.00001.hpb", etc.]
 def basefilename_list_from_filespec(filespec):
     return [f[:-2] for f in sorted(glob.glob(filespec.replace("{}", "*") + ".0"))]
 
@@ -134,7 +82,7 @@ def basefilename_list_from_filespec(filespec):
 def num_objects_in_lightcones():
 
 
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_4096_900/example.{}.hpb"
+    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_4096_900/run.{}.hpb"
     nside = 4096
     
     total_num_objects = 0
@@ -150,7 +98,7 @@ def num_objects_in_lightcones():
 
     
 
-# Example filespec: "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/example.{}.hpb"
+# Example filespec: "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/run.{}.hpb"
 def save_all_lightcone_files_caller_core(filespec, nside, new_nside = None, delete_hpb_files_when_done = None, save_image_files = None):
 
     if new_nside is None:
@@ -189,7 +137,7 @@ def save_all_lightcone_files_caller_core(filespec, nside, new_nside = None, dele
     
 
 def save_all_lightcone_files():
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/example.00067{}.hpb"
+    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/run.00067{}.hpb"
     nside = 4096
     save_all_lightcone_files_caller_core(filespec, nside)
 
@@ -241,18 +189,18 @@ def plot_lightcone_files(list_of_npy_filenames, do_show = True, do_save = False,
             
 def show_one_lightcone():
 
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/example.00072.lightcone.npy"
+    filename = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/run.00072.lightcone.npy"
     plot_lightcone_files([filename,])
     
 def save_one_lightcone():
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_1070/example.00236.lightcone.npy"
+    filename = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_1070/run.00236.lightcone.npy"
     plot_lightcone_files([filename,], False, True, True)
 
     
 def show_two_lightcones():
 
-    filenames = ["/share/splinter/ucapwhi/lfi_project/experiments/gpu_fast/example.00093.lightcone.npy",
-        "/share/splinter/ucapwhi/lfi_project/experiments/gpu_fast_amendedtransfer/example.00093.lightcone.npy"]
+    filenames = ["/share/splinter/ucapwhi/lfi_project/experiments/gpu_fast/run.00093.lightcone.npy",
+        "/share/splinter/ucapwhi/lfi_project/experiments/gpu_fast_amendedtransfer/run.00093.lightcone.npy"]
     plot_lightcone_files(filenames)
     #maps = [np.load(f) for f in filenames]
     #for (i, c0, c1) in zip(range(len(maps[0])), maps[0], maps[1]):
@@ -297,7 +245,7 @@ def count_objects_in_many_lightcone_files():
     num_objects_list = []
     for el in file_list:
     
-        file_num = int(string_between_strings(el, "example.", ".lightcone.npy"))
+        file_num = int(string_between_strings(el, "run.", ".lightcone.npy"))
         num_objects = np.load(el).sum()
         
         file_num_list.append(file_num)
@@ -344,7 +292,7 @@ def get_dark_type():
     return np.dtype([('mass','>f4'),('x','>f4'),('y','>f4'),('z','>f4'),('vx','>f4'),('vy','>f4'),('vz','>f4'),('eps','>f4'),('phi','>f4')])
 
 
-# file_name will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00100"
+# file_name will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/run.00100"
 # This is an edited version the code in the readtipsy.py file distributed with PKDGRAV3.
 # Returns an array with elements of type get_dark_type()
 def read_one_box(file_name):
@@ -363,8 +311,8 @@ def read_one_box(file_name):
 
 
 def read_one_box_example():
-    #file_name = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_4096_900/example.00071"
-    file_name = "/share/splinter/ucapwhi/lfi_project/experiments/simple_64_64/example.00071"
+    #file_name = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_4096_900/run.00071"
+    file_name = "/share/splinter/ucapwhi/lfi_project/experiments/simple_64_64/run.00071"
     print("Reading file {}...".format(file_name))
     print(datetime.datetime.now().time())
     d = read_one_box(file_name)
@@ -397,7 +345,7 @@ def read_one_box_example():
     
     
 
-# File_name will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00100"
+# File_name will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/run.00100"
 def show_one_shell(file_name, shell_low, shell_high, nside):
 
     d = read_one_box(file_name)
@@ -441,7 +389,7 @@ def show_one_shell(file_name, shell_low, shell_high, nside):
     
 def show_one_shell_example():
 
-    file_name = "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00099"
+    file_name = "/share/splinter/ucapwhi/lfi_project/experiments/simple/run.00099"
     shell_low = 0.1137
     shell_high = 0.228
     nside = 128
@@ -450,7 +398,7 @@ def show_one_shell_example():
     
 def match_points_between_boxes():
 
-    file_names = ["/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00001", "/share/splinter/ucapwhi/lfi_project/experiments/simple/example.00100"]
+    file_names = ["/share/splinter/ucapwhi/lfi_project/experiments/simple/run.00001", "/share/splinter/ucapwhi/lfi_project/experiments/simple/run.00100"]
 
     d0 = read_one_box(file_names[0])
     d1 = read_one_box(file_names[1])
@@ -545,13 +493,13 @@ def show_one_output_file(filename):
         pass
     
 def show_one_output_file_example():
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_32_512_900/example_output.txt"
+    filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_32_512_900/output.txt"
     show_one_output_file(filename)
     
     
 def build_z_values_file(directory):
 
-    input_filename = directory + "/example_output.txt"
+    input_filename = directory + "/output.txt"
     control_file_name = directory + "/control.par"
     output_filename = directory + "/z_values.txt"
     
@@ -637,7 +585,7 @@ def post_run_process():
     
     print("Processing {} with nside {}".format(directory, nside))
     
-    filespec = os.path.join(directory, "example.{}.hpb")
+    filespec = os.path.join(directory, "run.{}.hpb")
     save_all_lightcone_files_caller_core(filespec, nside, new_nside)
     
     if False:
@@ -655,40 +603,42 @@ def post_run_process():
 
 # ======================== Start of other utilities ========================    
 
-def intersection_of_shell_and_cells():
-
-    radius = 2.418
-    nside = 128
-    npix = hp.nside2npix(nside)
-    
-    (ra, dec) = hp.pix2ang(nside, np.arange(npix), False, lonlat=True)
-    (x, y, z) = cwu.spherical_to_cartesian(ra, dec, distance = radius)
-    
-    
-    to_be_sorted = np.column_stack([np.random.uniform(size=216),np.arange(216)])
-    random_indices = to_be_sorted[to_be_sorted[:,0].argsort()].astype(int)[:,1]
-    
-    
-        
-    if True:
-        # Box number
-        hp_map = random_indices[(np.floor(x).astype(int) + 3) * 36 + (np.floor(y).astype(int) + 3) * 6 + (np.floor(z).astype(int) + 3)]
-    else:
-        # Shell number
-        hp_map = np.floor(np.maximum.reduce([np.abs(x), np.abs(y), np.abs(z)]))
-    
-    rot = (50.0, -40.0, 0.0)
-    cmap=plt.get_cmap('magma')
-    if False:
-        hp.mollview(hp_map, cmap=cmap)
-    else:
-        hp.orthview(hp_map, rot=rot, cmap=cmap)
-    
-    plt.show()
+### Good code, but no longer needed.
+#import cosmic_web_utilities as cwu 
+#def intersection_of_shell_and_cells():
+#
+#    radius = 2.418
+#    nside = 128
+#    npix = hp.nside2npix(nside)
+#    
+#    (ra, dec) = hp.pix2ang(nside, np.arange(npix), False, lonlat=True)
+#    (x, y, z) = cwu.spherical_to_cartesian(ra, dec, distance = radius)
+#    
+#    
+#    to_be_sorted = np.column_stack([np.random.uniform(size=216),np.arange(216)])
+#    random_indices = to_be_sorted[to_be_sorted[:,0].argsort()].astype(int)[:,1]
+#    
+#    
+#        
+#    if True:
+#        # Box number
+#        hp_map = random_indices[(np.floor(x).astype(int) + 3) * 36 + (np.floor(y).astype(int) + 3) * 6 + (np.floor(z).astype(int) + 3)]
+#    else:
+#        # Shell number
+#        hp_map = np.floor(np.maximum.reduce([np.abs(x), np.abs(y), np.abs(z)]))
+#    
+#    rot = (50.0, -40.0, 0.0)
+#    cmap=plt.get_cmap('magma')
+#    if False:
+#        hp.mollview(hp_map, cmap=cmap)
+#    else:
+#        hp.orthview(hp_map, rot=rot, cmap=cmap)
+#    
+#    plt.show()
     
     
 def compare_two_lightcones_by_power_spectra():
-    file_name_array = ["/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/example.00067.lightcone.npy", "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/example.00130.lightcone.npy"]
+    file_name_array = ["/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/run.00067.lightcone.npy", "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/run.00130.lightcone.npy"]
     
     delta_array = [(m/np.mean(m))-1.0 for m in [np.load(f) for f in file_name_array]]
 
@@ -789,7 +739,7 @@ def compress_lightcone_file(input_file_name, delete_input_file):
 
 def compress_all_lightcone_files_in_directory(directory):
 
-    file_name_list = glob.glob(os.path.join(directory, "example.*.lightcone.npy"))
+    file_name_list = glob.glob(os.path.join(directory, "run.*.lightcone.npy"))
     file_name_list.sort()
     for f in file_name_list:
         compress_lightcone_file(f, True)
