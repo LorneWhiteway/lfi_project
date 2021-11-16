@@ -37,7 +37,7 @@ LW has made the following changes to this code:
 ```
 sintr -A <PROJECT-CODE-GPU> -p ampere -t 1:0:0 --exclusive
 ```
-For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-guide/interactive.html#sintr); the progam has the same interface as `sbatch` (so the example above requests an interactive session for one hour).
+For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-guide/interactive.html#sintr); the program has the same interface as `sbatch` (so the example above requests an interactive session for one hour).
 
 ### How to build pkdgrav3 for use by the Wilkes GPUs
 - Log on to a GPU
