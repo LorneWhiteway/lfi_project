@@ -45,7 +45,7 @@ if (0) then
 	cp /share/splinter/ucapwhi/lfi_project/experiments/$experiment_name/control.par .
 
 	# Run pkdgrav3
-	/share/splinter/ucapwhi/lfi_project/pkdgrav3/build_gpu_k80/pkdgrav3 -sz 9 ./control.par > ./output.txt
+	/share/splinter/ucapwhi/lfi_project/pkdgrav3/build_splinter_k80/pkdgrav3 -sz 9 ./control.par > ./output.txt
 
 	# Copy output files back to splinter
 	cp ./example* /share/splinter/ucapwhi/lfi_project/experiments/$experiment_name
@@ -58,7 +58,7 @@ else
 	cd /share/splinter/ucapwhi/lfi_project/experiments/$experiment_name/
 	
 	# Run pkdgrav3
-	/share/splinter/ucapwhi/lfi_project/pkdgrav3/build_gpu_k80/pkdgrav3 -sz 9 ./control.par > ./output.txt
+	/share/splinter/ucapwhi/lfi_project/pkdgrav3/build_splinter_k80/pkdgrav3 -sz 9 ./control.par > ./output.txt
 
 
 endif

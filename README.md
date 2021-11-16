@@ -35,7 +35,7 @@ where `XX` is one of v100 or k80, depending on which GPU you wish to go to.
 
 ### How to build pkdgrav3 for use by a splinter GPU
 - Log on to a GPU and go to the project directory.
-- Run `./cm.csh build_XX`, where where `XX` is one of v100 or k80, depending on which GPU you wish to use. You will need to type `y` to confirm the build directory name.
+- Run `./cm.csh build_splinter_XX`, where where `XX` is one of v100 or k80, depending on which GPU you wish to use. You will need to type `y` to confirm the build directory name.
 
 ### How to run one of the experiments on a splinter GPU
 - Log on to splinter (but don't log on to a GPU)
