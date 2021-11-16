@@ -1,0 +1,3 @@
+Setting environment variables for USING pkdgrav3...
+Setting PYTHONPATH to /share/splinter/ucapwhi/cosmic_web/hong_dey
+slurmstepd: error: *** JOB 96340 ON compute-0-28 CANCELLED AT 2021-04-23T21:48:02 DUE TO TIME LIMIT ***
