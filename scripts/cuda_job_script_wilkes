@@ -6,7 +6,7 @@
 
 #! Modified by LW
 #! Command line example:
-#! env EXPERIMENT=wilkes_test3 sbatch ../../scripts/cuda_job_script_wilkes
+#! sbatch ../../scripts/cuda_job_script_wilkes
 #! Run it from the directory in which the control file is located.
 
 #!#############################################################
@@ -66,9 +66,9 @@ source /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/set_environment_wilkes.sh 
 application="/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/pkdgrav3/build_wilkes/pkdgrav3"
 
 #! Run options for the application:
-####### I have had to hard-code this for now as the env thing doesn't seem to be working.
-EXPERIMENT=speedtest
-options="/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/"$EXPERIMENT"/control.par > /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/"$EXPERIMENT"/output.txt"
+#! Note that here we are assuming that the job file is being submitted from the directory
+#! in which the control file is located.
+options="./control.par > ./output.txt"
 
 #! Work directory (i.e. where the job will run):
 workdir="$SLURM_SUBMIT_DIR"  # The value of SLURM_SUBMIT_DIR sets workdir to the directory

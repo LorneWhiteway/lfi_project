@@ -15,7 +15,7 @@ read ans
 
 if [[ $ans == "y" ]]; then
 	cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project
-	source ./set_environment.sh BUILD
+	source ./set_environment_wilkes.sh BUILD
 	##git clone https://bitbucket.org/dpotter/pkdgrav3.git
 	cd ./pkdgrav3
 	rm -rf ./$BUILD_DIR
