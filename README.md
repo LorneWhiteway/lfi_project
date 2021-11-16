@@ -27,21 +27,21 @@ LW has made the following changes to this code:
 
 1. Project directory is `/share/splinter/ucapwhi/lfi_project`.
 
+2. In what follows, `<GPU_NAME>` hould be replaced by one of `v100` or `k80`, depending on which GPU you wish to use.
+
 ### How to log on to one of the splinter GPU nodes
 ```
-srun -p GPU --gres=gpu:XX:1 --pty tcsh
+srun -p GPU --gres=gpu:<GPU_NAME>:1 --pty tcsh
 ```
-where `XX` is one of v100 or k80, depending on which GPU you wish to go to.
 
 ### How to build pkdgrav3 for use by a splinter GPU
 - Log on to a GPU and go to the project directory.
-- Run `./cm.csh build_splinter_XX`, where where `XX` is one of v100 or k80, depending on which GPU you wish to use. You will need to type `y` to confirm the build directory name.
+- Run `./cm.csh build_splinter_<GPU_NAME>`. You will need to type `y` to confirm the build directory name.
 
 ### How to run one of the experiments on a splinter GPU
 - Log on to splinter (but don't log on to a GPU)
 - Go to the project directory, and from there to `/experiments/<experiment>`
-- `sbatch ../../scripts/cuda_job_script_splinter`
-
+- `sbatch ../../scripts/cuda_job_script_splinter_<GPU_NAME>`
 
 
 ## Information about working with Wilkes cluster
