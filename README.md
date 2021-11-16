@@ -41,7 +41,7 @@ srun -p GPU --gres=gpu:<GPU_NAME>:1 --pty tcsh
 ### How to run one of the experiments on a splinter GPU
 - Log on to splinter (but don't log on to a GPU)
 - Go to the project directory, and from there to `/experiments/<experiment>`
-- `sbatch ../../scripts/cuda_job_script_splinter_<GPU_NAME>`
+- `sbatch --export=ALL,experiment_name='<experiment>' cuda_job_script_splinter_<GPU_NAME>`
 
 
 ## Information about working with Wilkes cluster
