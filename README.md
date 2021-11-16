@@ -23,6 +23,27 @@ LW has made the following changes to this code:
 
 7. Amended mdl2/mpi/mdl.c so that hwloc_topology_destroy is called only if bDedicated == 1 (as otherwise the topology object will not have been initialised and the call to hwloc_topology_destroy will cause a crash).
 
+## Information about working with the splinter cluster
+
+1. Project directory is `/share/splinter/ucapwhi/lfi_project`.
+
+### How to log on to one of the splinter GPU nodes
+```
+srun -p GPU --gres=gpu:XX:1 --pty tcsh
+```
+where `XX` is one of v100 or k80, depending on which GPU you wish to go to.
+
+### How to build pkdgrav3 for use by a splinter GPU
+- Log on to a GPU and go to the project directory.
+- Run `./cm.csh build_XX`, where where `XX` is one of v100 or k80, depending on which GPU you wish to use. You will need to type `y` to confirm the build directory name.
+
+### How to run one of the experiments on a splinter GPU
+- Log on to splinter (but don't log on to a GPU)
+- Go to the project directory, and from there to `/experiments/<experiment>`
+- `sbatch ../../scripts/cuda_job_script_splinter`
+
+
+
 ## Information about working with Wilkes cluster
 
 1. Project directory is `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`. Can use shortcut `s` to get to the parent of this directory.
@@ -40,13 +61,12 @@ sintr -A <PROJECT-CODE-GPU> -p ampere -t 1:0:0 --exclusive
 For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-guide/interactive.html#sintr); the program has the same interface as `sbatch` (so the example above requests an interactive session for one hour).
 
 ### How to build pkdgrav3 for use by the Wilkes GPUs
-- Log on to a GPU
-- Go to `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`
+- Log on to a GPU and go to the project directory.
 - Run `./cm.sh build_wilkes`. You will need to type `y` to confirm the build directory name.
 
 ### How to run one of the experiments on the Wilkes GPUs
 - Log on to Wilkes (but don't log on to a GPU)
-- Go to `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/<experiment>`
+- Go to the project directory, and from there to `/experiments/<experiment>`
 - `sbatch ../../scripts/cuda_job_script_wilkes`
 
 ### Information about Wilkes specifically for LW
