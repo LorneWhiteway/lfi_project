@@ -13,7 +13,7 @@ echo "Proceed? (y/n)"
 
 if ($< == y) then
 	cd /share/splinter/ucapwhi/lfi_project/
-	source ./set_environment.csh BUILD
+	source ./set_environment_splinter.csh BUILD
 	##git clone https://bitbucket.org/dpotter/pkdgrav3.git
 	cd ./pkdgrav3
 	rm -rf ./$BUILD_DIR
