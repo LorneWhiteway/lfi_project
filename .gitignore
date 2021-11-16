@@ -4,6 +4,7 @@ MPI_test/mpi_test
 AVX_test/avx_test
 
 
+experiments/*/run*
 experiments/*/example*
 experiments/*/.lockfile
 experiments/*/z_values.txt
