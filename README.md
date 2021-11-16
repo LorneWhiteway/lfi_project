@@ -25,23 +25,16 @@ LW has made the following changes to this code:
 
 ## Information about working with Wilkes cluster
 
-1. When logging on to Wilkes (<login-gpu.hpc.cam.ac.uk>), it seems to be necessary to type password from keyboard, rather than cutting-and-posting from password safe (despite PuTTY Window/Selection/Ctrl+Shift+{C,V} being set correctly). Not sure why.
+1. Project directory is `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`. Can use shortcut `s` to get to the parent of this directory.
 
-2. Project directory is `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`. Can use shortcut `s` to get to the parent of this directory.
+2. To set the environment on Wilkes, use `set_environment.sh` (and not `set_environment.csh`, which is for splinter).
 
-3. Can use WebDrive to connect to login-gpu.hpc.cam.ac.uk as (for example) the W drive. It is convenient to set up a symbolic link (suggest calling it `work`) in the home directory to point to the project directory.
-
-4. To set the environment on Wilkes, use `set_environment.sh` (and not `set_environment.csh`, which is for splinter).
-
-
-## How to interact with the GPUs on Wilkes
-
-In what follows:
+3. In what follows:
 - `<partition>` refers to either `pascal` (the old partition with [V100](https://en.wikipedia.org/wiki/Volta_(microarchitecture)) GPUs) or `ampere` (the new partition with [A100](https://en.wikipedia.org/wiki/Ampere_(microarchitecture)) GPUs.
 - `<PROJECT-CODE-GPU>` is the project code (contact LW or NJ to get this).
 - `<experiment>` denotes an 'experiment' i.e. a subdirectory of `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/` containing a control file `control.par`. Example: `gpu_256_1024_900`.
 
-### How to log on to one of the GPU nodes
+### How to log on to one of the Wilkes GPU nodes
 ```
 sintr -A <PROJECT-CODE-GPU> -p <partition> -t 1:0:0 --exclusive
 ```
@@ -57,5 +50,10 @@ For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-g
 - Go to `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/<experiment>`
 - `env EXPERIMENT=<experiment> sbatch ../../scripts/cuda_job_script_wilkes_<partition>`
 
+### Information about Wilkes specifically for LW
 
+1. When logging on to Wilkes (<login-gpu.hpc.cam.ac.uk>), it seems to be necessary to type password from keyboard, rather than cutting-and-posting from password safe (despite PuTTY Window/Selection/Ctrl+Shift+{C,V} being set correctly). This seems to be related to the version of PuTTY.
 
+2. LW has set up the the shortcut `s` to get to the parent of the project directory.
+
+3. Use WebDrive to connect to login-gpu.hpc.cam.ac.uk and map it in Windows as the W drive. I have set up a symbolic link `work` in my home directory to point to the project directory.
