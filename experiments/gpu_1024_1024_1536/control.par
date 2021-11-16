@@ -1,6 +1,6 @@
 #import math
 
-achOutName      = "example"
+achOutName      = "run"
 
 # Memory and performance
 bMemUnordered   = 1    # iOrder replaced by potential and group id
