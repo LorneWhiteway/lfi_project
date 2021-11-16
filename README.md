@@ -27,28 +27,27 @@ LW has made the following changes to this code:
 
 1. Project directory is `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`. Can use shortcut `s` to get to the parent of this directory.
 
-2. To set the environment on Wilkes, use `set_environment.sh` (and not `set_environment.csh`, which is for splinter).
+2. The following instructions are for using the ampere partition. To use the old pascal partition, contact LW.
 
 3. In what follows:
-- `<partition>` refers to either `pascal` (the old partition with [V100](https://en.wikipedia.org/wiki/Volta_(microarchitecture)) GPUs) or `ampere` (the new partition with [A100](https://en.wikipedia.org/wiki/Ampere_(microarchitecture)) GPUs.
 - `<PROJECT-CODE-GPU>` is the project code (contact LW or NJ to get this).
 - `<experiment>` denotes an 'experiment' i.e. a subdirectory of `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/` containing a control file `control.par`. Example: `gpu_256_1024_900`.
 
 ### How to log on to one of the Wilkes GPU nodes
 ```
-sintr -A <PROJECT-CODE-GPU> -p <partition> -t 1:0:0 --exclusive
+sintr -A <PROJECT-CODE-GPU> -p ampere -t 1:0:0 --exclusive
 ```
 For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-guide/interactive.html#sintr); the progam has the same interface as `sbatch` (so the example above requests an interactive session for one hour).
 
 ### How to build pkdgrav3 for use by the Wilkes GPUs
 - Log on to a GPU
 - Go to `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`
-- Run `./cm.sh build_<partition>`
+- Run `./cm.sh build_wilkes
 
 ### How to run one of the experiments on the Wilkes GPUs
 - Log on to Wilkes (but don't log on to a GPU)
 - Go to `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/<experiment>`
-- `env EXPERIMENT=<experiment> sbatch ../../scripts/cuda_job_script_wilkes_<partition>`
+- `env EXPERIMENT=<experiment> sbatch ../../scripts/cuda_job_script_wilkes`
 
 ### Information about Wilkes specifically for LW
 

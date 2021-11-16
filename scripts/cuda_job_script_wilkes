@@ -6,7 +6,7 @@
 
 #! Modified by LW
 #! Command line example:
-#! env EXPERIMENT=wilkes_test3 sbatch ../../scripts/cuda_job_script_wilkes_ampere
+#! env EXPERIMENT=wilkes_test3 sbatch ../../scripts/cuda_job_script_wilkes
 #! Run it from the directory in which the control file is located.
 
 #!#############################################################
@@ -60,10 +60,10 @@ module purge                               # Removes all modules still loaded
 module load rhel8/default-amp              # REQUIRED - loads the basic environment
 
 #! Insert additional module load commands after this line if needed:
-source /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/set_environment.sh USE
+source /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/set_environment_wilkes.sh USE
 
 #! Full path to application executable: 
-application="/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/pkdgrav3/build_ampere/pkdgrav3"
+application="/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/pkdgrav3/build_wilkes/pkdgrav3"
 
 #! Run options for the application:
 ####### I have had to hard-code this for now as the env thing doesn't seem to be working.
