@@ -20,7 +20,7 @@
 
 
 ## Call this job script using syntax like this:
-## sbatch --export=ALL,experiment_name='gpu_1024_1024_1000' cuda_job_script
+## sbatch --export=ALL,experiment_name='gpu_1024_1024_1000' cuda_job_script_splinter
 
 ## To go to the GPU node, do:
 ## srun -p GPU --gres=gpu:XX:1 --pty tcsh
