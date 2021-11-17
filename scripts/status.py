@@ -53,9 +53,7 @@ def status(directory):
     print("Status of {} as of {}".format(directory, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
     control_file_name = os.path.abspath(os.path.join(directory, "control.par"))
     report_whether_file_exists("control file", control_file_name)
-    report_whether_file_exists("old log file", os.path.abspath(os.path.join(directory, "example.log")))
     report_whether_file_exists("log file", os.path.abspath(os.path.join(directory, "run.log")))
-    report_whether_file_exists("old output file", os.path.abspath(os.path.join(directory, "example_output.txt")))
     report_whether_file_exists("output file", os.path.abspath(os.path.join(directory, "output.txt")))
     report_whether_several_files_exist("partial lightcone", os.path.join(directory, "*.hpb*"))
     if report_whether_several_files_exist("full lightcone", os.path.join(directory, "*.npy")):
