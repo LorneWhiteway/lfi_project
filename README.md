@@ -69,6 +69,24 @@ For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-g
 - Go to the project directory, and from there to `/experiments/<experiment>`
 - `sbatch ../../scripts/cuda_job_script_wilkes`
 
+### Working with python on the Wilkes cluster
+- Go to the project directory
+- `module load python/3.8`
+- `source env/bin/activate`
+
+This will take you into a virtual environment, from where you can run python scripts.
+To exit the virtual environment:
+- `deactivate`
+
+How to create this virtual environment:
+- Go to the project directory
+- `module load python/3.8`
+- `python3 -m venv env`
+- `source env/bin/activate`
+- `cd env`
+- `pip install --upgrade pip`
+- `pip install healpy`
+
 ### Information about Wilkes specifically for LW
 
 1. When logging on to Wilkes (<login-gpu.hpc.cam.ac.uk>), it seems to be necessary to type password from keyboard, rather than cutting-and-posting from password safe (despite PuTTY Window/Selection/Ctrl+Shift+{C,V} being set correctly). This seems to be related to the version of PuTTY.
@@ -76,3 +94,5 @@ For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-g
 2. LW has set up the the shortcut `s` to get to the parent of the project directory.
 
 3. Use WebDrive to connect to login-gpu.hpc.cam.ac.uk and map it in Windows as the W drive. I have set up a symbolic link `work` in my home directory to point to the project directory.
+
+
