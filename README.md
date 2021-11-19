@@ -70,15 +70,18 @@ For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-g
 - `sbatch ../../scripts/cuda_job_script_wilkes`
 
 ### Working with python on the Wilkes cluster
+
+I have set up a virtual Python environment in the subdirectory `env` of the project directory. This is convenient as we can install our own software there.
+
+To enter the virtual environment:
 - Go to the project directory
 - `module load python/3.8`
 - `source env/bin/activate`
 
-This will take you into a virtual environment, from where you can run python scripts.
-To exit the virtual environment:
+To leave the virtual environment:
 - `deactivate`
 
-How to create this virtual environment:
+For reference (e.g. in case it needs to be repeated), here's how the virtual environment was created:
 - Go to the project directory
 - `module load python/3.8`
 - `python3 -m venv env`
