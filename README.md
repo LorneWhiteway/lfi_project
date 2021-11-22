@@ -122,5 +122,5 @@ pkdgrav3_postprocess.py [options] directory
 Here is further information about output format. Here XXXXX stands for a 5 character left-zero-padded tomographic slice identifier e.g. 00076.
 | Type | Name format | Comments |
 | --- | --- | --- |
-| Lightcone files | run.XXXXX.lightcone.npy | Numpy file (i.e. can be opened with np.load) containing healpix array (in ring ordering) of object counts. The counts are written in uint16 (unless the values are too large to allow this).
+| Lightcone files | run.XXXXX.lightcone.npy | Numpy file (i.e. can be opened with np.load) containing healpix array (in ring ordering) of object counts. The data-type used in the files is uint16 (unless the values are too large to allow this). |
 
