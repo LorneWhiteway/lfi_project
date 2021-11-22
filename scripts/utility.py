@@ -773,12 +773,15 @@ def test_compression(file_name_1, file_name_2):
 def report_whether_file_exists(file_description, file_name):
     print("File {} {} '{}'".format(("exists:" if os.path.isfile(file_name) else "DOES NOT exist: no"), file_description, file_name))
     
+# Returns True iff files exist.
 def report_whether_several_files_exist(file_description, filespec):
     num_files = len(glob.glob(filespec))
     if num_files > 0:
         print("Files exist: {} {} file{}".format(num_files, file_description, plural_suffix(num_files)))
+        return True
     else:
         print("Files DO NOT exist: no {} files".format(file_description))
+        return False
 
 def plural_suffix(count):
     return ("" if count==1 else "s")
@@ -804,7 +807,8 @@ def status(directory):
     report_whether_file_exists("log file", os.path.abspath(os.path.join(directory, "run.log")))
     report_whether_file_exists("output file", os.path.abspath(os.path.join(directory, "output.txt")))
     report_whether_several_files_exist("raw PKDGRAV3 output", os.path.join(directory, "*.hpb*"))
-    report_whether_several_files_exist("full lightcone", os.path.join(directory, "*.npy"))
+    if report_whether_several_files_exist("full lightcone", os.path.join(directory, "*.npy")):
+        print("   Type of full lightcone files is {}".format(npy_file_data_type(glob.glob(os.path.join(directory, "*.npy"))[0])))
     report_whether_several_files_exist("lightcone image (mollview)", os.path.join(directory, "*.lightcone.mollview.png"))
     report_whether_several_files_exist("lightcone image (orthview)", os.path.join(directory, "*.lightcone.orthview.png"))
     report_whether_file_exists("z_values file", os.path.abspath(os.path.join(directory, "z_values.txt")))
