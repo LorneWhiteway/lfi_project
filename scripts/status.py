@@ -16,8 +16,6 @@ import datetime
 
 # ======================== Start of code for reporting on the status of an 'experiments' directory ========================
 
-# This functionality is exposed through 'status.py'.
-
 # Helper functions
 def report_whether_file_exists(file_description, file_name):
     print("File {} {} '{}'".format(("exists:" if os.path.isfile(file_name) else "DOES NOT exist: no"), file_description, file_name))
