@@ -73,16 +73,16 @@ def one_healpix_map_from_basefilename(basefilename, nside):
     
     
 
-# filespec will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/run.{}.hpb"
+# filespec will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/run.*.hpb"
 # Output will be a list like ["/share/splinter/ucapwhi/lfi_project/experiments/simple/run.00001.hpb", etc.]
 def basefilename_list_from_filespec(filespec):
-    return [f[:-2] for f in sorted(glob.glob(filespec.replace("{}", "*") + ".0"))]
+    return [f[:-2] for f in sorted(glob.glob(filespec + ".0"))]
 
     
 def num_objects_in_lightcones():
 
 
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_4096_900/run.{}.hpb"
+    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_4096_900/run.*.hpb"
     nside = 4096
     
     total_num_objects = 0
@@ -98,7 +98,7 @@ def num_objects_in_lightcones():
 
     
 
-# Example filespec: "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/run.{}.hpb"
+# Example filespec: "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/run.*.hpb"
 def save_all_lightcone_files_caller_core(filespec, nside, new_nside = None, delete_hpb_files_when_done = None, save_image_files = None):
 
     if new_nside is None:
@@ -132,15 +132,6 @@ def save_all_lightcone_files_caller_core(filespec, nside, new_nside = None, dele
                 with contextlib.suppress(FileNotFoundError):
                     os.remove(f)
                     
-                    
-        
-    
-
-def save_all_lightcone_files():
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/run.00067{}.hpb"
-    nside = 4096
-    save_all_lightcone_files_caller_core(filespec, nside)
-
     
 def plot_lightcone_files(list_of_npy_filenames, do_show = True, do_save = False, mollview_format = None):
 
@@ -148,12 +139,9 @@ def plot_lightcone_files(list_of_npy_filenames, do_show = True, do_save = False,
         mollview_format = False
     
     for filename in list_of_npy_filenames:
-        print("Using file {}".format(filename))
         
         map_t = np.load(filename)
-        
-        print("Number of objects = {}".format(np.sum(map_t)))
-        print("Number of pixels = {}".format(map_t.shape))
+        num_objects = np.sum(map_t)
         
         # Histogram of pixel values
         if False:
@@ -174,11 +162,11 @@ def plot_lightcone_files(list_of_npy_filenames, do_show = True, do_save = False,
         else:
             rot = (50.0, -40.0, 0.0)
             hp.orthview(map_t, rot=rot, title=filename.replace("/share/splinter/ucapwhi/lfi_project/experiments/", ""), cbar=True, cmap=cmap)
-            save_file_extension = "png"
+            save_file_extension = "orthview.png"
 
         if do_save:
             save_file_name = filename.replace("npy", save_file_extension)
-            print("Saving {}...".format(save_file_name))    
+            print("From {} created image file {} with {} objects".format(filename, save_file_name, num_objects))    
             plt.savefig(save_file_name)
 
         
@@ -208,15 +196,15 @@ def show_two_lightcones():
     #        print(i, c0, c1)
         
     
-def save_all_lightcone_image_files(directory):
-    file_list = glob.glob(directory + "/*.npy")
+def save_all_lightcone_image_files(directory, mollview_format):
+    file_list = glob.glob(os.path.join(directory, "*.npy"))
     file_list.sort()
-    plot_lightcone_files(file_list, False, True, True)
+    plot_lightcone_files(file_list, False, True, mollview_format)
     
 
 def save_all_lightcone_image_files_caller():
     directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_1070/"
-    save_all_lightcone_image_files(directory)
+    save_all_lightcone_image_files(directory, True)
     
     
 
@@ -575,27 +563,36 @@ def display_z_values_file(directory):
         plt.savefig(save_file_name)
     
 
+def file_spec_has_files(file_spec):
+    return bool(glob.glob(file_spec))
+
+
 # Run this after PKDGRAV3 has finished to do all the postprocessing
-def post_run_process():
+def pkdgrav3_postprocess(directory, do_lightcone_files, do_mollview_images, do_ortho_images, do_z_file, do_status, do_force):
+
+    control_filename = os.path.join(directory, "control.par")
     
-    # Set directory and nside to the appropriate values...
-    directory = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/speedtest"
-    nside = int(get_float_from_control_file(directory + "/control.par", "nSideHealpix"))
+    nside = int(get_float_from_control_file(control_filename, "nSideHealpix"))
     new_nside = nside
     
-    print("Processing {} with nside {}".format(directory, nside))
+    print("Processing {}".format(directory))
     
-    filespec = os.path.join(directory, "run.{}.hpb")
-    save_all_lightcone_files_caller_core(filespec, nside, new_nside)
     
-    if True:
-        save_all_lightcone_image_files(directory)
+    if do_lightcone_files and (do_force or not file_spec_has_files(os.path.join(directory, "run.*.lightcone.npy"))):
+        save_all_lightcone_files_caller_core(os.path.join(directory, "run.*.hpb"), nside, new_nside)
+        
+    if do_mollview_images and (do_force or not file_spec_has_files(os.path.join(directory, "run.*.lightcone.mollview.png"))):
+        save_all_lightcone_image_files(directory, True)
     
-    build_z_values_file(directory)
+    if do_ortho_images and (do_force or not file_spec_has_files(os.path.join(directory, "run.*.lightcone.orthview.png"))):
+        save_all_lightcone_image_files(directory, False)
     
-    #display_z_values_file(directory)
-
-
+    if do_z_file and (do_force or not file_spec_has_files(os.path.join(directory, "z_values.txt"))):
+        build_z_values_file(directory)
+        
+    if do_status:
+        status(directory)
+        
     
     
 # ======================== End of code for reading PKDGRAV3 output ========================    
@@ -770,6 +767,51 @@ def test_compression(file_name_1, file_name_2):
 
 # ======================== End of other utilities ========================    
 
+# ======================== Start of code for reporting on the status of an 'experiments' directory ========================
+
+# Helper functions
+def report_whether_file_exists(file_description, file_name):
+    print("File {} {} '{}'".format(("exists:" if os.path.isfile(file_name) else "DOES NOT exist: no"), file_description, file_name))
+    
+def report_whether_several_files_exist(file_description, filespec):
+    num_files = len(glob.glob(filespec))
+    if num_files > 0:
+        print("Files exist: {} {} file{}".format(num_files, file_description, plural_suffix(num_files)))
+    else:
+        print("Files DO NOT exist: no {} files".format(file_description))
+
+def plural_suffix(count):
+    return ("" if count==1 else "s")
+    
+def npy_file_data_type(file_name):
+    d = np.load(file_name)
+    return d.dtype.name
+    
+
+def status(directory):
+
+    # Deal recursively with subdirectories
+    dir_name_list = glob.glob(os.path.join(directory, "*/"))
+    dir_name_list.sort()
+    for d in dir_name_list:
+        status(d)
+
+    # Then deal with this directory
+    print("========================================================================")
+    print("Status of {} as of {}".format(directory, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    control_file_name = os.path.abspath(os.path.join(directory, "control.par"))
+    report_whether_file_exists("control file", control_file_name)
+    report_whether_file_exists("log file", os.path.abspath(os.path.join(directory, "run.log")))
+    report_whether_file_exists("output file", os.path.abspath(os.path.join(directory, "output.txt")))
+    report_whether_several_files_exist("raw PKDGRAV3 output", os.path.join(directory, "*.hpb*"))
+    report_whether_several_files_exist("full lightcone", os.path.join(directory, "*.npy"))
+    report_whether_several_files_exist("lightcone image (mollview)", os.path.join(directory, "*.lightcone.mollview.png"))
+    report_whether_several_files_exist("lightcone image (orthview)", os.path.join(directory, "*.lightcone.orthview.png"))
+    report_whether_file_exists("z_values file", os.path.abspath(os.path.join(directory, "z_values.txt")))
+
+
+# ======================== End of code for reporting on the status of an 'experiments' directory ========================
+
 
 
 if __name__ == '__main__':
@@ -777,7 +819,6 @@ if __name__ == '__main__':
     #show_one_output_file_example()
     #show_one_shell_example()
     #match_points_between_boxes()
-    #save_all_lightcone_files()
     #show_one_lightcone()
     #show_two_lightcones()
     #num_objects_in_lightcones()
@@ -788,7 +829,7 @@ if __name__ == '__main__':
     #string_between_strings_test_harness()
     #intersection_of_shell_and_cells()
     #build_z_values_file_caller()
-    #save_all_lightcone_image_files("/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/")
+    #save_all_lightcone_image_files("/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/", True)
     #compare_two_lightcones_by_power_spectra()
     #get_float_from_control_file_test_harness()
     #compare_two_time_spacings()
