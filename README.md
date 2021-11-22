@@ -94,8 +94,29 @@ For reference (e.g. in case it needs to be repeated), here's how the virtual env
 
 1. When logging on to Wilkes (<login-gpu.hpc.cam.ac.uk>), it seems to be necessary to type password from keyboard, rather than cutting-and-posting from password safe (despite PuTTY Window/Selection/Ctrl+Shift+{C,V} being set correctly). This seems to be related to the version of PuTTY.
 
-2. LW has set up the the shortcut `s` to get to the parent of the project directory.
+2. I have set up the the shortcut `s` to get to the parent of the project directory.
 
 3. Use WebDrive to connect to login-gpu.hpc.cam.ac.uk and map it in Windows as the W drive. I have set up a symbolic link `work` in my home directory to point to the project directory.
+
+## Python scripts
+
+### pkdgrav3_postprocess.py
+
+This is the main script for post-processing PKDGRAV3 output to create full lightcones and image files. Recall that PKDGRAV3 outputs each lightcone in several sections, one section per file. These files need to be concatenated (and trimmed) to get the full lightcone; that is what this script does. The script is 'lazy' in that it will not try to create files that it can see already exist (but this can be overridden using the `--force` option).
+
+Syntax: 
+```
+pkdgrav3_postprocess.py [options] directory
+```
+| Options | Meaning |
+| --- | ---|
+| -l or --lightcone | create full lightcone files |
+| -m or --mollview | create image files in mollview format |
+| -o or --orthview | create image files in ortho format |
+| -z or --zfile | create a text file specifying the redshift ranges for the lightcones |
+| -s or --status | print a summary of the files in the directory |
+| -f or --force | create output files even if they are present already |
+| -a or --all | all of the above |
+| -h or --help | print this help message, then exit |
 
 
