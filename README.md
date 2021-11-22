@@ -115,8 +115,8 @@ pkdgrav3_postprocess.py [options] directory
 | -o or --orthview | create image files in ortho format |
 | -z or --zfile | create a text file specifying the redshift ranges for the lightcones |
 | -s or --status | print a summary of the files in the directory |
-| -f or --force | create output files even if they are present already |
 | -a or --all | all of the above |
+| -f or --force | create output files even if they are present already |
 | -h or --help | print this help message, then exit |
 
 Here is further information about output format. Here XXXXX stands for a 5 character left-zero-padded tomographic slice identifier e.g. 00076.

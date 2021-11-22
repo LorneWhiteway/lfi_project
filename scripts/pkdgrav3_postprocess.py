@@ -31,8 +31,8 @@ def show_help():
     print("-o or --orthview   create image files in ortho format")
     print("-z or --zfile      create a text file specifying the redshift ranges for the lightcones")
     print("-s or --status     print a summary of the files in the directory")
-    print("-f or --force      create output files even if they are present already")
     print("-a or --all        all of the above")
+    print("-f or --force      create output files even if they are present already")
     print("-h or --help       print this help message, then exit")
     
     
@@ -58,7 +58,7 @@ if __name__ == '__main__':
             
         do_all = item_is_in_command_line(command_line_array, "-a", "--all")
         do_mollview_images = do_all or item_is_in_command_line(command_line_array, "-m", "--mollview")
-        do_ortho_images = item_is_in_command_line(command_line_array, "-o", "--orthview")
+        do_ortho_images = do_all or item_is_in_command_line(command_line_array, "-o", "--orthview")
         do_lightcone_files = do_mollview_images or do_ortho_images or do_all or item_is_in_command_line(command_line_array, "-l", "--lightcones")
         do_z_file = do_all or item_is_in_command_line(command_line_array, "-z", "--zfile")
         do_status = do_all or item_is_in_command_line(command_line_array, "-s", "--status")
