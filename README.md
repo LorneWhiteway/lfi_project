@@ -109,7 +109,7 @@ Syntax:
 pkdgrav3_postprocess.py [options] directory
 ```
 | Options | Meaning |
-| --- | ---|
+| --- | --- |
 | -l or --lightcone | create full lightcone files |
 | -m or --mollview | create image files in mollview format |
 | -o or --orthview | create image files in ortho format |
@@ -119,4 +119,8 @@ pkdgrav3_postprocess.py [options] directory
 | -a or --all | all of the above |
 | -h or --help | print this help message, then exit |
 
+Here is further information about output format. Here XXXXX stands for a 5 character left-zero-padded tomographic slice identifier e.g. 00076.
+| Type | Name format | Comments |
+| --- | --- | --- |
+| Lightcone files | run.XXXXX.lightcone.npy | Numpy file (i.e. can be opened with np.load) containing healpix array (in ring ordering) of object counts. The counts are written in uint16 (unless the values are too large to allow this).
 
