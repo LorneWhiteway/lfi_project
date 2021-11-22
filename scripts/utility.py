@@ -42,7 +42,7 @@ def get_float_from_control_file_test_harness():
 
 
 
-# ======================== Start of code for reading lightcone files ========================
+# ======================== Start of code for reading partial lightcone files ========================
 
 
 # basefilename will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/run.00001.hpb"
@@ -79,22 +79,6 @@ def basefilename_list_from_filespec(filespec):
     return [f[:-2] for f in sorted(glob.glob(filespec + ".0"))]
 
     
-def num_objects_in_lightcones():
-
-
-    filespec = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_4096_900/run.*.hpb"
-    nside = 4096
-    
-    total_num_objects = 0
-    for b in basefilename_list_from_filespec(filespec):
-        map_b = one_healpix_map_from_basefilename(b, nside)
-        num_objects_b = np.sum(map_b)
-        print(b, num_objects_b)
-        total_num_objects += num_objects_b
-    print("======")
-    print(total_num_objects)
-
-
 
     
 
@@ -825,7 +809,6 @@ if __name__ == '__main__':
     #match_points_between_boxes()
     #show_one_lightcone()
     #show_two_lightcones()
-    #num_objects_in_lightcones()
     #display_z_values_file("/share/splinter/ucapwhi/lfi_project/experiments/v100_freqtimeslicing/")
     post_run_process()
     #read_one_box_example()
