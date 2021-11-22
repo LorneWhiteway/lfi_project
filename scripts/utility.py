@@ -209,7 +209,7 @@ def show_two_lightcones():
         
     
 def save_all_lightcone_image_files(directory):
-    file_list = glob.glob(directory + "*.npy")
+    file_list = glob.glob(directory + "/*.npy")
     file_list.sort()
     plot_lightcone_files(file_list, False, True, True)
     
@@ -238,7 +238,7 @@ def string_between_strings_test_harness():
     
 def count_objects_in_many_lightcone_files():
     directory = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_1024_1000/"
-    file_list = glob.glob(directory + "*.lightcone.npy")
+    file_list = glob.glob(directory + "/*.lightcone.npy")
     file_list.sort()
     
     file_num_list = []
@@ -256,13 +256,13 @@ def count_objects_in_many_lightcone_files():
     file_num_array = np.array(file_num_list)
     num_objects_array = np.array(num_objects_list)
     
-    array_file_name = directory + "object_count.txt"
+    array_file_name = directory + "/object_count.txt"
     print("Saving array to {}".format(array_file_name))
     np.save(array_file_name, np.column_stack([file_num_array, num_objects_array]))
     
     
     plt.plot(file_num_array, num_objects_array)
-    plot_file_name = directory + "object_count.png"
+    plot_file_name = directory + "/object_count.png"
     print("Saving plot to {}".format(plot_file_name))
     plt.savefig(plot_file_name)
     
@@ -579,7 +579,7 @@ def display_z_values_file(directory):
 def post_run_process():
     
     # Set directory and nside to the appropriate values...
-    directory = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_fast/"
+    directory = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/speedtest"
     nside = int(get_float_from_control_file(directory + "/control.par", "nSideHealpix"))
     new_nside = nside
     
@@ -588,7 +588,7 @@ def post_run_process():
     filespec = os.path.join(directory, "run.{}.hpb")
     save_all_lightcone_files_caller_core(filespec, nside, new_nside)
     
-    if False:
+    if True:
         save_all_lightcone_image_files(directory)
     
     build_z_values_file(directory)
