@@ -532,61 +532,6 @@ def create_dummy_output_file():
         hp.write_map(output_file_name, empty_map, overwrite=True)
     
 
-
-############ Start of code for compressing files - no longer needed. ############
-
-def compress_lightcone_file(input_file_name, delete_input_file):
-    print("\n\n")
-    print("Compressing {}...".format(input_file_name))
-    d = np.load(input_file_name)
-    max_pixel_value = np.max(d)
-    print("Max pixel value = {}".format(np.max(d)))
-    output_file_name = input_file_name.replace(".npy", ".compressed.npy")
-    if max_pixel_value < 65535:
-        print("Saving to {}...".format(output_file_name))
-        np.save(output_file_name, d.astype(np.uint16))
-        if delete_input_file:
-            if test_compression(input_file_name, output_file_name):
-                print("Deleting {}".format(input_file_name))
-                os.remove(input_file_name)
-                os.rename(output_file_name, input_file_name)
-            else:
-                raise SystemError("Files {} and {} are different!".format(input_file_name, output_file_name))
-    else:
-        print("NOT saving to {} as pixel values are too large.".format(output_file_name))
-        
-
-def compress_all_lightcone_files_in_directory(directory):
-
-    file_name_list = glob.glob(os.path.join(directory, "run.*.lightcone.npy"))
-    file_name_list.sort()
-    for f in file_name_list:
-        compress_lightcone_file(f, True)
-        
-def compress_all_lightcone_files():
-
-    for d in ["computenode_256_256_1000", "computenode_32_32", "gpu_1024_1024_1000", "gpu_1024_1024_1536", "gpu_1100_1024_1536", "gpu_256_4096_900",
-        "gpu_32_512_900", "gpu_512_1024_1000", "gpu_512_256_1000", "gpu_768_2048_900", "gpu_fast", "gpu_fast_amendedtransfer", "gpu_probtest",
-        "k80_1024_4096_900", "simple_64_64", "v100_freqtimeslicing"]:
-        compress_all_lightcone_files_in_directory("/share/splinter/ucapwhi/lfi_project/experiments/" + d + "/")
-        
-    
-def test_compression(file_name_1, file_name_2):
-    
-    print("Comparing {} and {}".format(file_name_1, file_name_2))
-    
-    d1 = np.load(file_name_1)
-    d2 = np.load(file_name_2)
-    
-    ret = np.all(d1.astype(float)==d2.astype(float))
-    
-    print("Files compared OK" if ret else "Files DID NOT compare OK")
-    
-    return ret
-    
-    
-############ End of code for compressing files - no longer needed. ############
-
 # ======================== End of other utilities ========================    
 
 
@@ -652,7 +597,6 @@ if __name__ == '__main__':
     #get_float_from_control_file_test_harness()
     #compare_two_time_spacings()
     #create_dummy_output_file()
-    #compress_all_lightcone_files()
     pass
     
     
