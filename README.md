@@ -100,6 +100,8 @@ For reference (e.g. in case it needs to be repeated), here's how the virtual env
 
 ## Python scripts
 
+Scripts (in [Python3](https://www.python.org/)) are located in the `scripts` subdirectory of the project directory.
+
 ### pkdgrav3_postprocess.py
 
 This is the main script for post-processing PKDGRAV3 output to create full lightcones and image files. Recall that PKDGRAV3 outputs each lightcone in several sections, one section per file. These files need to be concatenated (and trimmed) to get the full lightcone; that is what this script does. The script is 'lazy' in that it will not try to create files that it can see already exist (but this can be overridden using the `--force` option).
@@ -124,5 +126,5 @@ Here is further information about output format. Here XXXXX stands for a 5 chara
 | --- | --- | --- |
 | Lightcone files | run.XXXXX.lightcone.npy | Numpy file (i.e. can be opened with [np.load](https://numpy.org/doc/stable/reference/generated/numpy.load.html)) containing healpix array (in the default ordering i.e. ring) of object counts per pixel. The NSIDE is as specified when PKDGRAV3 was run. The data-type used in the files is [uint16](https://numpy.org/doc/stable/reference/arrays.scalars.html#sized-aliases) (unless the values are too large to allow this). |
 | Image files | run.XXXXX.lightcone.mollview.png or run.XXXXX.lightcone.orthview.png | Image file (in png format) showing the lightcone. The plotted quantity is the base-10 logarithm of the 'normalised object count' (by 'normalised object count' we mean the pixel object count divided by the average object count across all pixels). The plots are in [mollview](https://healpy.readthedocs.io/en/latest/generated/healpy.visufunc.mollview.html) or [orthview](https://healpy.readthedocs.io/en/latest/generated/healpy.visufunc.orthview.html) format as requested. |
-| Redshift ranges | z_values.txt | Text file describing the redshift ranges for the tomographic slices. The file has one header row, refer to this for details of the columns in the file. Each slice is described by the redshift, by the comoving distance (in Mpc/h) and by the comoving distance (in units of the box length) for the far endpoint and for the near endpoint of the slice; the width of the slice (in the same terms) is also given. | 
+| Redshift ranges | z_values.txt | Text file describing the redshift ranges for the tomographic slices. The file has one header row; refer to this for details of the columns in the file. Each slice is described by the redshift, by the comoving distance (in Mpc/h) and by the comoving distance (in units of the box length) for the far endpoint and for the near endpoint of the slice; the width of the slice (in the same terms) is also given. | 
 
