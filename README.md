@@ -56,7 +56,7 @@ srun -p GPU --gres=gpu:<GPU_NAME>:1 --pty tcsh
 - `sbatch --export=ALL,experiment_name='<experiment>' ../../scripts/cuda_job_script_splinter_<GPU_NAME>`
 
 
-## Information about working with Wilkes cluster
+## Information about working with the Wilkes cluster
 
 1. Project directory is `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`. Can use shortcut `s` to get to the parent of this directory.
 
