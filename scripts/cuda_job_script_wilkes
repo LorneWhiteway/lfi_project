@@ -65,18 +65,19 @@ source /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/set_environment_wilkes.sh 
 #! Full path to application executable: 
 application="/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/pkdgrav3/build_wilkes/pkdgrav3"
 
-#! Run options for the application:
-#! Note that here we are assuming that the job file is being submitted from the directory
-#! in which the control file is located.
-options="./control.par > ./output.txt"
-
+#! Note LW moved this definition to be before the definition of 'options'
 #! Work directory (i.e. where the job will run):
 workdir="$SLURM_SUBMIT_DIR"  # The value of SLURM_SUBMIT_DIR sets workdir to the directory
                              # in which sbatch is run.
 
+#! Run options for the application:
+#! Note that here we are assuming that the job file is being submitted from the directory
+#! in which the control file is located.
+options="$workdir/control.par > $workdir/output.txt"
+
 #! Are you using OpenMP (NB this is unrelated to OpenMPI)? If so increase this
 #! safe value to no more than 128:
-export OMP_NUM_THREADS=32
+export OMP_NUM_THREADS=31
 
 #! Number of MPI tasks to be started by the application per node and in total (do not change):
 np=$[${numnodes}*${mpi_tasks_per_node}]
