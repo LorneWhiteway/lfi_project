@@ -1,7 +1,18 @@
 # lfi_project
-Likelihood-free inference project for the [Dark Energy Survey](https://www.darkenergysurvey.org/) (project 330)
 
-Contains files for using [pkdgrav3](https://bitbucket.org/dpotter/pkdgrav3/src).
+This repository contains code used in the likelihood-free inference project for the [Dark Energy Survey](https://www.darkenergysurvey.org/) (project 330).
+
+Its primary purpose is to make it easy to run the N-body simulation code [pkdgrav3](https://bitbucket.org/dpotter/pkdgrav3/src), and to post-process the output from this program.
+
+This repository contains a version of pkdgrav3 in which several bugs have been fixed.
+
+pkdgrav3 runs most efficiently using GPU hardware, and we provide job files to run pkdgrav3 efficiently on the `splinter` cluster at UCL and on the DiRAC Wiles3 cluster.
+
+The primary goal of the simulation is to create a sequence of snapshots (at a discrete sequence of time points) of the positions in 3 dimensional space of a collection of particles interacting via gravity. The sequence of snapshots is therefore a 4 dimensional object (3 spatial and 1 temporal dimension). For our purposes we are interested only in the lightcone, i.e. the 3 dimensional submanifold consisting of events that we (as observers at the centre of the simulation box) can actually observe. Within the simulation the lightcone thus becomes a sequence of snapshots (each representing a tomographic slice bounded by two adjacent time points, or equivalently two adjacent distances, or equivalently two adjacent redshifts) of the positions of the particles on the celestial sphere. These positions are then binned into (heal-)pixels to give pixel-by-pixel object counts. In short, the lightcone is a sequence of healpix maps.
+
+pkdgrav3 is able to output lightcone files; as these are our only interest we have amended the pkdgrav3 code to _only_ output these files (i.e. the 3 dimenisional snapshot files are not output). Each healpix map is output in several separate pieces (each in one file) and this repository provides the functionality to reconstitute the full healpix map from these parts.
+
+
 
 ## Changes made to pkdgrav3:
 
