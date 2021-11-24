@@ -411,11 +411,10 @@ def match_points_between_boxes():
 
 
 # ======================== Start of code for reading PKDGRAV3 output ========================
+
 # The file to be read by this routine can be created by running PKDGRAV3 and piping the output to file.
 def read_one_output_file(filename):
-    
 
-    
     step_list = []
     time_list = []
     z_list = []
@@ -433,41 +432,7 @@ def read_one_output_file(filename):
                 z_list.append(z)
                 
     return (np.array(step_list), np.array(time_list), np.array(z_list))
-
-
             
-def show_one_output_file(filename):
-
-    (s_arr, t_arr, z_arr) = read_one_output_file(filename)
-    
-    hubble_constant = 0.67
-    
-    cosmo = FlatLambdaCDM(H0=100*hubble_constant, Om0=0.32)
-    c_arr = cosmo.comoving_distance(z_arr).value # In Mpc
-
-    if True:
-        c_arr_diffs = c_arr[:-1] - c_arr[1:] #This way around as the arrays go from high z to low z
-        z_arr_diffs = z_arr[:-1] - z_arr[1:] #This way around as the arrays go from high z to low z
-        if False:
-            plt.scatter(z_arr[:-1], c_arr_diffs[:]*hubble_constant, s=5)
-            plt.ylabel('Shell thickness (Mpc/h)')
-        else:
-            plt.scatter(z_arr[:-1], z_arr_diffs[:], s=5)
-            plt.ylabel('Shell thickness (delta redshift)')
-        
-        plt.xlabel('Redshift')
-        plt.show()
-    
-    
-    print("Step\tTime\tRedshift\tComoving r(Mpc)\tComoving r(Mpc/h)")
-    for (s, t, z, c) in zip(s_arr, t_arr, z_arr, c_arr):
-        print(s,t,z,c,c*hubble_constant)
-        pass
-    
-def show_one_output_file_example():
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_32_512_900/output.txt"
-    show_one_output_file(filename)
-    
     
 def build_z_values_file(directory):
 
@@ -482,7 +447,6 @@ def build_z_values_file(directory):
     
     Om0 = get_float_from_control_file(control_file_name, "dOmega0")
     cosmo = FlatLambdaCDM(H0=100.0, Om0=Om0)
-    
     
     box_size = get_float_from_control_file(control_file_name, "dBoxSize")
 
@@ -502,49 +466,6 @@ def build_z_values_file(directory):
     
 
 
-def build_z_values_file_caller():
-    directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_1070/"
-    build_z_values_file(directory)
-    
-
-
-def display_z_values_file(directory):
-    
-    input_filename = directory + "/z_values.txt"
-    
-    d = np.loadtxt(input_filename, delimiter=",", skiprows=1)
-    s_arr = d[:,0]
-    z_arr = d[:,1]
-    t_arr = d[:,2]
-    a_arr = d[:,3]
-    inverse_a_arr = d[:,4]
-    c_arr = d[:,5]  # Comoving distance (Mpc/h)
-    c_over_boxsize_arr = d[:,6]
-    
-    if True:
-        y_data_to_ploy = c_arr[:-1] - c_arr[1:]
-        y_data_label = "Shell thickness (comoving) Mpc/h"
-        x_data_to_plot = (z_arr[:-1] + z_arr[1:]) * 0.5
-        x_data_label = "Redshift"
-    else:
-        y_data_to_ploy = c_arr
-        y_data_label = "Shell distance (Mpc/h)"
-        x_data_to_plot = s_arr
-        x_data_label = "Slice number"
-    
-    
-    start_point = 351 # TODO unhardcode this
-    
-    plt.scatter(x_data_to_plot[start_point:], y_data_to_ploy[start_point:],s=1)
-    plt.xlabel(x_data_label)
-    plt.ylabel(y_data_label)
-    
-    if False:
-        plt.show()
-    else:
-        save_file_name = directory + "/shell_thickness.png"
-        print("Saving {}...".format(save_file_name))    
-        plt.savefig(save_file_name)
     
 
 def file_spec_has_files(file_spec):
@@ -804,18 +725,14 @@ def status(directory):
 
 if __name__ == '__main__':
     
-    #show_one_output_file_example()
     #show_one_shell_example()
     #match_points_between_boxes()
     #show_one_lightcone()
     #show_two_lightcones()
-    #display_z_values_file("/share/splinter/ucapwhi/lfi_project/experiments/v100_freqtimeslicing/")
-    post_run_process()
     #read_one_box_example()
     #count_objects_in_many_lightcone_files()
     #string_between_strings_test_harness()
     #intersection_of_shell_and_cells()
-    #build_z_values_file_caller()
     #save_all_lightcone_image_files("/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/", True)
     #compare_two_lightcones_by_power_spectra()
     #get_float_from_control_file_test_harness()
@@ -824,6 +741,7 @@ if __name__ == '__main__':
     #save_one_lightcone()
     #save_all_lightcone_image_files_caller()
     #compress_all_lightcone_files()
+    pass
     
     
 
