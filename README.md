@@ -27,7 +27,7 @@ LW has made the following changes to this code:
 
 1. Project directory is `/share/splinter/ucapwhi/lfi_project`.
 
-2. In what follows, `<GPU_NAME>` hould be replaced by one of `v100` or `k80`, depending on which GPU you wish to use.
+2. In what follows, `<GPU_NAME>` should be replaced by one of `v100` or `k80`, depending on which GPU you wish to use.
 
 ### How to log on to one of the splinter GPU nodes
 ```
