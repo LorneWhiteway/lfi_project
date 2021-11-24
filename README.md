@@ -10,8 +10,7 @@ pkdgrav3 runs most efficiently using GPU hardware, and we provide job files to r
 
 The primary goal of the simulation is to create a sequence of snapshots (at a discrete sequence of time points) of the positions in 3 dimensional space of a collection of particles interacting via gravity. The sequence of snapshots is therefore a 4 dimensional object (3 spatial and 1 temporal dimension). For our purposes we are interested only in the lightcone, i.e. the 3 dimensional submanifold consisting of events that we (as observers at the centre of the simulation box) can actually observe. Within the simulation the lightcone thus becomes a sequence of snapshots (each representing a tomographic slice bounded by two adjacent time points, or equivalently two adjacent distances, or equivalently two adjacent redshifts) of the positions of the particles on the celestial sphere. These positions are then binned into (heal-)pixels to give pixel-by-pixel object counts. In short, the lightcone is a sequence of healpix maps.
 
-pkdgrav3 is able to output lightcone files; as these are our only interest we have amended the pkdgrav3 code to _only_ output these files (i.e. the 3 dimenisional snapshot files are not output). Each healpix map is output in several separate pieces (each in one file) and this repository provides the functionality to reconstitute the full healpix map from these parts.
-
+pkdgrav3 is able to output lightcone files; as these are our only interest we have amended the pkdgrav3 code to _only_ output these files (i.e. the 3 dimenisional snapshot files are not output). Each healpix map is output in several separate pieces (each in one file) and this repository provides the functionality to reconstitute the full healpix map from these parts. We also provide functionality to create images of the lightcone files, and to create a summary of the redshift boundaries of each tomographic slice.
 
 
 ## Changes made to pkdgrav3:
@@ -115,7 +114,7 @@ Scripts (in [Python3](https://www.python.org/)) are located in the `scripts` sub
 
 ### pkdgrav3_postprocess.py
 
-This is the main script for post-processing PKDGRAV3 output to create full lightcones and image files. Recall that PKDGRAV3 outputs each lightcone in several sections, one section per file. These files need to be concatenated (and trimmed) to get the full lightcone; that is what this script does. The script is 'lazy' in that it will not try to create files that it can see already exist (but this can be overridden using the `--force` option).
+This is the main script for post-processing PKDGRAV3 output to create full healpix lightcone files and image files. Recall that PKDGRAV3 outputs each lightcone healpix array in several sections, one section per file. These files need to be concatenated (and trimmed) to get the full healpoix map; that is what this script does. The script is 'lazy' in that it will not try to create files that it can see already exist (but this can be overridden using the `--force` option).
 
 Syntax: 
 ```
