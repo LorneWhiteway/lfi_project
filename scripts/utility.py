@@ -13,8 +13,6 @@ import matplotlib.pyplot as plt
 import healpy as hp
 from astropy.cosmology import FlatLambdaCDM
 import datetime
-import re
-from numpy import random
 import os
 import contextlib
 import sys
@@ -78,9 +76,6 @@ def one_healpix_map_from_basefilename(basefilename, nside):
 def basefilename_list_from_filespec(filespec):
     return [f[:-2] for f in sorted(glob.glob(filespec + ".0"))]
 
-    
-
-    
 
 # Example filespec: "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/run.*.hpb"
 def save_all_lightcone_files_caller_core(filespec, nside, new_nside = None, delete_hpb_files_when_done = None, save_image_files = None):
@@ -158,90 +153,11 @@ def plot_lightcone_files(list_of_npy_filenames, do_show = True, do_save = False,
         plt.show()
         
     
-            
-def show_one_lightcone():
-
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/run.00072.lightcone.npy"
-    plot_lightcone_files([filename,])
-    
-def save_one_lightcone():
-    filename = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_1070/run.00236.lightcone.npy"
-    plot_lightcone_files([filename,], False, True, True)
-
-    
-def show_two_lightcones():
-
-    filenames = ["/share/splinter/ucapwhi/lfi_project/experiments/gpu_fast/run.00093.lightcone.npy",
-        "/share/splinter/ucapwhi/lfi_project/experiments/gpu_fast_amendedtransfer/run.00093.lightcone.npy"]
-    plot_lightcone_files(filenames)
-    #maps = [np.load(f) for f in filenames]
-    #for (i, c0, c1) in zip(range(len(maps[0])), maps[0], maps[1]):
-    #    if c0 != c1:
-    #        print(i, c0, c1)
-        
     
 def save_all_lightcone_image_files(directory, mollview_format):
     file_list = glob.glob(os.path.join(directory, "*.npy"))
     file_list.sort()
     plot_lightcone_files(file_list, False, True, mollview_format)
-    
-
-def save_all_lightcone_image_files_caller():
-    directory = "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_1070/"
-    save_all_lightcone_image_files(directory, True)
-    
-    
-
-# From https://stackoverflow.com/questions/4666973/how-to-extract-the-substring-between-two-markers
-def string_between_strings(s_to_search, left_s, right_s):
-    try:
-        ret = re.search(left_s + '(.+?)' + right_s, s_to_search).group(1)
-    except AttributeError:
-        ret = ''
-    return ret
-    
-
-def string_between_strings_test_harness():
-    print(string_between_strings("ABC", "A", "C"))
-    print(string_between_strings("xxx123zzz", "xxx", "zzz"))
-    
-    
-    
-    
-def count_objects_in_many_lightcone_files():
-    directory = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_1024_1000/"
-    file_list = glob.glob(directory + "/*.lightcone.npy")
-    file_list.sort()
-    
-    file_num_list = []
-    num_objects_list = []
-    for el in file_list:
-    
-        file_num = int(string_between_strings(el, "run.", ".lightcone.npy"))
-        num_objects = np.load(el).sum()
-        
-        file_num_list.append(file_num)
-        num_objects_list.append(num_objects)
-        
-        print(file_num, num_objects)
-        
-    file_num_array = np.array(file_num_list)
-    num_objects_array = np.array(num_objects_list)
-    
-    array_file_name = directory + "/object_count.txt"
-    print("Saving array to {}".format(array_file_name))
-    np.save(array_file_name, np.column_stack([file_num_array, num_objects_array]))
-    
-    
-    plt.plot(file_num_array, num_objects_array)
-    plot_file_name = directory + "/object_count.png"
-    print("Saving plot to {}".format(plot_file_name))
-    plt.savefig(plot_file_name)
-    
-        
-        
-    
-    
     
 
 
@@ -507,6 +423,7 @@ def pkdgrav3_postprocess(directory, do_lightcone_files, do_mollview_images, do_o
 
 ### Good code, but no longer needed.
 #import cosmic_web_utilities as cwu 
+#from numpy import random
 #def intersection_of_shell_and_cells():
 #
 #    radius = 2.418
@@ -672,6 +589,7 @@ def test_compression(file_name_1, file_name_2):
 
 # ======================== End of other utilities ========================    
 
+
 # ======================== Start of code for reporting on the status of an 'experiments' directory ========================
 
 # Helper functions
@@ -727,19 +645,13 @@ if __name__ == '__main__':
     
     #show_one_shell_example()
     #match_points_between_boxes()
-    #show_one_lightcone()
-    #show_two_lightcones()
     #read_one_box_example()
-    #count_objects_in_many_lightcone_files()
-    #string_between_strings_test_harness()
     #intersection_of_shell_and_cells()
     #save_all_lightcone_image_files("/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/", True)
     #compare_two_lightcones_by_power_spectra()
     #get_float_from_control_file_test_harness()
     #compare_two_time_spacings()
     #create_dummy_output_file()
-    #save_one_lightcone()
-    #save_all_lightcone_image_files_caller()
     #compress_all_lightcone_files()
     pass
     
