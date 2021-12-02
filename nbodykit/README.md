@@ -1,4 +1,4 @@
-This directory was created on 9 Feb 2021 by LW to allow me to use nbodykit.
+This directory contains utilities for interacting with `nbodykit`.
 
 See https://nbodykit.readthedocs.io/en/latest/index.html for info on nbodykit.
 
@@ -35,4 +35,4 @@ t = cosmology.power.transfers.CLASS(cosmology.Planck15,0.0)(k)
 print(t) # Should be 1.0
 ```
 
-Python code that interacts with nbodykit is located in nbody_utility.py.
+Python code that interacts with nbodykit is located in `nbody_utility.py`. Currently there is a function called `make_specific_cosmology_transfer_function_caller()` that can be used to build a transfer function for a specified cosmology.
