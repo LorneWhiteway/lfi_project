@@ -77,24 +77,35 @@ def print_cosmology(cosmo, cosmo_name):
         print("{} = {}".format(key, cosmo_dict[key]))
     print("sigma8 = {}".format(cosmo.sigma8))
     
+    
+    
+def trim_rows_containing_nan(a):
+    # Credit: https://note.nkmk.me/en/python-numpy-nan-remove/
+    return a[~np.isnan(a).any(axis=1), :]
+    
 
-def make_specific_cosmology_transfer_function():
+def make_specific_cosmology_transfer_function(identifier, h, Omega0_b, Omega0_cdm, n_s, sigma8):
 
-    file_name_orig = "/share/splinter/ucapwhi/lfi_project/data/euclid_z0_transfer_combined.dat"
+    # Load an old transfer function (just to get a list of wavenumbers).
+    file_name_orig = "../data/euclid_z0_transfer_combined.dat"
     d_orig = np.loadtxt(file_name_orig, delimiter = " ")
     k = d_orig[:,0]
     
-    new_name = "specific_cosmology_01"
-    new_cosmo = (cosmology.Planck15).clone(h=0.6736, Omega0_b=0.0493, Omega0_cdm=0.2107, n_s=0.9649).match(sigma8=0.84)
-    print_cosmology(new_cosmo, new_name)
-    
+    new_name = "specific_cosmology_{}".format(identifier)
+    new_cosmo = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=Omega0_cdm, n_s=n_s).match(sigma8=sigma8)
     transfer_function = np.column_stack([k, cosmology.power.transfers.CLASS(new_cosmo, 0.0)(k)])
+    transfer_function = trim_rows_containing_nan(transfer_function)
     
-    file_name_new = "/share/splinter/ucapwhi/lfi_project/data/" + new_name + "_transfer_function.dat"
+    file_name_new = "../data/" + new_name + "_transfer_function.dat"
     print("Saved transfer function in {}".format(file_name_new))
-    print("Consider updating the README file with the specifications for this cosmology.")
+    print("Consider updating the README file with the following specifications for this cosmology.")
+    print_cosmology(new_cosmo, new_name)
     np.savetxt(file_name_new, transfer_function, delimiter = " ", fmt = "%10.5E")
     
+
+def make_specific_cosmology_transfer_function_caller():
+    make_specific_cosmology_transfer_function(identifier="02", h=0.6736, Omega0_b=0.0493, Omega0_cdm=0.2107, n_s=0.9649, sigma8=0.84)
+
     
 def compare_two_transfer_functions():
     file_name_1 = "/share/splinter/ucapwhi/lfi_project/data/euclid_z0_transfer_combined.dat"
@@ -115,8 +126,8 @@ if __name__ == '__main__':
     
     #hello_world()
     #make_amended_euclid_transfer_function()
-    compare_with_euclid()
+    #compare_with_euclid()
     #make_specific_cosmology_transfer_function()
     #compare_two_transfer_functions()
-    
+    make_specific_cosmology_transfer_function_caller()
     

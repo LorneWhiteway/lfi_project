@@ -4,7 +4,7 @@ See https://nbodykit.readthedocs.io/en/latest/index.html for info on nbodykit.
 
 Installation used the instructions at https://nbodykit.readthedocs.io/en/latest/getting-started/install.html#installing-nbodykit-with-anaconda, together with information from the splinter user manual.
 
-To install, I did this:
+To install on splinter, I did this:
 ```
 bash
 eval "$(/share/apps/anaconda/3-2019.07/bin/conda shell.bash hook)"
@@ -16,7 +16,7 @@ conda install matplotlib
 To use, do this:
 ```
 bash
-source /share/splinter/ucapwhi/lfi_project/nbodykit/set_environment.sh
+source ./set_environment.sh
 ```
 
 You should then be able to e.g.

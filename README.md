@@ -101,6 +101,10 @@ For reference (e.g. in case it needs to be repeated), here's how the virtual env
 - `cd env`
 - `pip install --upgrade pip`
 - `pip install healpy`
+- Then for nbodykit: (see https://nbodykit.readthedocs.io/en/latest/getting-started/install.html#installing-nbodykit-with-pip)
+- `pip install cython`
+- `pip install mpi4py`
+- `pip install nbodykit`
 
 ### Information about Wilkes specifically for LW
 
