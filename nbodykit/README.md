@@ -29,7 +29,7 @@ Note that `/home/ucapwhi/.conda` is a symbolic link to `/share/splinter/ucapwhi/
 To use nbodykit, do:
 ```
 bash
-source ./set_environment.sh
+source ./set_environment_splinter.sh
 ```
 
 ## nbodykit on Wilkes3
