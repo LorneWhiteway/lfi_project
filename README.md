@@ -172,10 +172,10 @@ Note that `/home/ucapwhi/.conda` is a symbolic link to `/share/splinter/ucapwhi/
 #### Using nbodykit on splinter
 
 To use nbodykit, do:
-```
-bash
-source ./set_environment_splinter.sh
-```
+- Go to the project directory
+- `bash`
+- `source ./set_environment_splinter_nbodycode.sh`
+
 
 ### nbodykit on Wilkes3
 
