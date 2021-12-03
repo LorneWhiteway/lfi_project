@@ -19,20 +19,22 @@ import sys
 
 # ======================== Start of code for reading control file ========================
 
-def get_float_from_control_file(control_file_name, key):
+
+# Returns a string; caller is then responsible for casting this to the desired type.
+def get_from_control_file(control_file_name, key):
     with open(control_file_name, "r") as f:
         for line in f:
             if key == line.split("#")[0].split("=")[0].strip():
-                return float(line.split("#")[0].split("=")[1].strip())
+                return line.split("#")[0].split("=")[1].strip().strip('\"')
             
     raise SystemError("Could not find key {} in ini file {}".format(key, control_file_name))
 
 
 
-def get_float_from_control_file_test_harness():
-    control_file_name = "/share/splinter/ucapwhi/lfi_project/experiments/v100_foo/control.par"
+def get_from_control_file_test_harness():
+    control_file_name = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/fast/control.par"
     key = "dBoxSize"
-    print(get_float_from_control_file(control_file_name, key))
+    print(float(get_from_control_file(control_file_name, key)))
     
 # ======================== End of code for reading control file ========================
 
@@ -361,13 +363,13 @@ def build_z_values_file(directory):
     
     (s_arr, t_arr, z_arr) = read_one_output_file(input_filename)
     
-    Om0 = get_float_from_control_file(control_file_name, "dOmega0")
+    Om0 = float(get_from_control_file(control_file_name, "dOmega0"))
     cosmo = FlatLambdaCDM(H0=100.0, Om0=Om0)
     
-    box_size = get_float_from_control_file(control_file_name, "dBoxSize")
+    box_size = float(get_from_control_file(control_file_name, "dBoxSize"))
 
     # Prepand step 0 values
-    starting_z = get_float_from_control_file(control_file_name, "dRedFrom")
+    starting_z = float(get_from_control_file(control_file_name, "dRedFrom"))
     s_arr = np.concatenate(([0], s_arr))
     z_arr = np.concatenate(([starting_z], z_arr))
     
@@ -391,21 +393,23 @@ def file_spec_has_files(file_spec):
 # Run this after PKDGRAV3 has finished to do all the postprocessing
 def pkdgrav3_postprocess(directory, do_lightcone_files, do_mollview_images, do_ortho_images, do_z_file, do_status, do_force):
 
-    control_filename = os.path.join(directory, "control.par")
+    control_file_name = os.path.join(directory, "control.par")
     
-    nside = int(get_float_from_control_file(control_filename, "nSideHealpix"))
+    nside = int(get_from_control_file(control_file_name, "nSideHealpix"))
     new_nside = nside
     
     print("Processing {}".format(directory))
     
+    outName = get_from_control_file(control_file_name, "achOutName") # Standard value is 'run'.
     
-    if do_lightcone_files and (do_force or not file_spec_has_files(os.path.join(directory, "run.*.lightcone.npy"))):
-        save_all_lightcone_files_caller_core(os.path.join(directory, "run.*.hpb"), nside, new_nside)
+    
+    if do_lightcone_files and (do_force or not file_spec_has_files(os.path.join(directory, outName + ".*.lightcone.npy"))):
+        save_all_lightcone_files_caller_core(os.path.join(directory, outName + ".*.hpb"), nside, new_nside)
         
-    if do_mollview_images and (do_force or not file_spec_has_files(os.path.join(directory, "run.*.lightcone.mollview.png"))):
+    if do_mollview_images and (do_force or not file_spec_has_files(os.path.join(directory, outName + ".*.lightcone.mollview.png"))):
         save_all_lightcone_image_files(directory, True)
     
-    if do_ortho_images and (do_force or not file_spec_has_files(os.path.join(directory, "run.*.lightcone.orthview.png"))):
+    if do_ortho_images and (do_force or not file_spec_has_files(os.path.join(directory, outName + ".*.lightcone.orthview.png"))):
         save_all_lightcone_image_files(directory, False)
     
     if do_z_file and (do_force or not file_spec_has_files(os.path.join(directory, "z_values.txt"))):
@@ -508,7 +512,7 @@ def compare_two_time_spacings():
     if False:
         plt.show()
     else:
-        num_steps = int(get_float_from_control_file(file_1.replace("z_values.txt", "control.par"), "nSteps"))
+        num_steps = int(get_from_control_file(file_1.replace("z_values.txt", "control.par"), "nSteps"))
         save_file_name = "/share/splinter/ucapwhi/lfi_project/experiments/v100_freqtimeslicing/z_values_comp_{}.png".format(num_steps)
         print("Saving {}...".format(save_file_name))    
         plt.savefig(save_file_name)
@@ -518,8 +522,8 @@ def create_dummy_output_file():
     # create dmmy output files to reserve disk space
     directory = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_probtest"
     control_file_name = directory + "/control.par"
-    nside = int(get_float_from_control_file(control_file_name, "nSideHealpix"))
-    num_steps = int(get_float_from_control_file(control_file_name, "nSteps"))
+    nside = int(get_from_control_file(control_file_name, "nSideHealpix"))
+    num_steps = int(get_from_control_file(control_file_name, "nSteps"))
     
     n_pixels = hp.nside2npix(nside)
     empty_map = np.zeros(n_pixels)
@@ -535,11 +539,15 @@ def create_dummy_output_file():
 # ======================== End of other utilities ========================    
 
 
-# ======================== Start of code for reporting on the status of an 'experiments' directory ========================
+# ======================== Start of code for reporting on the status of directory containing pkdgrav3 output ========================
 
 # Helper functions
+
+# Returns True iff the file exists.
 def report_whether_file_exists(file_description, file_name):
-    print("File {} {} '{}'".format(("exists:" if os.path.isfile(file_name) else "DOES NOT exist: no"), file_description, file_name))
+    file_exists = os.path.isfile(file_name)
+    print("File {} {} '{}'".format(("exists:" if file_exists else "DOES NOT exist: no"), file_description, file_name))
+    return file_exists
     
 # Returns True iff files exist.
 def report_whether_several_files_exist(file_description, filespec):
@@ -571,8 +579,10 @@ def status(directory):
     print("========================================================================")
     print("Status of {} as of {}".format(directory, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
     control_file_name = os.path.abspath(os.path.join(directory, "control.par"))
-    report_whether_file_exists("control file", control_file_name)
-    report_whether_file_exists("log file", os.path.abspath(os.path.join(directory, "run.log")))
+    out_name = ""
+    if report_whether_file_exists("control file", control_file_name):
+        out_name = get_from_control_file(control_file_name, "achOutName") # Typical value is 'run'.
+    report_whether_file_exists("log file", os.path.abspath(os.path.join(directory, out_name + ".log")))
     report_whether_file_exists("output file", os.path.abspath(os.path.join(directory, "output.txt")))
     report_whether_several_files_exist("raw PKDGRAV3 output", os.path.join(directory, "*.hpb*"))
     if report_whether_several_files_exist("full lightcone", os.path.join(directory, "*.npy")):
@@ -594,7 +604,7 @@ if __name__ == '__main__':
     #intersection_of_shell_and_cells()
     #save_all_lightcone_image_files("/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/", True)
     #compare_two_lightcones_by_power_spectra()
-    #get_float_from_control_file_test_harness()
+    get_float_from_control_file_test_harness()
     #compare_two_time_spacings()
     #create_dummy_output_file()
     pass
