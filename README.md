@@ -146,4 +146,57 @@ Here is further information about output format. The slices are sequentially num
 
 ## Transfer functions
 
-See the README file in the `nbodykit` subdirectory for information on creating transfer functions. Transfer functions go in the `data` subdirectory. If you ad a new transfer function then update the README file in the `data` subdirectory.
+pkdgrav3 requires a transfer function (to specify the initial power spectrum). These can be created using the Python module [nbodykit](https://nbodykit.readthedocs.io/en/latest/index.html).
+
+For now, transfer functions go in the `data` subdirectory. If you add a new transfer function then update the README file in the `data` subdirectory. (In the future this will be changed so that the transfer function will be in the same directory as the control file.)
+
+LW is in the process of amending and documenting the (existing) code that creates transfer functions.
+
+### nbodykit on splinter
+
+#### Installing nbodykit on splinter
+
+I used the instructions at https://nbodykit.readthedocs.io/en/latest/getting-started/install.html#installing-nbodykit-with-anaconda, together with information from the splinter user manual.
+
+To install on splinter:
+```
+bash
+eval "$(/share/apps/anaconda/3-2019.07/bin/conda shell.bash hook)"
+conda create --prefix /share/splinter/ucapwhi/lfi_project/nbodykit python=3.7 pip
+conda install -c bccp nbodykit
+conda install matplotlib
+```
+
+Note that `/home/ucapwhi/.conda` is a symbolic link to `/share/splinter/ucapwhi/.conda` - this is to avoid the 2 Gb disk quota in `/home/ucapwhi`.
+
+#### Using nbodykit on splinter
+
+To use nbodykit, do:
+```
+bash
+source ./set_environment_splinter.sh
+```
+
+### nbodykit on Wilkes3
+
+#### Installing nbodykit on Wilkes3
+
+This is included in the instructions (elsewhere in this README) about working with Python on Wilkes3.
+
+#### Using nbodykit on Wilkes3
+
+- Go to the project directory
+- `module load python/3.8`
+- `source env/bin/activate`
+
+
+### Example code
+
+If nbodykit is installed properly then the following Python3 code should work:
+```
+from nbodykit.lab import *
+k = 0.00001
+t = cosmology.power.transfers.CLASS(cosmology.Planck15,0.0)(k)
+print(t) # Should be 1.0
+```
+
