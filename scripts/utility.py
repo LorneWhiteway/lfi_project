@@ -80,7 +80,7 @@ def basefilename_list_from_filespec(filespec):
 
 
 # Example filespec: "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/run.*.hpb"
-def save_all_lightcone_files_caller_core(filespec, nside, delete_hpb_files_when_done):
+def save_all_lightcone_files(filespec, nside, delete_hpb_files_when_done):
 
     # basefilename_list_from_filespec returns a sorted list, so we are certainly stepping through the files in the correct order.
     
@@ -410,7 +410,7 @@ def pkdgrav3_postprocess(directory, do_lightcone_files, do_mollview_images, do_o
     
     
     if do_lightcone_files and (do_force or not file_spec_has_files(os.path.join(directory, outName + ".*.lightcone.npy"))):
-        save_all_lightcone_files_caller_core(os.path.join(directory, outName + ".*.hpb"), nside, False)
+        save_all_lightcone_files(os.path.join(directory, outName + ".*.hpb"), nside, False)
         
     if do_mollview_images and (do_force or not file_spec_has_files(os.path.join(directory, outName + ".*.lightcone.mollview.png"))):
         save_all_lightcone_image_files(directory, True)
@@ -610,7 +610,7 @@ if __name__ == '__main__':
     #intersection_of_shell_and_cells()
     #save_all_lightcone_image_files("/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/", True)
     #compare_two_lightcones_by_power_spectra()
-    get_float_from_control_file_test_harness()
+    #get_float_from_control_file_test_harness()
     #compare_two_time_spacings()
     #create_dummy_output_file()
     pass
