@@ -80,29 +80,36 @@ def basefilename_list_from_filespec(filespec):
 
 
 # Example filespec: "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/run.*.hpb"
-def save_all_lightcone_files_caller_core(filespec, nside, new_nside = None, delete_hpb_files_when_done = None, save_image_files = None):
+def save_all_lightcone_files_caller_core(filespec, nside, delete_hpb_files_when_done):
 
-    if new_nside is None:
-        new_nside = nside
-        
-    if delete_hpb_files_when_done is None:
-        delete_hpb_files_when_done = False
-        
-    if save_image_files is None:
-        save_image_files = False
-
+    # basefilename_list_from_filespec returns a sorted list, so we are certainly stepping through the files in the correct order.
+    
+    # Somewhat unfortunately, pkdgrav3 appears to create the first (i.e most distant) lightcone for the furthest tomographic
+    # bin for which the _near_ boundary is less than or equal to 3*boxlength. But for this bin the _far_ boundary is more than
+    # 3*boxlength, so this lightcone will be partially outside the 3*boxlength box. It will therefore be incomplete, and must
+    # not be used. The variable have_already_encountered_first_populated_lightcone is part of the logic to ensure this.
+    have_already_encountered_first_populated_lightcone = False
+    
+    
     for b in basefilename_list_from_filespec(filespec):
+        
         map_t = one_healpix_map_from_basefilename(b, nside)
+        
+        # Here is where you could change the NSIDE, if desired.
+        new_nside = nside
         if new_nside != nside:
             map_t = hp.ud_grade(map_t, new_nside)
+        
         output_file_name = b.replace(".hpb", ".lightcone.npy")
         max_pixel_value = np.max(map_t)
         if max_pixel_value > 0:
-            print("Writing file {}...".format(output_file_name))
-            # We write in uint16 format if possible so as to get smaller files.
-            np.save(output_file_name, map_t.astype(np.uint16) if (max_pixel_value < 65535) else map_t)
-            if save_image_files:
-                plot_lightcone_files([output_file_name,], do_show=False, do_save=True, mollview_format=True)
+            if have_already_encountered_first_populated_lightcone:
+                print("Writing file {}...".format(output_file_name))
+                # We write in uint16 format if possible so as to get smaller files.
+                np.save(output_file_name, map_t.astype(np.uint16) if (max_pixel_value < 65535) else map_t)
+            else:
+                print("Not writing file {} as it would be incomplete.".format(output_file_name))
+                have_already_encountered_first_populated_lightcone = True
         else:
             print("Not writing file {} as it would have no objects.".format(output_file_name))
             
@@ -396,7 +403,6 @@ def pkdgrav3_postprocess(directory, do_lightcone_files, do_mollview_images, do_o
     control_file_name = os.path.join(directory, "control.par")
     
     nside = int(get_from_control_file(control_file_name, "nSideHealpix"))
-    new_nside = nside
     
     print("Processing {}".format(directory))
     
@@ -404,7 +410,7 @@ def pkdgrav3_postprocess(directory, do_lightcone_files, do_mollview_images, do_o
     
     
     if do_lightcone_files and (do_force or not file_spec_has_files(os.path.join(directory, outName + ".*.lightcone.npy"))):
-        save_all_lightcone_files_caller_core(os.path.join(directory, outName + ".*.hpb"), nside, new_nside)
+        save_all_lightcone_files_caller_core(os.path.join(directory, outName + ".*.hpb"), nside, False)
         
     if do_mollview_images and (do_force or not file_spec_has_files(os.path.join(directory, outName + ".*.lightcone.mollview.png"))):
         save_all_lightcone_image_files(directory, True)
