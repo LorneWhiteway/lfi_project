@@ -27,6 +27,7 @@ def show_help():
     print(" in order to create derived files such as full lightcones and images.")
     print("Options:")
     print("-l or --lightcone  create full lightcone files")
+    print("-d or --delete     delete the raw, partial lightcone files")
     print("-m or --mollview   create image files in mollview format")
     print("-o or --orthview   create image files in ortho format")
     print("-z or --zfile      create a text file specifying the redshift ranges for the lightcones")
@@ -59,7 +60,8 @@ if __name__ == '__main__':
         do_all = item_is_in_command_line(command_line_array, "-a", "--all")
         do_mollview_images = do_all or item_is_in_command_line(command_line_array, "-m", "--mollview")
         do_ortho_images = do_all or item_is_in_command_line(command_line_array, "-o", "--orthview")
-        do_lightcone_files = do_mollview_images or do_ortho_images or do_all or item_is_in_command_line(command_line_array, "-l", "--lightcones")
+        do_delete = do_all or item_is_in_command_line(command_line_array, "-d", "--delete")
+        do_lightcone_files = do_mollview_images or do_ortho_images or do_delete or do_all or item_is_in_command_line(command_line_array, "-l", "--lightcones")
         do_z_file = do_all or item_is_in_command_line(command_line_array, "-z", "--zfile")
         do_status = do_all or item_is_in_command_line(command_line_array, "-s", "--status")
         do_force = item_is_in_command_line(command_line_array, "-f", "--force")
@@ -67,7 +69,7 @@ if __name__ == '__main__':
         directory = command_line_array[-1]
         
             
-        utility.pkdgrav3_postprocess(directory, do_lightcone_files, do_mollview_images, do_ortho_images, do_z_file, do_status, do_force)
+        utility.pkdgrav3_postprocess(directory, do_lightcone_files, do_delete, do_mollview_images, do_ortho_images, do_z_file, do_status, do_force)
         
     except Exception as err:
         print(traceback.format_exc())

@@ -129,6 +129,7 @@ pkdgrav3_postprocess.py [options] directory
 | Options | Meaning |
 | --- | --- |
 | -l or --lightcone | create full lightcone files |
+| -d or --delete | delete the raw, partial lightcone files (and any _stub_ simulation box outputs) |
 | -m or --mollview | create image files in mollview format |
 | -o or --orthview | create image files in ortho format |
 | -z or --zfile | create a text file specifying the redshift ranges for the lightcones |
@@ -142,11 +143,13 @@ Here is further information about output format. The slices are sequentially num
 | --- | --- | --- |
 | Lightcone files | run.XXXXX.lightcone.npy | Numpy file (i.e. can be opened with [np.load](https://numpy.org/doc/stable/reference/generated/numpy.load.html)) containing healpix array (in the default ordering i.e. ring) of object counts per pixel. The NSIDE is as specified when PKDGRAV3 was run. The data-type used in the files is [uint16](https://numpy.org/doc/stable/reference/arrays.scalars.html#sized-aliases) (unless the values are too large to allow this). |
 | Image files | run.XXXXX.lightcone.mollview.png or run.XXXXX.lightcone.orthview.png | Image file (in png format) showing the lightcone. The plotted quantity is the base-10 logarithm of the 'normalised object count' (by 'normalised object count' we mean the pixel object count divided by the average object count across all pixels). The plots are in [mollview](https://healpy.readthedocs.io/en/latest/generated/healpy.visufunc.mollview.html) or [orthview](https://healpy.readthedocs.io/en/latest/generated/healpy.visufunc.orthview.html) format as requested. |
-| Redshift ranges | z_values.txt | Text file describing the redshift ranges for the tomographic slices. The file has one header row; refer to this for details of the columns in the file. Each slice is described by the redshift, and by the comoving distance (calculated using a cosmology with the same matter density as that used in the simulation, and quoted both in Mpc/h and in box-length units), for the far endpoint and for the near endpoint of the slice; the width of the slice (in the same terms) is also given. | 
+| Redshift ranges | z_values.txt | Text file describing the redshift ranges for the tomographic slices. The file has one header row; refer to this for details of the columns in the file. Each slice is described by the redshift, and by the comoving distance (calculated using a cosmology with the same matter density as that used in the simulation, and quoted both in Mpc/h and in box-length units), for the far endpoint and for the near endpoint of the slice; the width of the slice (in the same terms) is also given. |
+
+The first tomographic slice of the lightcone that pkdgrav3 populates is the one whose _near_ boundary is within the superbox (defined above); this slice has a _far_ boundary that is still outside the superbox and so this slice is only partially filled. The script therefore does not create a full lightcone file for this slice.
 
 ## Transfer functions
 
-pkdgrav3 requires a transfer function (to specify the initial power spectrum). These can be created using the Python module [nbodykit](https://nbodykit.readthedocs.io/en/latest/index.html).
+pkdgrav3 requires an input file containing a transfer function (to specify the initial power spectrum). Such files can be created using the Python module [nbodykit](https://nbodykit.readthedocs.io/en/latest/index.html).
 
 For now, transfer functions go in the `data` subdirectory. If you add a new transfer function then update the README file in the `data` subdirectory. (In the future this will be changed so that the transfer function will be in the same directory as the control file.)
 

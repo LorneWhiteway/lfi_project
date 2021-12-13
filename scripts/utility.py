@@ -82,8 +82,6 @@ def basefilename_list_from_filespec(filespec):
 # Example filespec: "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/run.*.hpb"
 def save_all_lightcone_files(filespec, nside, delete_hpb_files_when_done):
 
-    # basefilename_list_from_filespec returns a sorted list, so we are certainly stepping through the files in the correct order.
-    
     # Somewhat unfortunately, pkdgrav3 appears to create the first (i.e most distant) lightcone for the furthest tomographic
     # bin for which the _near_ boundary is less than or equal to 3*boxlength. But for this bin the _far_ boundary is more than
     # 3*boxlength, so this lightcone will be partially outside the 3*boxlength box. It will therefore be incomplete, and must
@@ -91,7 +89,10 @@ def save_all_lightcone_files(filespec, nside, delete_hpb_files_when_done):
     have_already_encountered_first_populated_lightcone = False
     
     
+    # basefilename_list_from_filespec returns a sorted list, so we are certainly stepping through the files in the correct order.
     for b in basefilename_list_from_filespec(filespec):
+    
+        # b will be something like '.../run.00001.hpb'
         
         map_t = one_healpix_map_from_basefilename(b, nside)
         
@@ -119,6 +120,14 @@ def save_all_lightcone_files(filespec, nside, delete_hpb_files_when_done):
             for f in glob.glob(filespec_to_delete):
                 with contextlib.suppress(FileNotFoundError):
                     os.remove(f)
+            # For tidiness also delete the simulation box file (with name such as '.../run.00001') - 
+            # provided the file has size 32 bytes (i.e. is a stub file).
+            simulation_box_file_name = b[:-4]
+            with contextlib.suppress(FileNotFoundError):
+                if os.stat(simulation_box_file_name).st_size == 32:
+                    print("Deleting {}".format(simulation_box_file_name))
+                    os.remove(simulation_box_file_name)
+                
                     
     
 def plot_lightcone_files(list_of_npy_filenames, do_show = True, do_save = False, mollview_format = None):
@@ -397,8 +406,13 @@ def file_spec_has_files(file_spec):
     return bool(glob.glob(file_spec))
 
 
-# Run this after PKDGRAV3 has finished to do all the postprocessing
-def pkdgrav3_postprocess(directory, do_lightcone_files, do_mollview_images, do_ortho_images, do_z_file, do_status, do_force):
+# Run this after PKDGRAV3 has finished to do all the postprocessing.
+# do_delete means that the raw, partial lightcone files (output by PKDGRAV) will be deleted.
+# If do_delete is set then do_lightcone_files must be set as well (assertion failure if not) - this prevents this program from deleting
+# raw, partial lightcone files that have not yet been processed into full lightcone files.
+def pkdgrav3_postprocess(directory, do_lightcone_files, do_delete, do_mollview_images, do_ortho_images, do_z_file, do_status, do_force):
+
+    assert(do_lightcone_files or not do_delete)
 
     control_file_name = os.path.join(directory, "control.par")
     
@@ -410,7 +424,7 @@ def pkdgrav3_postprocess(directory, do_lightcone_files, do_mollview_images, do_o
     
     
     if do_lightcone_files and (do_force or not file_spec_has_files(os.path.join(directory, outName + ".*.lightcone.npy"))):
-        save_all_lightcone_files(os.path.join(directory, outName + ".*.hpb"), nside, False)
+        save_all_lightcone_files(os.path.join(directory, outName + ".*.hpb"), nside, do_delete)
         
     if do_mollview_images and (do_force or not file_spec_has_files(os.path.join(directory, outName + ".*.lightcone.mollview.png"))):
         save_all_lightcone_image_files(directory, True)
