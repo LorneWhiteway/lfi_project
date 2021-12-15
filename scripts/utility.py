@@ -217,8 +217,7 @@ def read_one_box(file_name):
 
 
 def read_one_box_example():
-    #file_name = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1024_4096_900/run.00071"
-    file_name = "/share/splinter/ucapwhi/lfi_project/experiments/simple_64_64/run.00071"
+    file_name = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/fast/run.00071"
     print("Reading file {}...".format(file_name))
     print(datetime.datetime.now().time())
     d = read_one_box(file_name)
@@ -245,7 +244,7 @@ def read_one_box_example():
         fig.colorbar(h[3], ax=ax)
 
     ax.set_aspect('equal')
-    plt.savefig("/share/splinter/ucapwhi/lfi_project/scripts/foo.png")
+    plt.savefig("/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/fast/foo.png")
     #print(d_x.shape[0])
     #print(d_x[z_filter].shape[0])
     

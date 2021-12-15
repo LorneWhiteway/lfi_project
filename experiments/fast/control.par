@@ -15,7 +15,7 @@ iSeed           = 314159265  # Random seed
 dRedFrom        = 49         # Starting redshift
 
 # Cosmology
-achTfFile       = "../../data/euclid_z0_transfer_combined.dat"
+achTfFile       = "./euclid_z0_transfer_combined.dat"
 h               = 0.67
 dOmega0         = 0.32
 dLambda         = 0.68
