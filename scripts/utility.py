@@ -16,6 +16,8 @@ import datetime
 import os
 import contextlib
 import sys
+from nbodykit.lab import *
+
 
 # ======================== Start of code for reading control file ========================
 
@@ -37,7 +39,6 @@ def get_from_control_file_test_harness():
     print(float(get_from_control_file(control_file_name, key)))
     
 # ======================== End of code for reading control file ========================
-
 
 
 
@@ -615,6 +616,51 @@ def status(directory):
 
 
 
+# ======================== Start of code for handling transfer functions ========================
+
+
+def print_cosmology(cosmo, cosmo_name):
+    print("======= Parameters for {} =======".format(cosmo_name))
+    cosmo_dict = dict(cosmo)
+    for key in cosmo_dict:
+        print("{} = {}".format(key, cosmo_dict[key]))
+    print("sigma8 = {}".format(cosmo.sigma8))
+    
+    
+    
+def trim_rows_containing_nan(a):
+    # Credit: https://note.nkmk.me/en/python-numpy-nan-remove/
+    return a[~np.isnan(a).any(axis=1), :]
+    
+
+def make_specific_cosmology_transfer_function(identifier, h, Omega0_b, Omega0_cdm, n_s, sigma8):
+
+    # Load an old transfer function (just to get a list of wavenumbers).
+    file_name_orig = "../data/euclid_z0_transfer_combined.dat"
+    d_orig = np.loadtxt(file_name_orig, delimiter = " ")
+    k = d_orig[:,0]
+    
+    new_name = "specific_cosmology_{}".format(identifier)
+    new_cosmo = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=Omega0_cdm, n_s=n_s).match(sigma8=sigma8)
+    transfer_function = np.column_stack([k, cosmology.power.transfers.CLASS(new_cosmo, 0.0)(k)])
+    transfer_function = trim_rows_containing_nan(transfer_function)
+    
+    file_name_new = "../data/" + new_name + "_transfer_function.dat"
+    print("Saved transfer function in {}".format(file_name_new))
+    print("Consider updating the README file with the following specifications for this cosmology.")
+    print_cosmology(new_cosmo, new_name)
+    np.savetxt(file_name_new, transfer_function, delimiter = " ", fmt = "%10.5E")
+    
+
+def make_specific_cosmology_transfer_function_caller():
+    make_specific_cosmology_transfer_function(identifier="foo", h=0.6736, Omega0_b=0.0493, Omega0_cdm=0.2107, n_s=0.9649, sigma8=0.84)
+    
+    
+# ======================== End of code for handling transfer functions ========================
+
+
+
+
 if __name__ == '__main__':
     
     #show_one_shell_example()
@@ -626,6 +672,7 @@ if __name__ == '__main__':
     #get_float_from_control_file_test_harness()
     #compare_two_time_spacings()
     #create_dummy_output_file()
+    make_specific_cosmology_transfer_function_caller()
     pass
     
     
