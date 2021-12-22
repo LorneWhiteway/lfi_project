@@ -1627,6 +1627,9 @@ int msrInitialize(MSR *pmsr,MDL mdl,void *pst,int argc,char **argv) {
 	    }
 	if (!validateParameters(mdl,msr->csm,msr->prm,&msr->param)) _msrExit(msr,1);
 	}
+	
+	
+	
 
     msr->param.dTuFac = msr->param.dGasConst/(msr->param.dConstGamma - 1)/
 		msr->param.dMeanMolWeight;
@@ -2306,7 +2309,7 @@ void msrAllNodeWrite(MSR msr, const char *pszFileName, double dTime, double dvFa
     in.nProcessors = nProcessors;
     // Change made by LW - suppress writing snapshot file (except perhaps in specific cases).
 	// The next line shows what the code needs to look like to allow writing of the snapshot file in certain cases.
-	if (0 && strstr(pszFileName, ".00160") != NULL) {
+	if (strstr(pszFileName, ".00001") != NULL) {
         pstWrite(msr->pst,&in,sizeof(in),NULL,0); // This will write the snapshot file.
     }
     else {
