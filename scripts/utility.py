@@ -17,6 +17,8 @@ import os
 import contextlib
 import sys
 from nbodykit.lab import *
+from shutil import copyfile
+import math
 
 
 # ======================== Start of code for reading control file ========================
@@ -619,47 +621,172 @@ def status(directory):
 # ======================== Start of code for handling transfer functions ========================
 
 
-def print_cosmology(cosmo, cosmo_name):
-    print("======= Parameters for {} =======".format(cosmo_name))
+def cosmology_summary(cosmo):
+    summary = []
     cosmo_dict = dict(cosmo)
     for key in cosmo_dict:
-        print("{} = {}".format(key, cosmo_dict[key]))
-    print("sigma8 = {}".format(cosmo.sigma8))
-    
+        summary.append("{} = {}".format(key, cosmo_dict[key]))
+    summary.append("sigma8 = {}".format(cosmo.sigma8))
+    return summary
     
     
 def trim_rows_containing_nan(a):
     # Credit: https://note.nkmk.me/en/python-numpy-nan-remove/
     return a[~np.isnan(a).any(axis=1), :]
     
-
-def make_specific_cosmology_transfer_function(identifier, h, Omega0_b, Omega0_cdm, n_s, sigma8):
-
-    # Load an old transfer function (just to get a list of wavenumbers).
-    file_name_orig = "../data/euclid_z0_transfer_combined.dat"
-    d_orig = np.loadtxt(file_name_orig, delimiter = " ")
-    k = d_orig[:,0]
     
-    new_name = "specific_cosmology_{}".format(identifier)
-    new_cosmo = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=Omega0_cdm, n_s=n_s).match(sigma8=sigma8)
-    transfer_function = np.column_stack([k, cosmology.power.transfers.CLASS(new_cosmo, 0.0)(k)])
+# This set of values was obtained from /data/euclid_z0_transfer_combined.dat    
+def set_of_wavenumbers():
+    return np.array([ \
+    1.05433E-05,1.16423E-05,1.28559E-05,1.41959E-05,1.56756E-05,1.73096E-05,1.91139E-05,2.11063E-05,
+    2.33063E-05,2.57357E-05,2.84183E-05,3.13805E-05,3.46515E-05,3.82634E-05,4.22518E-05,4.66560E-05,
+    5.15193E-05,5.68894E-05,6.28194E-05,6.93674E-05,7.65980E-05,8.45823E-05,9.33988E-05,1.03134E-04,
+    1.13885E-04,1.25756E-04,1.38864E-04,1.53339E-04,1.69322E-04,1.86972E-04,2.06461E-04,2.27981E-04,
+    2.51745E-04,2.77986E-04,3.06963E-04,3.38959E-04,3.74291E-04,4.13306E-04,4.56387E-04,5.03959E-04,
+    5.56490E-04,6.14497E-04,6.78549E-04,7.49279E-04,8.27381E-04,9.13624E-04,1.00886E-03,1.11402E-03,
+    1.23014E-03,1.35836E-03,1.49995E-03,1.65630E-03,1.82895E-03,2.01959E-03,2.23011E-03,2.46256E-03,
+    2.71925E-03,3.00270E-03,3.31569E-03,3.66130E-03,4.04294E-03,4.46436E-03,4.92971E-03,5.44357E-03,
+    6.01098E-03,6.63755E-03,7.32942E-03,8.09341E-03,8.93704E-03,9.86860E-03,1.08973E-02,1.20332E-02,
+    1.32874E-02,1.46725E-02,1.62019E-02,1.78907E-02,1.97556E-02,2.18148E-02,2.40887E-02,2.65996E-02,
+    2.93723E-02,3.24339E-02,3.58147E-02,3.95479E-02,4.36702E-02,4.80373E-02,5.24043E-02,5.67713E-02,
+    6.11383E-02,6.55053E-02,6.98724E-02,7.42394E-02,7.86064E-02,8.29734E-02,8.73405E-02,9.17075E-02,
+    9.71317E-02,1.02556E-01,1.07980E-01,1.13404E-01,1.18828E-01,1.24253E-01,1.29677E-01,1.35101E-01,
+    1.40525E-01,1.45949E-01,1.51373E-01,1.56798E-01,1.62222E-01,1.67646E-01,1.73070E-01,1.78494E-01,
+    1.83918E-01,1.89343E-01,1.94767E-01,2.00191E-01,2.05615E-01,2.11039E-01,2.16463E-01,2.21888E-01,
+    2.27312E-01,2.32736E-01,2.38160E-01,2.43584E-01,2.49008E-01,2.54433E-01,2.59857E-01,2.65281E-01,
+    2.70705E-01,2.76129E-01,2.81553E-01,2.86978E-01,2.92402E-01,2.97826E-01,3.03250E-01,3.08674E-01,
+    3.14098E-01,3.19523E-01,3.24947E-01,3.30371E-01,3.35795E-01,3.41219E-01,3.46643E-01,3.52068E-01,
+    3.57492E-01,3.62916E-01,3.68340E-01,3.73764E-01,3.79189E-01,3.84613E-01,3.90037E-01,3.95461E-01,
+    4.00885E-01,4.06309E-01,4.11734E-01,4.17158E-01,4.22582E-01,4.28006E-01,4.33430E-01,4.38854E-01,
+    4.44279E-01,4.49703E-01,4.55127E-01,4.60551E-01,4.65975E-01,4.71399E-01,4.76824E-01,4.82248E-01,
+    4.87672E-01,4.93096E-01,4.98520E-01,5.03944E-01,5.09369E-01,5.14793E-01,5.20217E-01,5.25641E-01,
+    5.31065E-01,5.36489E-01,5.41914E-01,5.47338E-01,5.52762E-01,5.58186E-01,5.63610E-01,5.69034E-01,
+    5.74459E-01,5.79883E-01,6.04325E-01,6.40940E-01,6.79774E-01,9.48700E-01,1.32402E+00,1.84782E+00,
+    2.57884E+00,3.59905E+00,5.02288E+00,7.01000E+00,9.78324E+00,1.36536E+01,1.90552E+01,2.65936E+01,
+    3.71144E+01,5.17973E+01,7.22889E+01,1.00887E+02,1.40800E+02,1.96502E+02,2.74240E+02,3.82733E+02,
+    5.34147E+02,7.45462E+02,1.04038E+03,1.45196E+03,2.02638E+03,2.82804E+03,3.94684E+03,5.50826E+03,
+    7.68740E+03,1.07286E+04])
+    
+   
+def make_specific_cosmology_transfer_function(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s):
+
+    transfer_function_file_name = os.path.join(directory, "transfer_function.txt")
+    cosmology_parameters_file_name = os.path.join(directory, "transfer_function_cosmology.txt")
+
+    k = set_of_wavenumbers()
+    cosmology_object = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=(Omega0_m-Omega0_b), w0_fld=w, n_s=n_s).match(sigma8=sigma8)
+    transfer_function = np.column_stack([k, cosmology.power.transfers.CLASS(cosmology_object, 0.0)(k)])
     transfer_function = trim_rows_containing_nan(transfer_function)
+    np.savetxt(transfer_function_file_name, transfer_function, delimiter = " ", fmt = "%10.5E")
+    np.savetxt(cosmology_parameters_file_name, cosmology_summary(cosmology_object), fmt = '%s')
     
-    file_name_new = "../data/" + new_name + "_transfer_function.dat"
-    print("Saved transfer function in {}".format(file_name_new))
-    print("Consider updating the README file with the following specifications for this cosmology.")
-    print_cosmology(new_cosmo, new_name)
-    np.savetxt(file_name_new, transfer_function, delimiter = " ", fmt = "%10.5E")
-    
+    print("Saved transfer function in {}".format(transfer_function_file_name))
+    print("Parameters:")
+    for line in cosmology_summary(cosmology_object):
+        print(line)
+
 
 def make_specific_cosmology_transfer_function_caller():
-    make_specific_cosmology_transfer_function(identifier="foo", h=0.6736, Omega0_b=0.0493, Omega0_cdm=0.2107, n_s=0.9649, sigma8=0.84)
+    make_specific_cosmology_transfer_function("/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs/run002",
+        Omega0_m = 0.249628758416763685,
+        sigma8 = 0.950496160083634467,
+        w = -0.792417404234305733,
+        Omega0_b = 0.043508831007317443,
+        h = 0.716547375449984592,
+        n_s = 0.951311068780816615)
+    
+    
     
     
 # ======================== End of code for handling transfer functions ========================
 
 
+# ======================== Start of code for creating input files for multiple runs ========================
 
+
+# Returns the name of the new directory
+def make_run_directory_if_necessary(base_directory, run_num):
+    dir_name = os.path.join(base_directory, "run" + str(run_num).zfill(3))
+    os.makedirs(dir_name, exist_ok = True)
+    return dir_name
+    
+    
+def change_one_value_in_ini_file(file_name, key, new_value):
+    list_of_lines = []
+    
+    with open(file_name, 'r') as infile:
+        for line in infile:
+            if line.find(key) == 0:
+                new_line = key + new_value + "\n"
+                list_of_lines.append(new_line)
+            else:
+                list_of_lines.append(line)
+            
+    with open(file_name, 'w') as outfile:
+        for line in list_of_lines:
+            outfile.write(line)
+    
+    
+
+
+
+def create_input_files_for_multiple_runs():
+    cosmo_params_for_all_runs_file_name = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs/params_run_1.txt"
+    cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',')
+    num_runs = cosmo_params_for_all_runs.shape[0]
+    
+    base_directory = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs"
+    scripts_directory = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/scripts"
+    job_script_file_name = 'cuda_job_script_wilkes'
+    
+    
+    for run_num_zero_based in range(num_runs):
+        run_num_one_based = run_num_zero_based + 1
+        
+        
+        if run_num_zero_based < 1:
+        
+            print("{} of {}".format(run_num_one_based, num_runs))
+            
+            this_run_directory = make_run_directory_if_necessary(base_directory, run_num_one_based)
+            
+            original_job_script_file_name = os.path.join(scripts_directory, job_script_file_name)
+            this_job_script_file_name = os.path.join(this_run_directory, job_script_file_name)
+            
+            copyfile(original_job_script_file_name, this_job_script_file_name)
+            
+            change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', '35:59:00')
+            
+            original_control_file_name = os.path.join(base_directory, "control.par")
+            this_control_file_name = os.path.join(this_run_directory, "control.par")
+            
+            copyfile(original_control_file_name, this_control_file_name)
+            
+            change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./transfer_function.txt"')
+            change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 0]))
+            change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 1]))
+            acos_w_string = "2.0*math.cos({})  # {}".format(math.acos(cosmo_params_for_all_runs[run_num_zero_based, 2] / 2.0), cosmo_params_for_all_runs[run_num_zero_based, 2])
+            change_one_value_in_ini_file(this_control_file_name, 'w0              = ', acos_w_string)
+            change_one_value_in_ini_file(this_control_file_name, 'h               = ', str(cosmo_params_for_all_runs[run_num_zero_based, 4]))
+            change_one_value_in_ini_file(this_control_file_name, 'dSpectral       = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
+            
+            change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based) + "          # Random seed")
+            
+            change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "1283       # Mpc/h")
+            change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1250       # Simulation has nGrid^3 particles")
+            change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "2048 # NSide for output lightcone healpix maps.")
+            
+            make_specific_cosmology_transfer_function(this_run_directory,
+                Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
+                sigma8 = cosmo_params_for_all_runs[run_num_zero_based, 1],
+                w = cosmo_params_for_all_runs[run_num_zero_based, 2],
+                Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 3],
+                h = cosmo_params_for_all_runs[run_num_zero_based, 4],
+                n_s = cosmo_params_for_all_runs[run_num_zero_based, 5])
+                
+    
+
+# ======================== End of code for creating input files for multiple runs ========================
 
 if __name__ == '__main__':
     
@@ -672,7 +799,8 @@ if __name__ == '__main__':
     #get_float_from_control_file_test_harness()
     #compare_two_time_spacings()
     #create_dummy_output_file()
-    make_specific_cosmology_transfer_function_caller()
+    #make_specific_cosmology_transfer_function_caller()
+    create_input_files_for_multiple_runs()
     pass
     
     
