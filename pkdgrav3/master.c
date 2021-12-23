@@ -2309,7 +2309,7 @@ void msrAllNodeWrite(MSR msr, const char *pszFileName, double dTime, double dvFa
     in.nProcessors = nProcessors;
     // Change made by LW - suppress writing snapshot file (except perhaps in specific cases).
 	// The next line shows what the code needs to look like to allow writing of the snapshot file in certain cases.
-	if (strstr(pszFileName, ".00001") != NULL) {
+	if (0 && strstr(pszFileName, ".00001") != NULL) {
         pstWrite(msr->pst,&in,sizeof(in),NULL,0); // This will write the snapshot file.
     }
     else {
