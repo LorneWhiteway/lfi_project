@@ -680,10 +680,11 @@ def make_specific_cosmology_transfer_function(directory, Omega0_m, sigma8, w, Om
     np.savetxt(transfer_function_file_name, transfer_function, delimiter = " ", fmt = "%10.5E")
     np.savetxt(cosmology_parameters_file_name, cosmology_summary(cosmology_object), fmt = '%s')
     
-    print("Saved transfer function in {}".format(transfer_function_file_name))
-    print("Parameters:")
-    for line in cosmology_summary(cosmology_object):
-        print(line)
+    if False:
+        print("Saved transfer function in {}".format(transfer_function_file_name))
+        print("Parameters:")
+        for line in cosmology_summary(cosmology_object):
+            print(line)
 
 
 def make_specific_cosmology_transfer_function_caller():
@@ -704,67 +705,83 @@ def make_specific_cosmology_transfer_function_caller():
 # ======================== Start of code for creating input files for multiple runs ========================
 
 
-# Returns the name of the new directory
-def make_run_directory_if_necessary(base_directory, run_num):
-    dir_name = os.path.join(base_directory, "run" + str(run_num).zfill(3))
-    os.makedirs(dir_name, exist_ok = True)
-    return dir_name
-    
     
 def change_one_value_in_ini_file(file_name, key, new_value):
     list_of_lines = []
     
+    key_was_found = False
     with open(file_name, 'r') as infile:
         for line in infile:
             if line.find(key) == 0:
                 new_line = key + new_value + "\n"
                 list_of_lines.append(new_line)
+                key_was_found = True
             else:
                 list_of_lines.append(line)
             
+    if not key_was_found:
+        raise RuntimeError("Key {} not found in {}".format(key, file_name))
+    
     with open(file_name, 'w') as outfile:
         for line in list_of_lines:
             outfile.write(line)
     
-    
 
+def project_directory():
+    return "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/"
+    
+def run_directory_name(runs_directory, run_num):
+    return os.path.join(runs_directory, "run" + str(run_num).zfill(3))
+
+
+def run_program(program_name, command_line):
+    args = [program_name]
+    args.extend(command_line.split())
+    subprocess.run(args)
 
 
 def create_input_files_for_multiple_runs():
-    cosmo_params_for_all_runs_file_name = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs/params_run_1.txt"
+
+    runs_directory = os.path.join(project_directory(), "runs")
+    scripts_directory = os.path.join(project_directory(), "scripts")
+    cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, "params_run_1.txt")
     cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',')
     num_runs = cosmo_params_for_all_runs.shape[0]
     
-    base_directory = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs"
-    scripts_directory = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/scripts"
-    job_script_file_name = 'cuda_job_script_wilkes'
+    job_script_file_name_no_path = 'cuda_job_script_wilkes'
+    original_job_script_file_name = os.path.join(scripts_directory, job_script_file_name_no_path)
+    
+    control_file_name_no_path = 'control.par'
+    original_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
     
     
     for run_num_zero_based in range(num_runs):
         run_num_one_based = run_num_zero_based + 1
         
         
-        if run_num_zero_based < 1:
+        if (run_num_one_based == 10):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
-            this_run_directory = make_run_directory_if_necessary(base_directory, run_num_one_based)
+            this_run_directory = run_directory_name(runs_directory, run_num_one_based)
+            this_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path)
+            this_control_file_name = os.path.join(this_run_directory, control_file_name_no_path)
             
-            original_job_script_file_name = os.path.join(scripts_directory, job_script_file_name)
-            this_job_script_file_name = os.path.join(this_run_directory, job_script_file_name)
             
+        
+            # Make directory
+            os.makedirs(this_run_directory, exist_ok = True)
+            
+            # Job script
             copyfile(original_job_script_file_name, this_job_script_file_name)
-            
             change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', '35:59:00')
             
-            original_control_file_name = os.path.join(base_directory, "control.par")
-            this_control_file_name = os.path.join(this_run_directory, "control.par")
-            
+            # Control file
             copyfile(original_control_file_name, this_control_file_name)
-            
             change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./transfer_function.txt"')
             change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 0]))
             change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 1]))
+            # Work around pkdgrav3 ini file parsing bug - doesn't like negative numbers.
             acos_w_string = "2.0*math.cos({})  # {}".format(math.acos(cosmo_params_for_all_runs[run_num_zero_based, 2] / 2.0), cosmo_params_for_all_runs[run_num_zero_based, 2])
             change_one_value_in_ini_file(this_control_file_name, 'w0              = ', acos_w_string)
             change_one_value_in_ini_file(this_control_file_name, 'h               = ', str(cosmo_params_for_all_runs[run_num_zero_based, 4]))
@@ -776,6 +793,7 @@ def create_input_files_for_multiple_runs():
             change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1250       # Simulation has nGrid^3 particles")
             change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "2048 # NSide for output lightcone healpix maps.")
             
+            # Transfer function
             make_specific_cosmology_transfer_function(this_run_directory,
                 Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
                 sigma8 = cosmo_params_for_all_runs[run_num_zero_based, 1],
@@ -783,8 +801,11 @@ def create_input_files_for_multiple_runs():
                 Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 3],
                 h = cosmo_params_for_all_runs[run_num_zero_based, 4],
                 n_s = cosmo_params_for_all_runs[run_num_zero_based, 5])
-                
-    
+
+
+
+
+
 
 # ======================== End of code for creating input files for multiple runs ========================
 
@@ -801,6 +822,8 @@ if __name__ == '__main__':
     #create_dummy_output_file()
     #make_specific_cosmology_transfer_function_caller()
     create_input_files_for_multiple_runs()
+    
+    
     pass
     
     
