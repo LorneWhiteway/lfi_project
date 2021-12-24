@@ -730,8 +730,8 @@ def change_one_value_in_ini_file(file_name, key, new_value):
 def project_directory():
     return "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/"
     
-def run_directory_name(runs_directory, run_num):
-    return os.path.join(runs_directory, "run" + str(run_num).zfill(3))
+def zfilled_run_num(run_num):
+    return str(run_num).zfill(3)
 
 
 def run_program(program_name, command_line):
@@ -759,11 +759,11 @@ def create_input_files_for_multiple_runs():
         run_num_one_based = run_num_zero_based + 1
         
         
-        if (run_num_one_based == 10):
+        if (run_num_one_based == 13):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
-            this_run_directory = run_directory_name(runs_directory, run_num_one_based)
+            this_run_directory = os.path.join(runs_directory, "run" + zfilled_run_num(run_num_one_based))
             this_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path)
             this_control_file_name = os.path.join(this_run_directory, control_file_name_no_path)
             
@@ -775,6 +775,7 @@ def create_input_files_for_multiple_runs():
             # Job script
             copyfile(original_job_script_file_name, this_job_script_file_name)
             change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', '35:59:00')
+            change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH -J ', 'pgr3_{}'.format(zfilled_run_num(run_num_one_based)))
             
             # Control file
             copyfile(original_control_file_name, this_control_file_name)
