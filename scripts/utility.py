@@ -742,7 +742,7 @@ def run_program(program_name, command_line):
 
 def create_input_files_for_multiple_runs():
 
-    runs_directory = os.path.join(project_directory(), "runs")
+    runs_directory = os.path.join(project_directory(), "runsB")
     scripts_directory = os.path.join(project_directory(), "scripts")
     cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, "params_run_1.txt")
     cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',')
@@ -759,7 +759,7 @@ def create_input_files_for_multiple_runs():
         run_num_one_based = run_num_zero_based + 1
         
         
-        if (run_num_one_based == 13):
+        if (True):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
@@ -790,8 +790,8 @@ def create_input_files_for_multiple_runs():
             
             change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based) + "          # Random seed")
             
-            change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "1283       # Mpc/h")
-            change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1250       # Simulation has nGrid^3 particles")
+            change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "1250       # Mpc/h")
+            change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1080       # Simulation has nGrid^3 particles")
             change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "2048 # NSide for output lightcone healpix maps.")
             
             # Transfer function
