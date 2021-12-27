@@ -16,9 +16,9 @@ import datetime
 import os
 import contextlib
 import sys
-from nbodykit.lab import *
 from shutil import copyfile
 import math
+import stat
 
 
 # ======================== Start of code for reading control file ========================
@@ -670,6 +670,8 @@ def set_of_wavenumbers():
    
 def make_specific_cosmology_transfer_function(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s):
 
+    from nbodykit.lab import cosmology
+
     transfer_function_file_name = os.path.join(directory, "transfer_function.txt")
     cosmology_parameters_file_name = os.path.join(directory, "transfer_function_cosmology.txt")
 
@@ -743,13 +745,12 @@ def run_program(program_name, command_line):
 def create_input_files_for_multiple_runs():
 
     runs_directory = os.path.join(project_directory(), "runsB")
-    scripts_directory = os.path.join(project_directory(), "scripts")
     cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, "params_run_1.txt")
     cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',')
     num_runs = cosmo_params_for_all_runs.shape[0]
     
     job_script_file_name_no_path = 'cuda_job_script_wilkes'
-    original_job_script_file_name = os.path.join(scripts_directory, job_script_file_name_no_path)
+    original_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path)
     
     control_file_name_no_path = 'control.par'
     original_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
@@ -758,12 +759,14 @@ def create_input_files_for_multiple_runs():
     for run_num_zero_based in range(num_runs):
         run_num_one_based = run_num_zero_based + 1
         
-        
+        # Amend the code here to restrict to just certain directories.
         if (True):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
-            this_run_directory = os.path.join(runs_directory, "run" + zfilled_run_num(run_num_one_based))
+            run_string = zfilled_run_num(run_num_one_based)
+            
+            this_run_directory = os.path.join(runs_directory, "run" + run_string)
             this_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path)
             this_control_file_name = os.path.join(this_run_directory, control_file_name_no_path)
             
@@ -775,7 +778,8 @@ def create_input_files_for_multiple_runs():
             # Job script
             copyfile(original_job_script_file_name, this_job_script_file_name)
             change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', '35:59:00')
-            change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH -J ', 'pgr3_{}'.format(zfilled_run_num(run_num_one_based)))
+            change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH -J ', 'pgr3_{}'.format(run_string))
+            change_one_value_in_ini_file(this_job_script_file_name, 'application=', '"/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsB/run{}/pkdgrav3_and_post_process.sh"'.format(run_string))
             
             # Control file
             copyfile(original_control_file_name, this_control_file_name)
@@ -793,6 +797,21 @@ def create_input_files_for_multiple_runs():
             change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "1250       # Mpc/h")
             change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1080       # Simulation has nGrid^3 particles")
             change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "2048 # NSide for output lightcone healpix maps.")
+            
+            
+            # Run script
+            run_script_name = os.path.join(this_run_directory, "pkdgrav3_and_post_process.sh")
+            with open(run_script_name, 'w') as out_file:
+                out_file.write("module load python/3.8\n")
+                out_file.write("source /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/env/bin/activate\n")
+                out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsB/run{}/\n".format(run_string))
+                out_file.write("/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/pkdgrav3/build_wilkes/pkdgrav3 ./control.par > ./output.txt\n")
+                out_file.write("python3 /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/scripts/pkdgrav3_postprocess.py -l -d -z -s . >> ./output.txt\n")
+                out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsB/\n")
+                out_file.write("tar czvf run{}.tar.gz ./run{}/\n".format(run_string, run_string))
+                out_file.write("test -f ./run{}.tar.gz && rm ./run{}/run*\n".format(run_string, run_string))
+            st = os.stat(run_script_name)
+            os.chmod(run_script_name, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH) # See https://stackoverflow.com/questions/12791997/
             
             # Transfer function
             make_specific_cosmology_transfer_function(this_run_directory,
