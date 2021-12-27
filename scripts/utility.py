@@ -19,6 +19,8 @@ import sys
 from shutil import copyfile
 import math
 import stat
+import time
+import pickle
 
 
 # ======================== Start of code for reading control file ========================
@@ -45,7 +47,75 @@ def get_from_control_file_test_harness():
 
 
 
-# ======================== Start of code for reading partial lightcone files ========================
+# ======================== Start of code for reading raw lightcone files ========================
+
+
+# Example lightcone_file_name: "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/run.00072.lightcone.npy"
+# in which case we return the integer 72
+def tomographic_slice_number_from_lightcone_file_name(lightcone_file_name):
+    base_name = os.path.basename(lightcone_file_name) # Example: run.00072.lightcone.npy
+    return int(base_name[-19:-14])
+
+#def tomographic_slice_number_from_lightcone_file_name_test_harness():
+#    lightcone_file_name = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/run.12345.lightcone.npy"
+#    print(tomographic_slice_number_from_lightcone_file_name(lightcone_file_name))
+
+
+# Updates a pickle file that stores a dictionary linking the tomographic slice number and the object count
+# From https://stackoverflow.com/questions/19201290/how-to-save-a-dictionary-to-a-file
+def update_object_count_file(object_count_file_name, tomographic_slice_number, count):
+    d = {}
+    if os.path.isfile(object_count_file_name):
+        with open(object_count_file_name, 'rb') as f:
+            d = pickle.load(f)
+    d[tomographic_slice_number] = count
+    with open(object_count_file_name, 'wb') as f:
+        pickle.dump(d, f)
+        
+
+
+def get_object_count_from_object_count_file(object_count_file_name, tomographic_slice_number):
+    d = {}
+    if os.path.isfile(object_count_file_name):
+        with open(object_count_file_name, 'rb') as f:
+            d = pickle.load(f)
+        if tomographic_slice_number in d:
+            return d[tomographic_slice_number]
+            
+    return 0
+    
+def show_object_count_file(object_count_file_name):
+    d = {}
+    if os.path.isfile(object_count_file_name):
+        with open(object_count_file_name, 'rb') as f:
+            d = pickle.load(f)
+            
+    for key in d:
+        print("{}: {}".format(key, d[key]))
+    
+        
+
+#def object_count_file_test_harness():
+#    object_count_file_name = '/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/scripts/obj_count.pkl'
+#    lightcone_file_name = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/run.12345.lightcone.npy"
+#    tomographic_slice_number = tomographic_slice_number_from_lightcone_file_name(lightcone_file_name)
+#    count = 34557
+#    update_object_count_file(object_count_file_name, tomographic_slice_number, count)
+#    print(get_object_count_from_object_count_file(object_count_file_name, 12345))
+#    print(get_object_count_from_object_count_file(object_count_file_name, 12346))
+#    print(get_object_count_from_object_count_file(object_count_file_name, 72))
+#    print(get_object_count_from_object_count_file(object_count_file_name, 0))
+#    lightcone_file_name = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/run.12346.lightcone.npy"
+#    tomographic_slice_number = tomographic_slice_number_from_lightcone_file_name(lightcone_file_name)
+#    count = 98765
+#    update_object_count_file(object_count_file_name, tomographic_slice_number, count)
+#    print(get_object_count_from_object_count_file(object_count_file_name, 12345))
+#    print(get_object_count_from_object_count_file(object_count_file_name, 12346))
+#    print(get_object_count_from_object_count_file(object_count_file_name, 72))
+#    print(get_object_count_from_object_count_file(object_count_file_name, 0))
+    
+
+
 
 
 # basefilename will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/run.00001.hpb"
@@ -74,6 +144,10 @@ def one_healpix_map_from_basefilename(basefilename, nside):
     
     return healpix_map[:n_pixels]
     
+
+def file_is_recent(file_name, cutoff_time_in_seconds):
+    return (time.time() - os.path.getmtime(file_name)) < cutoff_time_in_seconds
+
     
 
 # filespec will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/run.*.hpb"
@@ -83,19 +157,34 @@ def basefilename_list_from_filespec(filespec):
 
 
 # Example filespec: "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/run.*.hpb"
-def save_all_lightcone_files(filespec, nside, delete_hpb_files_when_done):
+# Set 'on_the_fly' to True if you are doing post-processing while the pkdgrav run is on-going. In this case:
+# a) no processing is done if files for step '97' exist (as in this case the run is almost finished and regular 
+# post-processing will do the rest); b) a step is post-processed only if it is more than one hour old.
+def save_all_lightcone_files(filespec, nside, delete_hpb_files_when_done, on_the_fly):
 
-    # Somewhat unfortunately, pkdgrav3 appears to create the first (i.e most distant) lightcone for the furthest tomographic
-    # bin for which the _near_ boundary is less than or equal to 3*boxlength. But for this bin the _far_ boundary is more than
-    # 3*boxlength, so this lightcone will be partially outside the 3*boxlength box. It will therefore be incomplete, and must
-    # not be used. The variable have_already_encountered_first_populated_lightcone is part of the logic to ensure this.
-    have_already_encountered_first_populated_lightcone = False
     
+    # This will be a pickle file storing a dictionary linking the tomographic slice number to the object count.
+    object_count_file_name = os.path.join(os.path.dirname(filespec), "object_count.pkl")
+    
+    if on_the_fly:
+        if os.path.isfile(filespec.replace("*", "00097")+".0") or os.path.isfile(filespec.replace("*", "00097").replace(".hpb", ".lightcone.npy")):
+            # Don't do anything as normal post-processing will happen soon (or is underway - hence the test for .lightcone.npy)
+            # and we don't want to interfere.
+            print("save_all_lightcone_files is doing nothing due to presence of 00097 file.")
+            return
+        
     
     # basefilename_list_from_filespec returns a sorted list, so we are certainly stepping through the files in the correct order.
     for b in basefilename_list_from_filespec(filespec):
     
         # b will be something like '.../run.00001.hpb'
+        
+        cutoff_time_in_seconds = 3600
+        if on_the_fly and file_is_recent(b + '.0', cutoff_time_in_seconds):
+            # This slice is too recent (and might still be being written out) - so don't
+            # process it. Also we can quit completely as all remaining files will be newer.
+            print("save_all_lightcone_files is quitting as files are less than {} seconds old.".format(cutoff_time_in_seconds))
+            return
         
         map_t = one_healpix_map_from_basefilename(b, nside)
         
@@ -104,18 +193,32 @@ def save_all_lightcone_files(filespec, nside, delete_hpb_files_when_done):
         if new_nside != nside:
             map_t = hp.ud_grade(map_t, new_nside)
         
-        output_file_name = b.replace(".hpb", ".lightcone.npy")
+        # This will be something like "/share/splinter/ucapwhi/lfi_project/experiments/gpu_1000_1024_1000/run.00001.lightcone.npy"
+        lightcone_file_name = b.replace(".hpb", ".lightcone.npy")
+        
+        update_object_count_file(object_count_file_name, tomographic_slice_number_from_lightcone_file_name(lightcone_file_name), np.sum(map_t))
+        
         max_pixel_value = np.max(map_t)
         if max_pixel_value > 0:
-            if have_already_encountered_first_populated_lightcone:
-                print("Writing file {}...".format(output_file_name))
+            # Somewhat unfortunately, pkdgrav3 appears to create the first (i.e most distant) lightcone for the furthest tomographic
+            # bin for which the _near_ boundary is less than or equal to 3*boxlength. But for this bin the _far_ boundary is more than
+            # 3*boxlength, so this lightcone will be partially outside the 3*boxlength box. It will therefore be incomplete, and must
+            # not be used. So test to see if the _previous_ tomographic slice had any objects; if it didn't, then we know that
+            # the current file will be incomplete. The object_count_file exists to allow this logic.
+            
+            if get_object_count_from_object_count_file(object_count_file_name, tomographic_slice_number_from_lightcone_file_name(lightcone_file_name)-1) > 0:
+                print("Writing file {}...".format(lightcone_file_name))
                 # We write in uint16 format if possible so as to get smaller files.
-                np.save(output_file_name, map_t.astype(np.uint16) if (max_pixel_value < 65535) else map_t)
+                np.save(lightcone_file_name, map_t.astype(np.uint16) if (max_pixel_value < 65535) else map_t)
             else:
-                print("Not writing file {} as it would be incomplete.".format(output_file_name))
-                have_already_encountered_first_populated_lightcone = True
+                # For safety, save the data under a new name.
+                lightcone_file_name_amended = lightcone_file_name.replace('lightcone', 'incomplete')
+                print("Writing incomplete file {}.".format(lightcone_file_name_amended))
+                # We write in uint16 format if possible so as to get smaller files.
+                np.save(lightcone_file_name_amended, map_t.astype(np.uint16) if (max_pixel_value < 65535) else map_t)
+                
         else:
-            print("Not writing file {} as it would have no objects.".format(output_file_name))
+            print("Not writing file {} as it would have no objects.".format(lightcone_file_name))
             
         if delete_hpb_files_when_done:
             filespec_to_delete = b + ".*"
@@ -182,7 +285,7 @@ def save_all_lightcone_image_files(directory, mollview_format):
     
 
 
-# ======================== End of code for reading lightcone files ========================
+# ======================== End of code for reading raw lightcone files ========================
 
 
 
@@ -426,7 +529,7 @@ def pkdgrav3_postprocess(directory, do_lightcone_files, do_delete, do_mollview_i
     
     
     if do_lightcone_files and (do_force or not file_spec_has_files(os.path.join(directory, outName + ".*.lightcone.npy"))):
-        save_all_lightcone_files(os.path.join(directory, outName + ".*.hpb"), nside, do_delete)
+        save_all_lightcone_files(os.path.join(directory, outName + ".*.hpb"), nside, do_delete, False)
         
     if do_mollview_images and (do_force or not file_spec_has_files(os.path.join(directory, outName + ".*.lightcone.mollview.png"))):
         save_all_lightcone_image_files(directory, True)
@@ -440,7 +543,52 @@ def pkdgrav3_postprocess(directory, do_lightcone_files, do_delete, do_mollview_i
     if do_status:
         status(directory)
         
+
+
+def monitor_core(directory):
+    print("Processing {}".format(directory))
     
+    control_file_name = os.path.abspath(os.path.join(directory, "control.par"))
+    if os.path.isfile(control_file_name):
+        
+        outName = get_from_control_file(control_file_name, "achOutName") # Standard value is 'run'.
+        nside = int(get_from_control_file(control_file_name, "nSideHealpix"))
+        do_delete = True
+        
+        save_all_lightcone_files(os.path.join(directory, outName + ".*.hpb"), nside, do_delete, True)
+        sys.stdout.flush()
+    
+    
+
+
+
+def monitor(directory):
+
+    sleep_time_in_seconds = 300
+    
+    while True:
+    
+        if os.path.isfile('/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/scripts/monitor_stop.txt'):
+            print("monitor is quitting due to detection of stop file")
+            return
+        
+        # Deal recursively with subdirectories
+        dir_name_list = glob.glob(os.path.join(directory, "*/"))
+        dir_name_list.sort()
+        for d in dir_name_list:
+            monitor_core(d)
+
+        # Then deal with this directory
+        monitor_core(directory)
+        
+            
+        print("Time now: {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+        print("Sleeping for {} seconds".format(sleep_time_in_seconds))
+        sys.stdout.flush()
+        
+        time.sleep(sleep_time_in_seconds)
+        
+        
     
 # ======================== End of code for reading PKDGRAV3 output ========================    
 
@@ -614,7 +762,7 @@ def status(directory):
     report_whether_file_exists("z_values file", os.path.abspath(os.path.join(directory, "z_values.txt")))
 
 
-# ======================== End of code for reporting on the status of an 'experiments' directory ========================
+# ======================== End of code for reporting on the status of directory containing pkdgrav3 output ========================
 
 
 
@@ -736,12 +884,6 @@ def zfilled_run_num(run_num):
     return str(run_num).zfill(3)
 
 
-def run_program(program_name, command_line):
-    args = [program_name]
-    args.extend(command_line.split())
-    subprocess.run(args)
-
-
 def create_input_files_for_multiple_runs():
 
     runs_directory = os.path.join(project_directory(), "runsB")
@@ -841,8 +983,10 @@ if __name__ == '__main__':
     #compare_two_time_spacings()
     #create_dummy_output_file()
     #make_specific_cosmology_transfer_function_caller()
-    create_input_files_for_multiple_runs()
-    
+    #create_input_files_for_multiple_runs()
+    #monitor()
+    #tomographic_slice_number_from_lightcone_file_name_test_harness()
+    #object_count_file_test_harness()
     
     pass
     
