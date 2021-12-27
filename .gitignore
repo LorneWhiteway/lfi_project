@@ -14,6 +14,10 @@ experiments/*/output*
 
 *.tar.gz
 
+runs/run*/
+runsB/run*/
+
+
 # Omit nbodykit (except for a few files in the top-level directory that have been checked-in).
 nbodykit/*
 
