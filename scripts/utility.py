@@ -775,6 +775,8 @@ def cosmology_summary(cosmo):
     for key in cosmo_dict:
         summary.append("{} = {}".format(key, cosmo_dict[key]))
     summary.append("sigma8 = {}".format(cosmo.sigma8))
+    summary.append("Omega0_k = {}".format(cosmo.Omega0_k))
+    summary.append("Omega_fld = {}".format(cosmo.Ode0))
     return summary
     
     
@@ -838,7 +840,7 @@ def make_specific_cosmology_transfer_function(directory, Omega0_m, sigma8, w, Om
 
 
 def make_specific_cosmology_transfer_function_caller():
-    make_specific_cosmology_transfer_function("/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs/run002",
+    make_specific_cosmology_transfer_function("/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsC/run002",
         Omega0_m = 0.249628758416763685,
         sigma8 = 0.950496160083634467,
         w = -0.792417404234305733,
@@ -983,7 +985,7 @@ if __name__ == '__main__':
     #get_float_from_control_file_test_harness()
     #compare_two_time_spacings()
     #create_dummy_output_file()
-    #make_specific_cosmology_transfer_function_caller()
+    make_specific_cosmology_transfer_function_caller()
     #create_input_files_for_multiple_runs()
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
