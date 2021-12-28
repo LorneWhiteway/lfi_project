@@ -65,7 +65,7 @@ source /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/env/bin/activate
 application="/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/scripts/monitor.py"
 
 #! Run options for the application:
-options="/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsB/ >> /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsB/monitor_output.txt"
+options="/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsC/ >> /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsC/monitor_output.txt"
 
 
 #! Work directory (i.e. where the job will run):

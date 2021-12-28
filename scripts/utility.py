@@ -832,6 +832,12 @@ def make_specific_cosmology_transfer_function(directory, Omega0_m, sigma8, w, Om
     np.savetxt(transfer_function_file_name, transfer_function, delimiter = " ", fmt = "%10.5E")
     np.savetxt(cosmology_parameters_file_name, cosmology_summary(cosmology_object), fmt = '%s')
     
+    linear_power_file_name = os.path.join(directory, "linear_power.txt")
+    linear_power = np.column_stack([k, cosmology.power.linear.LinearPower(cosmology_object, 0.0, transfer='CLASS')(k)])
+    linear_power = trim_rows_containing_nan(linear_power)
+    np.savetxt(linear_power_file_name, linear_power, delimiter = " ", fmt = "%10.5E")
+    
+    
     if False:
         print("Saved transfer function in {}".format(transfer_function_file_name))
         print("Parameters:")
@@ -886,15 +892,25 @@ def zfilled_run_num(run_num):
     return str(run_num).zfill(3)
 
 
+def job_script_file_name_no_path():
+    return 'cuda_job_script_wilkes'
+    
+def runs_letter():
+    return 'C'
+    
+    
+def make_file_executable(file_name):
+    os.chmod(file_name, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH) # See https://stackoverflow.com/questions/12791997/
+
+
 def create_input_files_for_multiple_runs():
 
-    runs_directory = os.path.join(project_directory(), "runsB")
+    runs_directory = os.path.join(project_directory(), "runs{}".format(runs_letter()))
     cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, "params_run_1.txt")
     cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',')
     num_runs = cosmo_params_for_all_runs.shape[0]
     
-    job_script_file_name_no_path = 'cuda_job_script_wilkes'
-    original_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path)
+    original_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path())
     
     control_file_name_no_path = 'control.par'
     original_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
@@ -911,7 +927,7 @@ def create_input_files_for_multiple_runs():
             run_string = zfilled_run_num(run_num_one_based)
             
             this_run_directory = os.path.join(runs_directory, "run" + run_string)
-            this_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path)
+            this_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path())
             this_control_file_name = os.path.join(this_run_directory, control_file_name_no_path)
             
             
@@ -923,7 +939,7 @@ def create_input_files_for_multiple_runs():
             copyfile(original_job_script_file_name, this_job_script_file_name)
             change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', '35:59:00')
             change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH -J ', 'pgr3_{}'.format(run_string))
-            change_one_value_in_ini_file(this_job_script_file_name, 'application=', '"/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsB/run{}/pkdgrav3_and_post_process.sh"'.format(run_string))
+            change_one_value_in_ini_file(this_job_script_file_name, 'application=', '"/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/pkdgrav3_and_post_process.sh"'.format(runs_letter(), run_string))
             
             # Control file
             copyfile(original_control_file_name, this_control_file_name)
@@ -949,14 +965,14 @@ def create_input_files_for_multiple_runs():
             with open(run_script_name, 'w') as out_file:
                 out_file.write("module load python/3.8\n")
                 out_file.write("source /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/env/bin/activate\n")
-                out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsB/run{}/\n".format(run_string))
+                out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/\n".format(runs_letter(), run_string))
                 out_file.write("/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/pkdgrav3/build_wilkes/pkdgrav3 ./control.par > ./output.txt\n")
                 out_file.write("python3 /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/scripts/pkdgrav3_postprocess.py -l -d -z -s . >> ./output.txt\n")
-                out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsB/\n")
+                out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/\n".format(runs_letter()))
                 out_file.write("tar czvf run{}.tar.gz ./run{}/\n".format(run_string, run_string))
                 out_file.write("test -f ./run{}.tar.gz && rm ./run{}/run*\n".format(run_string, run_string))
             st = os.stat(run_script_name)
-            os.chmod(run_script_name, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH) # See https://stackoverflow.com/questions/12791997/
+            make_file_executable(run_script_name)
             
             # Transfer function
             make_specific_cosmology_transfer_function(this_run_directory,
@@ -967,8 +983,17 @@ def create_input_files_for_multiple_runs():
                 h = cosmo_params_for_all_runs[run_num_zero_based, 4],
                 n_s = cosmo_params_for_all_runs[run_num_zero_based, 5])
 
-
-
+def create_launch_script():
+    launch_script_file_name = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/launch.sh".format(runs_letter())
+    print("Writing to {}...".format(launch_script_file_name))
+    with open(launch_script_file_name, "w") as out_file:
+        for run_num_zero_based in range(128):
+            run_num_one_based = run_num_zero_based + 1
+            if (True):
+                run_string = zfilled_run_num(run_num_one_based)
+                out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/\n".format(runs_letter(), run_string))
+                out_file.write("sbatch ./{}\n".format(job_script_file_name_no_path()))
+    make_file_executable(launch_script_file_name)
 
 
 
@@ -985,11 +1010,12 @@ if __name__ == '__main__':
     #get_float_from_control_file_test_harness()
     #compare_two_time_spacings()
     #create_dummy_output_file()
-    make_specific_cosmology_transfer_function_caller()
+    #make_specific_cosmology_transfer_function_caller()
     #create_input_files_for_multiple_runs()
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
+    create_launch_script()
     
     pass
     

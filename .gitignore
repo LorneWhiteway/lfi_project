@@ -16,6 +16,7 @@ experiments/*/output*
 
 runs/run*/
 runsB/run*/
+runsC/run*/
 
 
 # Omit nbodykit (except for a few files in the top-level directory that have been checked-in).
