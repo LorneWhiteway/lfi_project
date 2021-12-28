@@ -927,6 +927,7 @@ def create_input_files_for_multiple_runs():
             copyfile(original_control_file_name, this_control_file_name)
             change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./transfer_function.txt"')
             change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 0]))
+            change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(1.0-cosmo_params_for_all_runs[run_num_zero_based, 0]))
             change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 1]))
             # Work around pkdgrav3 ini file parsing bug - doesn't like negative numbers.
             acos_w_string = "2.0*math.cos({})  # {}".format(math.acos(cosmo_params_for_all_runs[run_num_zero_based, 2] / 2.0), cosmo_params_for_all_runs[run_num_zero_based, 2])
