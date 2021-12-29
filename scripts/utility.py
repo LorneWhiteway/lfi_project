@@ -568,9 +568,13 @@ def monitor(directory):
     
     while True:
     
-        if os.path.isfile('/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/scripts/monitor_stop.txt'):
-            print("monitor is quitting due to detection of stop file")
+        stop_file_name = os.path.join(directory, "monitor_stop.txt")
+        if os.path.isfile(stop_file_name):
+            print("Monitor is quitting due to detection of stop file {}".format(stop_file_name))
             return
+        else:
+            print("Monitor is continuing. To force a stop, create a file called {}".format(stop_file_name))
+        
         
         # Deal recursively with subdirectories
         dir_name_list = glob.glob(os.path.join(directory, "*/"))
@@ -900,6 +904,7 @@ def runs_letter():
     
     
 def make_file_executable(file_name):
+    st = os.stat(file_name)
     os.chmod(file_name, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH) # See https://stackoverflow.com/questions/12791997/
 
 
@@ -971,7 +976,6 @@ def create_input_files_for_multiple_runs():
                 out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/\n".format(runs_letter()))
                 out_file.write("tar czvf run{}.tar.gz ./run{}/\n".format(run_string, run_string))
                 out_file.write("test -f ./run{}.tar.gz && rm ./run{}/run*\n".format(run_string, run_string))
-            st = os.stat(run_script_name)
             make_file_executable(run_script_name)
             
             # Transfer function
@@ -1011,11 +1015,11 @@ if __name__ == '__main__':
     #compare_two_time_spacings()
     #create_dummy_output_file()
     #make_specific_cosmology_transfer_function_caller()
-    #create_input_files_for_multiple_runs()
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    create_launch_script()
+    #create_input_files_for_multiple_runs()
+    #create_launch_script()
     
     pass
     
