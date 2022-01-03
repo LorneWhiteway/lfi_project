@@ -972,6 +972,7 @@ def create_input_files_for_multiple_runs():
             # Run script
             run_script_name = os.path.join(this_run_directory, "pkdgrav3_and_post_process.sh")
             with open(run_script_name, 'w') as out_file:
+                out_file.write("#!/usr/bin/env bash\n") # See https://stackoverflow.com/questions/10376206/what-is-the-preferred-bash-shebang for the full discussion...
                 out_file.write("module load python/3.8\n")
                 out_file.write("source /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/env/bin/activate\n")
                 out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/\n".format(runs_letter(), run_string))
