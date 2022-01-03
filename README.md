@@ -160,6 +160,17 @@ monitor.py directory
 The script operates on 'directory' as well as recursively on all subdirectories of 'directory'. The script periodically sleeps, upon awakening it searches for a file called 'monitor_stop.txt' in 'directroy', and it stops if this file exists. On addition, at startup if the file 'monitor_wait.txt' exists in 'directory' then the script will pause, only continuing when this file no longer exists.
 
 
+### utility.py
+
+This script contains various functions that may be called 'by hand' particularly to set up and run large numbers of pkdgrav3 jobs (with postprocessing).
+
+| Function | Purpose |
+| --- | --- |
+| create_input_files_for_multiple_runs | Creates a set of input files for a number of runs. For each run the input files include a pkdgrav3 control file (control.par), a transfer function file (transfer_function.txt), a text file listing the cosmological parameters used in the transfer function file (transfer_function_cosmology.txt), a bash script to run pkdgrav3 and then do postprocessing (pkdgrav3_and_post_process.sh), and a SLURM job script (cuda_job_script_wilkes). |
+| create_launch_script | Creates a bash script to call [sbatch](https://slurm.schedmd.com/sbatch.html) multiple times. |
+
+
+
 ## Transfer functions
 
 pkdgrav3 requires an input file containing a transfer function (to specify the initial power spectrum). Such files can be created using the Python module [nbodykit](https://nbodykit.readthedocs.io/en/latest/index.html).
