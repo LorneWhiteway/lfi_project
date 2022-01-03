@@ -1005,6 +1005,40 @@ def create_launch_script():
 
 
 
+# In hours
+def run_time(directory):
+    file_list = glob.glob(os.path.join(directory, "machine.file.*"))
+    if not file_list:
+        return 0
+    start_time = os.path.getmtime(file_list[0])
+    file_list = glob.glob(os.path.join(directory, "slurm*"))
+    if not file_list:
+        return 0
+    end_time = os.path.getmtime(file_list[0])
+    return (end_time - start_time) / 3600
+
+
+
+def calculate_each_run_time():
+    for run_num_zero_based in range(128):
+        run_num_one_based = run_num_zero_based + 1
+        run_string = zfilled_run_num(run_num_one_based)
+        this_directory = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/".format(runs_letter(), run_string)
+        print(this_directory, "{:.3f}".format(run_time(this_directory)))
+
+
+
+def show_last_unprocessed_file():
+    print(datetime.datetime.now().time())
+    for run_num_zero_based in range(128):
+        run_num_one_based = run_num_zero_based + 1
+        run_string = zfilled_run_num(run_num_one_based)
+        this_directory = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/".format(runs_letter(), run_string)
+        these_files = sorted(glob.glob(os.path.join(this_directory, "*.0")))
+        if these_files:
+            print(these_files[-1])
+
+
 # ======================== End of code for creating input files for multiple runs ========================
 
 if __name__ == '__main__':
@@ -1024,7 +1058,9 @@ if __name__ == '__main__':
     #object_count_file_test_harness()
     #create_input_files_for_multiple_runs()
     #create_launch_script()
-    
+    #calculate_each_run_time()
+    #show_last_unprocessed_file()
+
     pass
     
     
