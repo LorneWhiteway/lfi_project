@@ -153,9 +153,9 @@ The first tomographic slice of the lightcone that pkdgrav3 populates is the one 
 
 pkdgrav3 requires an input file containing a transfer function (to specify the initial power spectrum). Such files can be created using the Python module [nbodykit](https://nbodykit.readthedocs.io/en/latest/index.html).
 
-For now, transfer functions go in the `data` subdirectory. If you add a new transfer function then update the README file in the `data` subdirectory. (In the future this will be changed so that the transfer function will be in the same directory as the control file.)
+The script 'utility.py' has a function called 'make_specific_cosmology_transfer_function' that may be used to create transfer function files.
 
-LW is in the process of amending and documenting the (existing) code that creates transfer functions.
+We are currently putting transfer function files in the same directory as the control file for that run.
 
 ### nbodykit on splinter
 
