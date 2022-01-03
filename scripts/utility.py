@@ -976,7 +976,7 @@ def create_input_files_for_multiple_runs():
                 out_file.write("source /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/env/bin/activate\n")
                 out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/\n".format(runs_letter(), run_string))
                 out_file.write("/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/pkdgrav3/build_wilkes/pkdgrav3 ./control.par > ./output.txt\n")
-                out_file.write("python3 /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/scripts/pkdgrav3_postprocess.py -l -d -z -s -f . >> ./output.txt\n")
+                out_file.write("python3 /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/scripts/pkdgrav3_postprocess.py -l -d -f . >> ./output.txt\n")
                 out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/\n".format(runs_letter()))
                 out_file.write("tar czvf run{}.tar.gz ./run{}/\n".format(run_string, run_string))
                 out_file.write("test -f ./run{}.tar.gz && rm ./run{}/run*\n".format(run_string, run_string))
@@ -1005,8 +1005,8 @@ def create_launch_script():
 
 
 
-# In hours
-def run_time(directory):
+
+def start_time_end_time(directory):
     file_list = glob.glob(os.path.join(directory, "machine.file.*"))
     if not file_list:
         return 0
@@ -1015,16 +1015,29 @@ def run_time(directory):
     if not file_list:
         return 0
     end_time = os.path.getmtime(file_list[0])
-    return (end_time - start_time) / 3600
+    return (start_time, end_time)
 
 
 
-def calculate_each_run_time():
+def calculate_each_run_time_and_show_Gantt_chart():
+
+    y = []
+    width = []
+    left = []
+    
     for run_num_zero_based in range(128):
         run_num_one_based = run_num_zero_based + 1
         run_string = zfilled_run_num(run_num_one_based)
         this_directory = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/".format(runs_letter(), run_string)
-        print(this_directory, "{:.3f}".format(run_time(this_directory)))
+        (start_time, end_time) = start_time_end_time(this_directory)
+        run_time_in_seconds = end_time - start_time
+        print(this_directory, "{:.3f}".format(run_time_in_seconds/3600))
+        y.append(run_num_one_based)
+        width.append(run_time_in_seconds)
+        left.append(start_time)
+    plt.barh(y=y, width=width, left=left)
+    plt.savefig("/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/scripts/gantt.png")
+        
 
 
 
@@ -1058,7 +1071,7 @@ if __name__ == '__main__':
     #object_count_file_test_harness()
     #create_input_files_for_multiple_runs()
     #create_launch_script()
-    #calculate_each_run_time()
+    calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
 
     pass
