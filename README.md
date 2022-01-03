@@ -149,6 +149,17 @@ Here is further information about output format. The slices are sequentially num
 
 The first tomographic slice of the lightcone that pkdgrav3 populates is the one whose _near_ boundary is within the superbox (defined above); this slice has a _far_ boundary that is still outside the superbox and so this slice is only partially filled. The script therefore creates an 'incomplete' lightcone file for this slice.
 
+### monitor.py
+
+This script may be used to do 'on-the-fly' post-processing (with the goal of reducing peak disk usage). It runs in a permanent loop, repeatedly doing the same taks as would be done by pkdgrav3_postprocess.py with options '-l -d -f'. Usage:
+
+Syntax: 
+```
+monitor.py directory
+```
+The script operates on 'directory' as well as recursively on all subdirectories of 'directory'. The script periodically sleeps, upon awakening it searches for a file called 'monitor_stop.txt' in 'directroy', and it stops if this file exists. On addition, at startup if the file 'monitor_wait.txt' exists in 'directory' then the script will pause, only continuing when this file no longer exists.
+
+
 ## Transfer functions
 
 pkdgrav3 requires an input file containing a transfer function (to specify the initial power spectrum). Such files can be created using the Python module [nbodykit](https://nbodykit.readthedocs.io/en/latest/index.html).
