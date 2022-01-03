@@ -565,17 +565,17 @@ def monitor_core(directory):
 def monitor(directory):
 
     sleep_time_in_seconds = 300
+    wait_file_name = os.path.join(directory, "monitor_wait.txt")
+    stop_file_name = os.path.join(directory, "monitor_stop.txt")
+    
+    while os.path.isfile(wait_file_name):
+        print("Monitor has encountered wait file {} and will wait {} seconds before checking again".format(wait_file_name, sleep_time_in_seconds))
+        sys.stdout.flush()
+        time.sleep(sleep_time_in_seconds)
+        
     
     while True:
     
-        stop_file_name = os.path.join(directory, "monitor_stop.txt")
-        if os.path.isfile(stop_file_name):
-            print("Monitor is quitting due to detection of stop file {}".format(stop_file_name))
-            return
-        else:
-            print("Monitor is continuing. To force a stop, create a file called {}".format(stop_file_name))
-        
-        
         # Deal recursively with subdirectories
         dir_name_list = glob.glob(os.path.join(directory, "*/"))
         dir_name_list.sort()
@@ -587,10 +587,14 @@ def monitor(directory):
         
             
         print("Time now: {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-        print("Sleeping for {} seconds".format(sleep_time_in_seconds))
+        print("Monitor will now sleep for {} seconds".format(sleep_time_in_seconds))
+        print("When it wakes, it will check for {} and quit if this file exists".format(stop_file_name))
         sys.stdout.flush()
-        
         time.sleep(sleep_time_in_seconds)
+        if os.path.isfile(stop_file_name):
+            print("Monitor is quitting due to detection of stop file {}".format(stop_file_name))
+            sys.stdout.flush()
+            return
         
         
     
@@ -972,7 +976,7 @@ def create_input_files_for_multiple_runs():
                 out_file.write("source /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/env/bin/activate\n")
                 out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/\n".format(runs_letter(), run_string))
                 out_file.write("/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/pkdgrav3/build_wilkes/pkdgrav3 ./control.par > ./output.txt\n")
-                out_file.write("python3 /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/scripts/pkdgrav3_postprocess.py -l -d -z -s . >> ./output.txt\n")
+                out_file.write("python3 /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/scripts/pkdgrav3_postprocess.py -l -d -z -s -f . >> ./output.txt\n")
                 out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/\n".format(runs_letter()))
                 out_file.write("tar czvf run{}.tar.gz ./run{}/\n".format(run_string, run_string))
                 out_file.write("test -f ./run{}.tar.gz && rm ./run{}/run*\n".format(run_string, run_string))
