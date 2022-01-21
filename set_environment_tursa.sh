@@ -30,7 +30,7 @@ BASE_MODULE=use.own
 COMPILER_MODULE=gcc/9.3.0
 MPI_MODULE=openmpi/4.1.1-cuda11.4.1
 GSL_MODULE=lw-gsl-2.7
-FFTW_MODULE=foo2
+FFTW_MODULE=lw-fftw-3.3.10
 HDF5_MODULE=foo3
 CMAKE_MODULE=lw-cmake-3.22.1
 
@@ -40,7 +40,7 @@ module load $BASE_MODULE
 module load $COMPILER_MODULE
 module load $MPI_MODULE
 module load $GSL_MODULE
-#module load $FFTW_MODULE
+module load $FFTW_MODULE
 #module load $HDF5_MODULE
 
 	
