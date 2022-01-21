@@ -31,7 +31,7 @@ COMPILER_MODULE=gcc/9.3.0
 MPI_MODULE=openmpi/4.1.1-cuda11.4.1
 GSL_MODULE=lw-gsl-2.7
 FFTW_MODULE=lw-fftw-3.3.10
-HDF5_MODULE=lw-htf5-1.10.7
+HDF5_MODULE=lw-hdf5-1.10.7
 CMAKE_MODULE=lw-cmake-3.22.1
 
 
