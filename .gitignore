@@ -25,6 +25,9 @@ nbodykit/*
 # Omit cuda_test (except for a few files in the top-level directory that have been checked-in).
 cuda_test/*
 
+# Omit stl_test (except for a few files in the top-level directory that have been checked-in).
+stl_test/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
