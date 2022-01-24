@@ -21,7 +21,7 @@
 source /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/set_environment_tursa.sh USE
 
 #! Full path to application executable: 
-application="/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/pkdgrav3/build_wilkes/pkdgrav3"
+application="/mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/pkdgrav3/build/pkdgrav3"
 
 #! Work directory (i.e. where the job will run):
 workdir="$SLURM_SUBMIT_DIR"  # The directory in which sbatch is run.
