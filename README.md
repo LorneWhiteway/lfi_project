@@ -74,7 +74,7 @@ For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-g
 
 ### How to build pkdgrav3 for use by the Wilkes GPUs
 - Log on to a GPU and go to the project directory.
-- Run `./cm_wilkes.sh build_wilkes`. You will need to type `y` to confirm the build directory name.
+- Run `./cm.sh build_wilkes`. You will need to type `y` to confirm the build directory name.
 
 ### How to run one of the experiments on the Wilkes GPUs
 - Log on to Wilkes (but don't log on to a GPU)
@@ -120,7 +120,19 @@ For reference (e.g. in case it needs to be repeated), here's how the virtual env
 
 ### How I installed dependent libraries on Tursa
 
+Documentation for tursa is at https://epcced.github.io/dirac-docs/.
+
 Tursa didn't have any of the dependent libraries installed, so I installed them myself. Each library is installed in a sibling directory to the project directory. I also created module files (to be documented).
+
+#### CMake
+
+1. cd /mnt/lustre/tursafs1/home/dp153/dp153/shared/
+2. wget https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1.tar.gz
+3. tar -xvf cmake-3.22.1.tar.gz
+4. cd cmake-3.22.1
+5. ./configure --prefix=/mnt/lustre/tursafs1/home/dp153/dp153/shared/cmake-3.22.1
+6. make
+7. make install
 
 #### GSL
 
