@@ -58,7 +58,7 @@ srun -p GPU --gres=gpu:<GPU_NAME>:1 --pty tcsh
 
 ## Information about working with the Wilkes cluster
 
-1. Project directory is `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`. Can use shortcut `s` to get to the parent of this directory.
+1. Project directory is `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`.
 
 2. The following instructions are for using the ampere partition. To use the old pascal partition, contact LW.
 
@@ -113,6 +113,49 @@ For reference (e.g. in case it needs to be repeated), here's how the virtual env
 2. I have set up the the shortcut `s` to get to the parent of the project directory.
 
 3. Use WebDrive to connect to login-gpu.hpc.cam.ac.uk and map it in Windows as the W drive. I have set up a symbolic link `work` in my home directory to point to the project directory.
+
+## Information about working with the Tursa cluster
+
+1. Project directory is `/mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project`.
+
+### How I installed dependent libraries on Tursa
+
+Tursa didn't have any of the dependent libraries installed, so I installed them myself. Each library is installed in a sibling directory to the project directory. I also created module files (to be documented).
+
+#### GSL
+
+1. cd /mnt/lustre/tursafs1/home/dp153/dp153/shared/
+2. wget https://ftp.nluug.nl/pub/gnu/gsl/gsl-2.7.tar.gz
+3. tar -xvf gsl-2.7.tar.gz
+4. cd gsl-2.7
+5. ./configure --prefix=/mnt/lustre/tursafs1/home/dp153/dp153/shared/gsl-2.7
+6. make
+7. make install
+
+#### FFTW
+
+1. cd /mnt/lustre/tursafs1/home/dp153/dp153/shared/
+2. wget https://www.fftw.org/fftw-3.3.10.tar.gz
+3. tar -xvf fftw-3.3.10.tar.gz
+4. cd fftw-3.3.10
+5. ./configure --enable-float --enable-shared --enable-threads --enable-mpi --prefix=/mnt/lustre/tursafs1/home/dp153/dp153/shared/fftw-3.3.10
+6. make
+7. make install
+
+#### HDF5
+
+Here I put the source code 'one level down' as otherwise there were problems at 'make insall' time.
+
+1. cd /mnt/lustre/tursafs1/home/dp153/dp153/shared/
+2. mkdir hdf5-1.10.7
+3. cd hdf5-1.10.7
+4. wget https://www.hdfgroup.org/package/hdf5-1-10-7-tar-gz
+5. tar -xvf hdf5-1.10.7.tar.gz
+6. cd hdf5-1.10.7
+7. ./configure --prefix=/mnt/lustre/tursafs1/home/dp153/dp153/shared/hdf5-1.10.7
+8. make
+9. make install
+
 
 ## Python scripts
 
