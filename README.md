@@ -74,7 +74,7 @@ For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-g
 
 ### How to build pkdgrav3 for use by the Wilkes GPUs
 - Log on to a GPU and go to the project directory.
-- Run `./cm.sh build_wilkes`. You will need to type `y` to confirm the build directory name.
+- Run `./cm_wilkes.sh build_wilkes`. You will need to type `y` to confirm the build directory name.
 
 ### How to run one of the experiments on the Wilkes GPUs
 - Log on to Wilkes (but don't log on to a GPU)
