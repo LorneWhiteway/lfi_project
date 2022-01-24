@@ -50,4 +50,9 @@ if [[ $BUILD_MODE == $TRUE ]]; then
 	module load $CMAKE_MODULE
 fi
 
+# Grrr. The COMPILER_MODULE module doesn't set the following environment variables
+export CC=/mnt/lustre/tursafs1/apps/gcc/9.3.0/bin/gcc
+export CXX=/mnt/lustre/tursafs1/apps/gcc/9.3.0/bin/g++
+export FC=/mnt/lustre/tursafs1/apps/gcc/9.3.0/bin/gfortran
+
 
