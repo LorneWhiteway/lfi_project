@@ -22,8 +22,8 @@ runsC/run*/
 # Omit nbodykit (except for a few files in the top-level directory that have been checked-in).
 nbodykit/*
 
-# Omit cuda_check (except for a few files in the top-level directory that have been checked-in).
-cuda_check/*
+# Omit cuda_test (except for a few files in the top-level directory that have been checked-in).
+cuda_test/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
