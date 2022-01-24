@@ -1,0 +1,51 @@
+#!/bin/bash
+
+#! sbatch ../../scripts/cuda_job_script_tursa
+#! Run it from the directory in which the control file is located.
+
+#SBATCH --partition=gpu
+#SBATCH --job-name=pkdgrav3
+#SBATCH --time=01:00:00
+#SBATCH --nodes=1
+#SBATCH --tasks-per-node=1
+#SBATCH --cpus-per-task=1
+#SBATCH --gres=gpu:1
+#SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
+#SBATCH --mail-type=FAIL
+#SBATCH --account=DP153
+#SBATCH --qos=standard
+
+## Not sure if this is still needed...
+#SBATCH --mem=36000
+
+source /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/set_environment_tursa.sh USE
+
+#! Full path to application executable: 
+application="/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/pkdgrav3/build_wilkes/pkdgrav3"
+
+#! Work directory (i.e. where the job will run):
+workdir="$SLURM_SUBMIT_DIR"  # The directory in which sbatch is run.
+
+#! Note that here we are assuming that the job file is being submitted from the directory
+#! in which the control file is located.
+options="$workdir/control.par >> $workdir/output.txt"
+
+#! Are you using OpenMP (NB this is unrelated to OpenMPI)? If so increase this safe value to no more than 128:
+export OMP_NUM_THREADS=32
+
+#! Choose this for a pure shared-memory OpenMP parallel program on a single node:
+#! (OMP_NUM_THREADS threads will be created):
+CMD="$application $options"
+
+cd $workdir
+echo -e "Changed directory to `pwd`.\n"
+
+JOBID=$SLURM_JOB_ID
+
+echo -e "JobID: $JOBID\n======"
+echo "Time: `date`"
+echo "Running on master node: `hostname`"
+echo "Current directory: `pwd`"
+echo -e "\nExecuting command:\n==================\n$CMD\n"
+
+eval $CMD 
