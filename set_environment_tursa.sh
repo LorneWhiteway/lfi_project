@@ -26,18 +26,20 @@ else
 	echo "Setting environment variables for USING pkdgrav3..."
 fi	
 
-BASE_MODULE=use.own
-COMPILER_MODULE=gcc/9.3.0
+BASE_MODULE_1=use.own
+BASE_MODULE_2=use.lfi
+COMPILER_MODULE=lfi-gcc-9.3.0
 CUDA_MODULE=cuda/11.4.1
 MPI_MODULE=openmpi/4.1.1-cuda11.4.1
-GSL_MODULE=lw-gsl-2.7
-FFTW_MODULE=lw-fftw-3.3.10
-HDF5_MODULE=lw-hdf5-1.10.7
-CMAKE_MODULE=lw-cmake-3.22.1
+GSL_MODULE=lfi-gsl-2.7
+FFTW_MODULE=lfi-fftw-3.3.10
+HDF5_MODULE=lfi-hdf5-1.10.7
+CMAKE_MODULE=lfi-cmake-3.22.1
 
 
 module purge
-module load $BASE_MODULE
+module load $BASE_MODULE_1
+module load $BASE_MODULE_2
 module load $COMPILER_MODULE
 module load $CUDA_MODULE
 module load $MPI_MODULE
@@ -50,9 +52,5 @@ if [[ $BUILD_MODE == $TRUE ]]; then
 	module load $CMAKE_MODULE
 fi
 
-# Grrr. The COMPILER_MODULE module doesn't set the following environment variables
-export CC=/mnt/lustre/tursafs1/apps/gcc/9.3.0/bin/gcc
-export CXX=/mnt/lustre/tursafs1/apps/gcc/9.3.0/bin/g++
-export FC=/mnt/lustre/tursafs1/apps/gcc/9.3.0/bin/gfortran
 
 

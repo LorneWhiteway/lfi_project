@@ -1,0 +1,40 @@
+#%Module1.0#####################################################################
+#
+# modulefile for GCC v9.3.0
+# this was compiled with GCC on tursa-login1
+#
+############################################################
+
+set ModulesVersion 9.3.0
+
+proc ModulesHelp {} {
+        global version
+        puts stderr "\tAdds GCC 9.3.0 to your environment"
+        puts stderr "\tModified by LW to set environment variables CC, CXX and Fc as well"
+        puts stderr "\n\tVersion $version\n"
+}
+
+
+module-whatis   "Sets up GCC on your environment"
+
+# PATH
+prepend-path PATH /mnt/lustre/tursafs1/apps/gcc/9.3.0/bin/
+
+# LD_LIBRARY_PATH
+prepend-path LD_LIBRARY_PATH /mnt/lustre/tursafs1/apps/gcc/9.3.0/lib64
+
+# C++ header files
+prepend-path CPLUS_INCLUDE_PATH  /mnt/lustre/tursafs1/apps/gcc/9.3.0/include/c++/9.3.0
+
+# MANPATH
+prepend-path MANPATH /mnt/lustre/tursafs1/apps/gcc/9.3.0/share/man
+
+# CMake environment variables
+setenv CC /mnt/lustre/tursafs1/apps/gcc/9.3.0/bin/gcc
+setenv CXX /mnt/lustre/tursafs1/apps/gcc/9.3.0/bin/g++
+setenv FC /mnt/lustre/tursafs1/apps/gcc/9.3.0/bin/gfortran
+
+# a helpful message for users
+if [module-info mode load] {
+  puts stderr "\n\tGCC 9.3.0 loaded\n"
+}

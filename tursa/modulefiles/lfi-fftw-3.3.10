@@ -1,0 +1,15 @@
+#%Module -*- tcl -*-
+##
+##
+
+prepend-path    PATH              /mnt/lustre/tursafs1/home/dp153/dp153/shared/fftw-3.3.10/bin
+prepend-path    LD_LIBRARY_PATH   /mnt/lustre/tursafs1/home/dp153/dp153/shared/fftw-3.3.10/lib
+prepend-path    LD_LIBRARY_PATH   /mnt/lustre/tursafs1/home/dp153/dp153/shared/fftw-3.3.10/lib64
+prepend-path    LIBRARY_PATH      /mnt/lustre/tursafs1/home/dp153/dp153/shared/fftw-3.3.10/lib
+prepend-path    LIBRARY_PATH      /mnt/lustre/tursafs1/home/dp153/dp153/shared/fftw-3.3.10/lib64
+prepend-path    CPATH             /mnt/lustre/tursafs1/home/dp153/dp153/shared/fftw-3.3.10/include/
+setenv          FFTW_ROOT         /mnt/lustre/tursafs1/home/dp153/dp153/shared/fftw-3.3.10/
+setenv          FFTW3_ROOT        /mnt/lustre/tursafs1/home/dp153/dp153/shared/fftw-3.3.10/
+setenv          FFTW_INCLUDE_DIR  /mnt/lustre/tursafs1/home/dp153/dp153/shared/fftw-3.3.10/include
+setenv          FFTWDIR           /mnt/lustre/tursafs1/home/dp153/dp153/shared/fftw-3.3.10
+
