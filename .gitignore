@@ -11,6 +11,7 @@ experiments/*/z_values.txt
 experiments/*/slurm*
 experiments/*/machine*
 experiments/*/output*
+experiments/*/object_count.pkl
 
 *.tar.gz
 
