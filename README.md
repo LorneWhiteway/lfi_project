@@ -110,17 +110,18 @@ For reference (e.g. in case it needs to be repeated), here's how the virtual env
 
 1. When logging on to Wilkes (<login-gpu.hpc.cam.ac.uk>), it seems to be necessary to type password from keyboard, rather than cutting-and-posting from password safe (despite PuTTY Window/Selection/Ctrl+Shift+{C,V} being set correctly). This seems to be related to the version of PuTTY.
 
-2. I have set up the the shortcut `s` to get to the parent of the project directory.
+2. I have set up the the shortcut `s` to get to the project directory.
 
 3. Use WebDrive to connect to login-gpu.hpc.cam.ac.uk and map it in Windows as the W drive. I have set up a symbolic link `work` in my home directory to point to the project directory.
 
 ## Information about working with the Tursa cluster
 
-1. Project directory is `/mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project`.
+1. Documentation for tursa is at https://epcced.github.io/dirac-docs/.
+
+2. Project directory is `/mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project`.
 
 ### How I installed dependent libraries on Tursa
 
-Documentation for tursa is at https://epcced.github.io/dirac-docs/.
 
 Tursa didn't have any of the dependent libraries installed, so I installed them myself. Each library is installed in a sibling directory to the project directory. I also created module files (to be documented).
 
