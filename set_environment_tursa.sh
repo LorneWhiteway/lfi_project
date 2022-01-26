@@ -52,5 +52,6 @@ if [[ $BUILD_MODE == $TRUE ]]; then
 	module load $CMAKE_MODULE
 fi
 
+source env/bin/activate
 
 
