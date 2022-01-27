@@ -1,0 +1,1 @@
+Contains (as of 27 Jan 2022) two runs (Run001 and Run002) with different assumptions about where the neutrino and photon energy densities should be included in the pkdgrav3 input file. See the comments in the control files for these two runs. See also LW's Slack message to NJ, 17:50 27 Jan 2022.
