@@ -785,6 +785,8 @@ def cosmology_summary(cosmo):
     summary.append("sigma8 = {}".format(cosmo.sigma8))
     summary.append("Omega0_k = {}".format(cosmo.Omega0_k))
     summary.append("Omega_fld = {}".format(cosmo.Ode0))
+    summary.append("Omega0_cb = {}".format(cosmo.Omega0_cb))
+    summary.append("Omega0_m = {}".format(cosmo.Omega0_m))
     return summary
     
     
@@ -904,7 +906,7 @@ def job_script_file_name_no_path():
     return 'cuda_job_script_wilkes'
     
 def runs_letter():
-    return 'C'
+    return 'D'
     
     
 def make_file_executable(file_name):
@@ -916,7 +918,7 @@ def create_input_files_for_multiple_runs():
 
     runs_directory = os.path.join(project_directory(), "runs{}".format(runs_letter()))
     cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, "params_run_1.txt")
-    cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',')
+    cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',').reshape([-1,6]) # The 'reshape' handles the num_runs=1 case.
     num_runs = cosmo_params_for_all_runs.shape[0]
     
     original_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path())
@@ -1070,9 +1072,9 @@ if __name__ == '__main__':
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    #create_input_files_for_multiple_runs()
+    create_input_files_for_multiple_runs()
     #create_launch_script()
-    calculate_each_run_time_and_show_Gantt_chart()
+    #calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
 
     pass
