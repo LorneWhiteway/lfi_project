@@ -6,7 +6,7 @@ Its primary purpose is to make it easy to run the N-body simulation code [pkdgra
 
 This repository contains a version of pkdgrav3 in which several bugs have been fixed.
 
-pkdgrav3 runs most efficiently using GPU hardware, and we provide job files to run pkdgrav3 efficiently on the 'splinter' cluster at UCL and on the DiRAC 'Wilkes3' cluster at Cambridge.
+pkdgrav3 runs most efficiently using GPU hardware, and we provide job files to run pkdgrav3 efficiently on the 'splinter' cluster at UCL, the DiRAC 'Wilkes3' cluster at Cambridge, and the DiRAC 'Tursa' cluster at Edinburgh.
 
 The primary goal of the simulation is to create a sequence of snapshots (at a discrete sequence of time points) of the positions in 3 dimensional space of a collection of particles interacting via gravity. The sequence of snapshots is therefore a 4 dimensional object (3 spatial and 1 temporal dimension). For our purposes we are interested only in the lightcone, i.e. the 3 dimensional submanifold consisting of events that we (as observers at the centre of the simulation box) can actually observe. Within the simulation the lightcone thus becomes a sequence of snapshots (each representing a tomographic slice bounded by two adjacent time points, or equivalently two adjacent distances, or equivalently two adjacent redshifts) of the positions of the particles on the celestial sphere. These positions are then binned into (heal-)pixels to give pixel-by-pixel object counts. In short, the lightcone is a sequence of healpix maps.
 
@@ -58,17 +58,20 @@ srun -p GPU --gres=gpu:<GPU_NAME>:1 --pty tcsh
 
 ## Information about working with the Wilkes cluster
 
-1. Project directory is `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`.
+1. Address is `login-icelake.hpc.cam.ac.uk` (or `login-gpu.hpc.cam.ac.uk`, but this latter address puts you in a place where an inconsistency in the module files makes it hard to run slurm)
 
-2. The following instructions are for using the ampere partition. To use the old pascal partition, contact LW.
+2. Project directory is `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`.
 
-3. In what follows:
-- `<PROJECT-CODE-GPU>` is the project code (contact LW or NJ to get this).
-- `<experiment>` denotes an 'experiment' i.e. a subdirectory of `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/` containing a control file `control.par`. Example: `gpu_256_1024_900`.
+3. `<experiment>` denotes an 'experiment' i.e. a subdirectory of `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/` containing a control file `control.par`. Example: `gpu_256_1024_900`.
+
+### How to load environment variables
+- Log on to Wilkes
+- Go to the project directory
+- Run `source ./set_environment_wilkes.sh`
 
 ### How to log on to one of the Wilkes GPU nodes
 ```
-sintr -A <PROJECT-CODE-GPU> -p ampere -t 1:0:0 --exclusive
+sintr -A DIRAC-DP153-GPU -p ampere -t 1:0:0 --exclusive
 ```
 For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-guide/interactive.html#sintr); the program has the same interface as `sbatch` (so the example above requests an interactive session for one hour).
 
@@ -83,15 +86,7 @@ For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-g
 
 ### Working with python on the Wilkes cluster
 
-I have set up a virtual Python environment in the subdirectory `env` of the project directory. This is convenient as we can install our own software there.
-
-To enter the virtual environment:
-- Go to the project directory
-- `module load python/3.8`
-- `source env/bin/activate`
-
-To leave the virtual environment:
-- `deactivate`
+I have set up a virtual Python environment in the subdirectory `env` of the project directory. This is convenient as we can install our own software there. This is activated automatically by running `source ./set_environment_wilkes.sh` in the project directory.
 
 For reference (e.g. in case it needs to be repeated), here's how the virtual environment was created:
 - Go to the project directory
@@ -108,7 +103,7 @@ For reference (e.g. in case it needs to be repeated), here's how the virtual env
 
 ### Information about Wilkes specifically for LW
 
-1. When logging on to Wilkes (<login-gpu.hpc.cam.ac.uk>), it seems to be necessary to type password from keyboard, rather than cutting-and-posting from password safe (despite PuTTY Window/Selection/Ctrl+Shift+{C,V} being set correctly). This seems to be related to the version of PuTTY.
+1. Recall that when pasting passwords from KeePass into PuTTY, you should use Shift+Insert (and not Ctrl+V).
 
 2. I have set up the the shortcut `s` to get to the project directory.
 
@@ -120,8 +115,18 @@ For reference (e.g. in case it needs to be repeated), here's how the virtual env
 
 2. Project directory is `/mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project`.
 
-### How I installed dependent libraries on Tursa
+### How to log on to one of the Tursa GPU nodes
+```
+srun --partition gpu --gres=gpu:1 --account=DP153 --qos=standard --time=0:30:00 --exclusive --pty bash
+```
+However, it probably isn't necessary to use this (as you can build pkdgrav3 using the login node).
 
+### How to build pkdgrav3 for use by the Tursa GPUs
+
+- Go to the project directory.
+- Run `./cm_tursa.sh build_tursa`. You will need to type `y` to confirm the build directory name.
+
+### How I installed dependent libraries on Tursa
 
 Tursa didn't have any of the dependent libraries installed, so I installed them myself. Each library is installed in a sibling directory to the project directory. I also created module files (to be documented).
 
