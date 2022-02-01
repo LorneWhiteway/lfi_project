@@ -8,8 +8,8 @@ bNewKDK         = 1    # No accelerations in the particle, dual tree possible
 bDualTree       = 1    # Use two trees
 
 # Initial Condition
-dBoxSize        = 250        # Mpc/h
-nGrid           = 16         # Simulation has nGrid^3 particles
+dBoxSize        = 300        # Mpc/h
+nGrid           = 128         # Simulation has nGrid^3 particles
 b2LPT           = 1          # second order IC
 iSeed           = 314159265  # Random seed
 dRedFrom        = 49         # Starting redshift
@@ -28,7 +28,7 @@ dRedTo          = 0
 
 # Lightcone 
 bLightCone      = 1    # Output a lightcone
-nSideHealpix    = 16   # NSide for output lightcone healpix maps.
+nSideHealpix    = 128   # NSide for output lightcone healpix maps.
 
 # Logging/Output
 iLogInterval    = 1
