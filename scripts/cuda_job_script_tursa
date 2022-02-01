@@ -7,7 +7,7 @@
 #SBATCH --job-name=pkdgrav3
 #SBATCH --time=35:59:00
 #SBATCH --nodes=1
-#SBATCH --tasks-per-node=1
+#SBATCH --ntasks=1
 #SBATCH --gres=gpu:1
 #SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
 #SBATCH --mail-type=FAIL
