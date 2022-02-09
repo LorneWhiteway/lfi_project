@@ -853,6 +853,8 @@ def make_specific_cosmology_transfer_function(directory, Omega0_m, sigma8, w, Om
         print("Parameters:")
         for line in cosmology_summary(cosmology_object):
             print(line)
+            
+    return cosmology_object
 
 
 def make_specific_cosmology_transfer_function_caller():
@@ -863,7 +865,7 @@ def make_specific_cosmology_transfer_function_caller():
         Omega0_b = 0.043508831007317443,
         h = 0.716547375449984592,
         n_s = 0.951311068780816615,
-        P_k_max = 10.0)
+        P_k_max = 100.0)
     
     
     
@@ -907,7 +909,7 @@ def job_script_file_name_no_path():
     return 'cuda_job_script_wilkes'
     
 def runs_letter():
-    return 'D'
+    return 'E'
     
     
 def make_file_executable(file_name):
@@ -927,12 +929,15 @@ def create_input_files_for_multiple_runs():
     control_file_name_no_path = 'control.par'
     original_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
     
+    random_seed_offset_dict = {'C' : 0, 'E' : 128}
+    random_seed_offset = random_seed_offset_dict[runs_letter()]
+    
     
     for run_num_zero_based in range(num_runs):
         run_num_one_based = run_num_zero_based + 1
         
         # Amend the code here to restrict to just certain directories.
-        if (run_num_one_based == 4):
+        if (True):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
@@ -953,11 +958,23 @@ def create_input_files_for_multiple_runs():
             change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH -J ', 'pgr3_{}'.format(run_string))
             change_one_value_in_ini_file(this_job_script_file_name, 'application=', '"/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/pkdgrav3_and_post_process.sh"'.format(runs_letter(), run_string))
             
+            # Transfer function
+            cosmology_object = make_specific_cosmology_transfer_function(this_run_directory,
+                Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
+                sigma8 = cosmo_params_for_all_runs[run_num_zero_based, 1],
+                w = cosmo_params_for_all_runs[run_num_zero_based, 2],
+                Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 3],
+                h = cosmo_params_for_all_runs[run_num_zero_based, 4],
+                n_s = cosmo_params_for_all_runs[run_num_zero_based, 5],
+                P_k_max=100.0)
+                
+            OmegaDE = cosmology_object.Ode0
+
             # Control file
             copyfile(original_control_file_name, this_control_file_name)
             change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./transfer_function.txt"')
-            change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 0]))
-            change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(1.0-cosmo_params_for_all_runs[run_num_zero_based, 0]))
+            change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(1.0-OmegaDE) + "    # 1-dOmegaDE")
+            change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(OmegaDE) + "    # Equal to Omega_fld in transfer function")
             change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 1]))
             # Work around pkdgrav3 ini file parsing bug - doesn't like negative numbers.
             acos_w_string = "2.0*math.cos({})  # {}".format(math.acos(cosmo_params_for_all_runs[run_num_zero_based, 2] / 2.0), cosmo_params_for_all_runs[run_num_zero_based, 2])
@@ -965,7 +982,7 @@ def create_input_files_for_multiple_runs():
             change_one_value_in_ini_file(this_control_file_name, 'h               = ', str(cosmo_params_for_all_runs[run_num_zero_based, 4]))
             change_one_value_in_ini_file(this_control_file_name, 'dSpectral       = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
             
-            change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based) + "          # Random seed")
+            change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "          # Random seed")
             
             change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "1250       # Mpc/h")
             change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1080       # Simulation has nGrid^3 particles")
@@ -986,15 +1003,6 @@ def create_input_files_for_multiple_runs():
                 out_file.write("test -f ./run{}.tar.gz && rm ./run{}/run*\n".format(run_string, run_string))
             make_file_executable(run_script_name)
             
-            # Transfer function
-            make_specific_cosmology_transfer_function(this_run_directory,
-                Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
-                sigma8 = cosmo_params_for_all_runs[run_num_zero_based, 1],
-                w = cosmo_params_for_all_runs[run_num_zero_based, 2],
-                Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 3],
-                h = cosmo_params_for_all_runs[run_num_zero_based, 4],
-                n_s = cosmo_params_for_all_runs[run_num_zero_based, 5],
-                P_k_max=100.0)
 
 def create_launch_script():
     launch_script_file_name = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/launch.sh".format(runs_letter())
