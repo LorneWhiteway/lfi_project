@@ -828,7 +828,7 @@ def set_of_wavenumbers():
     7.68740E+03,1.07286E+04])
     
    
-def make_specific_cosmology_transfer_function(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s):
+def make_specific_cosmology_transfer_function(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, P_k_max):
 
     from nbodykit.lab import cosmology
 
@@ -836,7 +836,7 @@ def make_specific_cosmology_transfer_function(directory, Omega0_m, sigma8, w, Om
     cosmology_parameters_file_name = os.path.join(directory, "transfer_function_cosmology.txt")
 
     k = set_of_wavenumbers()
-    cosmology_object = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=(Omega0_m-Omega0_b), w0_fld=w, n_s=n_s).match(sigma8=sigma8)
+    cosmology_object = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=(Omega0_m-Omega0_b), w0_fld=w, n_s=n_s, P_k_max=P_k_max).match(sigma8=sigma8)
     transfer_function = np.column_stack([k, cosmology.power.transfers.CLASS(cosmology_object, 0.0)(k)])
     transfer_function = trim_rows_containing_nan(transfer_function)
     np.savetxt(transfer_function_file_name, transfer_function, delimiter = " ", fmt = "%10.5E")
@@ -862,7 +862,8 @@ def make_specific_cosmology_transfer_function_caller():
         w = -0.792417404234305733,
         Omega0_b = 0.043508831007317443,
         h = 0.716547375449984592,
-        n_s = 0.951311068780816615)
+        n_s = 0.951311068780816615,
+        P_k_max = 10.0)
     
     
     
@@ -931,7 +932,7 @@ def create_input_files_for_multiple_runs():
         run_num_one_based = run_num_zero_based + 1
         
         # Amend the code here to restrict to just certain directories.
-        if (True):
+        if (run_num_one_based == 4):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
@@ -992,7 +993,8 @@ def create_input_files_for_multiple_runs():
                 w = cosmo_params_for_all_runs[run_num_zero_based, 2],
                 Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 3],
                 h = cosmo_params_for_all_runs[run_num_zero_based, 4],
-                n_s = cosmo_params_for_all_runs[run_num_zero_based, 5])
+                n_s = cosmo_params_for_all_runs[run_num_zero_based, 5],
+                P_k_max=100.0)
 
 def create_launch_script():
     launch_script_file_name = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/launch.sh".format(runs_letter())
