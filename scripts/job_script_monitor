@@ -6,8 +6,7 @@
 
 #! Modified by LW
 #! Command line example:
-#! sbatch ../../scripts/cuda_job_script_wilkes
-#! Run it from the directory in which the control file is located.
+#! sbatch ./job_script_monitor
 
 #!#############################################################
 #!#### Modify the options in this section as appropriate ######
@@ -65,7 +64,7 @@ source /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/env/bin/activate
 application="/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/scripts/monitor.py"
 
 #! Run options for the application:
-options="/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsC/ >> /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsC/monitor_output.txt"
+options="/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsE/ >> /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsE/monitor_output.txt"
 
 
 #! Work directory (i.e. where the job will run):

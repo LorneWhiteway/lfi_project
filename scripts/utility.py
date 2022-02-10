@@ -920,7 +920,9 @@ def make_file_executable(file_name):
 def create_input_files_for_multiple_runs():
 
     runs_directory = os.path.join(project_directory(), "runs{}".format(runs_letter()))
-    cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, "params_run_1.txt")
+    
+    cosmo_params_base_file_name_dict = {'C' : "params_run_1.txt", 'E' : "params_run_2.txt"}
+    cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, cosmo_params_base_file_name_dict[runs_letter()])
     cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',').reshape([-1,6]) # The 'reshape' handles the num_runs=1 case.
     num_runs = cosmo_params_for_all_runs.shape[0]
     
