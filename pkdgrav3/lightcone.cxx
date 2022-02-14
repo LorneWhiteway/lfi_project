@@ -28,7 +28,11 @@
 
 extern "C" void addToLightCone(PKD pkd,double *r,float fPot,PARTICLE *p,int bParticleOutput);
 
-#define NBOX 184
+#define NBOX 5112
+
+// Includes code provided by Janis Fluri to increase number of replications from 6^3 to 20^3.
+// See https://cosmo-gitlab.phys.ethz.ch/jafluri/pkdgrav3_dev.
+
 
 extern "C"
 void pkdProcessLightCone(PKD pkd,PARTICLE *p,float fPot,double dLookbackFac,double dLookbackFacLCP,
@@ -36,31 +40,87 @@ void pkdProcessLightCone(PKD pkd,PARTICLE *p,float fPot,double dLookbackFac,doub
     const double dLightSpeed = dLightSpeedSim(dBoxSize);
     const double mrLCP = dLightSpeed*dLookbackFacLCP;
 
-    int nBox = NBOX; /* Check all 184 by default */
+    int nBox = NBOX; /* Check all 5112 by default */
     double dxStart;
 
-    dxStart = (dLookbackFac*dLightSpeed - 3.0)/(dKickDelta*dLightSpeed);
+    dxStart = (dLookbackFac*dLightSpeed - 10.0)/(dKickDelta*dLightSpeed);
     if (dxStart > 1) return;
     else if (dxStart < 0) {
-	dxStart = (dLookbackFac*dLightSpeed - 2.0)/(dKickDelta*dLightSpeed);
-	if (dxStart >= 0) dxStart = 0;
-	else {
-	    /*
-	    ** Check only 64!
-	    */
-	    nBox = 64;
-	    dxStart = (dLookbackFac*dLightSpeed - 1.0)/(dKickDelta*dLightSpeed);
-	    if (dxStart >= 0) dxStart = 0;
-	    else {
-		/*
-		** Check only 8!
-		*/
-		nBox = 8;
-		if (dLookbackFac >= 0) dxStart = 0;
-		else return;   /* Nothing to check */
-		}
-	    }
-	}
+        dxStart = (dLookbackFac*dLightSpeed - 9.0)/(dKickDelta*dLightSpeed);
+        if (dxStart >= 0) dxStart = 0;
+        else {
+            /*
+            ** Check only 3768!
+            */
+            nBox = 3768;
+            dxStart = (dLookbackFac*dLightSpeed - 8.0)/(dKickDelta*dLightSpeed);
+            if (dxStart >= 0) dxStart = 0;
+            else {
+                /*
+                ** Check only 2728!
+                */
+                nBox = 2728;
+                dxStart = (dLookbackFac*dLightSpeed - 7.0)/(dKickDelta*dLightSpeed);
+                if (dxStart >= 0) dxStart = 0;
+                else {
+                    /*
+                    ** Check only 1840!
+                    */
+                    nBox = 1840;
+                    dxStart = (dLookbackFac*dLightSpeed - 6.0)/(dKickDelta*dLightSpeed);
+                    if (dxStart >= 0) dxStart = 0;
+                    else {
+                        /*
+                        ** Check only 1256!
+                        */
+                        nBox = 1256;
+                        dxStart = (dLookbackFac*dLightSpeed - 5.0)/(dKickDelta*dLightSpeed);
+                        if (dxStart >= 0) dxStart = 0;
+                        else {
+                            /*
+                            ** Check only 720!
+                            */
+                            nBox = 720;
+                            dxStart = (dLookbackFac*dLightSpeed - 4.0)/(dKickDelta*dLightSpeed);
+                            if (dxStart >= 0) dxStart = 0;
+                            else {
+                                /*
+                                ** Check only 408!
+                                */
+                                nBox = 408;
+                                dxStart = (dLookbackFac*dLightSpeed - 3.0)/(dKickDelta*dLightSpeed);
+                                if (dxStart >= 0) dxStart = 0;
+                                else {
+                                    /*
+                                    ** Check only 184!
+                                    */
+                                    nBox = 184;
+                                    dxStart = (dLookbackFac*dLightSpeed - 2.0)/(dKickDelta*dLightSpeed);
+                                    if (dxStart >= 0) dxStart = 0;
+                                    else {
+                                        /*
+                                        ** Check only 64!
+                                        */
+                                        nBox = 64;
+                                        dxStart = (dLookbackFac*dLightSpeed - 1.0)/(dKickDelta*dLightSpeed);
+                                        if (dxStart >= 0) dxStart = 0;
+                                        else {
+                                            /*
+                                            ** Check only 8!
+                                            */
+                                            nBox = 8;
+                                            if (dLookbackFac >= 0) dxStart = 0;
+                                            else return;   /* Nothing to check */
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
     const vel_t *v = pkdVel(pkd,p);
     double r0[3],r1[3];

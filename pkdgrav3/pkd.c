@@ -339,6 +339,10 @@ static int gcd ( int a, int b ) {
     return b;
     }
 
+
+// Includes code provided by Janis Fluri to increase number of replications from 6^3 to 20^3.
+// See https://cosmo-gitlab.phys.ethz.ch/jafluri/pkdgrav3_dev.
+
 void initLightConeOffsets(PKD pkd) {
     BND bnd = {0,0,0,0.5,0.5,0.5};
     double min2;
@@ -391,6 +395,139 @@ void initLightConeOffsets(PKD pkd) {
 	    }
 	}
     assert(nBox == 184);
+    for (ix=-3;ix<=4;++ix) {
+        for (iy=-3;iy<=4;++iy) {
+            for (iz=-3;iz<=4;++iz) {
+                double r[3] = {ix - 0.5, iy - 0.5, iz - 0.5};
+                MINDIST(&bnd,r,min2);
+                // We also need the requirement min2 < 9.0 otherwise we skip too much...
+                if (ix>=-2 && ix<=3 && iy>=-2 && iy<=3 && iz>=-2 && iz<=3 && min2<9.0)
+                    continue;
+                if (min2 < 16.0) {
+                    pkd->lcOffset0[nBox] = r[0];
+                    pkd->lcOffset1[nBox] = r[1];
+                    pkd->lcOffset2[nBox] = r[2];
+                    ++nBox;
+                    }
+                }
+            }
+        }
+    //printf("Box count: %i \n", nBox);
+    assert(nBox == 408);
+    for (ix=-4;ix<=5;++ix) {
+        for (iy=-4;iy<=5;++iy) {
+            for (iz=-4;iz<=5;++iz) {
+                double r[3] = {ix - 0.5, iy - 0.5, iz - 0.5};
+                MINDIST(&bnd,r,min2);
+                // We also need the requirement min2 < 16.0 otherwise we skip too much...
+                if (ix>=-3 && ix<=4 && iy>=-3 && iy<=4 && iz>=-3 && iz<=4 && min2<16.0)
+                    continue;
+                if (min2 < 25.0) {
+                    pkd->lcOffset0[nBox] = r[0];
+                    pkd->lcOffset1[nBox] = r[1];
+                    pkd->lcOffset2[nBox] = r[2];
+                    ++nBox;
+                    }
+                }
+            }
+        }
+    //printf("Box count: %i \n", nBox);
+    assert(nBox == 720);
+    for (ix=-5;ix<=6;++ix) {
+        for (iy=-5;iy<=6;++iy) {
+            for (iz=-5;iz<=6;++iz) {
+                double r[3] = {ix - 0.5, iy - 0.5, iz - 0.5};
+                MINDIST(&bnd,r,min2);
+                // We also need the requirement min2 < 25.0 otherwise we skip too much...
+                if (ix>=-4 && ix<=5 && iy>=-4 && iy<=5 && iz>=-4 && iz<=5 && min2<25.0)
+                    continue;
+                if (min2 < 36.0) {
+                    pkd->lcOffset0[nBox] = r[0];
+                    pkd->lcOffset1[nBox] = r[1];
+                    pkd->lcOffset2[nBox] = r[2];
+                    ++nBox;
+                    }
+                }
+            }
+        }
+    //printf("Box count: %i \n", nBox);
+    assert(nBox == 1256);
+    for (ix=-6;ix<=7;++ix) {
+        for (iy=-6;iy<=7;++iy) {
+            for (iz=-6;iz<=7;++iz) {
+                double r[3] = {ix - 0.5, iy - 0.5, iz - 0.5};
+                MINDIST(&bnd,r,min2);
+                // We also need the requirement min2 < 36.0 otherwise we skip too much...
+                if (ix>=-5 && ix<=6 && iy>=-5 && iy<=6 && iz>=-5 && iz<=6 && min2<36.0)
+                    continue;
+                if (min2 < 49.0) {
+                    pkd->lcOffset0[nBox] = r[0];
+                    pkd->lcOffset1[nBox] = r[1];
+                    pkd->lcOffset2[nBox] = r[2];
+                    ++nBox;
+                    }
+                }
+            }
+        }
+    //printf("Box count: %i \n", nBox);
+    assert(nBox == 1840);
+    for (ix=-7;ix<=8;++ix) {
+        for (iy=-7;iy<=8;++iy) {
+            for (iz=-7;iz<=8;++iz) {
+                double r[3] = {ix - 0.5, iy - 0.5, iz - 0.5};
+                MINDIST(&bnd,r,min2);
+                // We also need the requirement min2 < 49.0 otherwise we skip too much...
+                if (ix>=-6 && ix<=7 && iy>=-6 && iy<=7 && iz>=-6 && iz<=7 && min2<49.0)
+                    continue;
+                if (min2 < 64.0) {
+                    pkd->lcOffset0[nBox] = r[0];
+                    pkd->lcOffset1[nBox] = r[1];
+                    pkd->lcOffset2[nBox] = r[2];
+                    ++nBox;
+                    }
+                }
+            }
+        }
+    //printf("Box count: %i \n", nBox);
+    assert(nBox == 2728);
+    for (ix=-8;ix<=9;++ix) {
+        for (iy=-8;iy<=9;++iy) {
+            for (iz=-8;iz<=9;++iz) {
+                double r[3] = {ix - 0.5, iy - 0.5, iz - 0.5};
+                MINDIST(&bnd,r,min2);
+                // We also need the requirement min2 < 64.0 otherwise we skip too much...
+                if (ix>=-7 && ix<=8 && iy>=-7 && iy<=8 && iz>=-7 && iz<=8 && min2<64.0)
+                    continue;
+                if (min2 < 81.0) {
+                    pkd->lcOffset0[nBox] = r[0];
+                    pkd->lcOffset1[nBox] = r[1];
+                    pkd->lcOffset2[nBox] = r[2];
+                    ++nBox;
+                    }
+                }
+            }
+        }
+    //printf("Box count: %i \n", nBox);
+    assert(nBox == 3768);
+    for (ix=-9;ix<=10;++ix) {
+        for (iy=-9;iy<=10;++iy) {
+            for (iz=-9;iz<=10;++iz) {
+                double r[3] = {ix - 0.5, iy - 0.5, iz - 0.5};
+                MINDIST(&bnd,r,min2);
+                // We also need the requirement min2 < 81.0 otherwise we skip too much...
+                if (ix>=-8 && ix<=9 && iy>=-8 && iy<=9 && iz>=-8 && iz<=9 && min2<81.0)
+                    continue;
+                if (min2 < 100.0) {
+                    pkd->lcOffset0[nBox] = r[0];
+                    pkd->lcOffset1[nBox] = r[1];
+                    pkd->lcOffset2[nBox] = r[2];
+                    ++nBox;
+                    }
+                }
+            }
+        }
+    //printf("Box count: %i \n", nBox);
+    assert(nBox == 5112);
     }
 
 void pkdInitialize(
@@ -2453,7 +2590,7 @@ void addToLightCone(PKD pkd,double *r,float fPot,PARTICLE *p,int bParticleOutput
     }
 
 #ifndef USE_SIMD_LC
-#define NBOX 184
+#define NBOX 5112
 void pkdProcessLightCone(PKD pkd,PARTICLE *p,float fPot,double dLookbackFac,double dLookbackFacLCP,double dDriftDelta,double dKickDelta) {
     const double dLightSpeed = dLightSpeedSim(pkd->param.dBoxSize);
     const double mrLCP = dLightSpeed*dLookbackFacLCP;
@@ -2471,7 +2608,7 @@ void pkdProcessLightCone(PKD pkd,PARTICLE *p,float fPot,double dLookbackFac,doub
 	} isect[4], temp;
     
     /*
-    ** Check all 184 by default.
+    ** Check all 5112 by default.
     */
     nBox = NBOX;
     xStart = (dLookbackFac*dLightSpeed - 3.0)/(dKickDelta*dLightSpeed);
