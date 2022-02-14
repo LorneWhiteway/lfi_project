@@ -755,9 +755,9 @@ typedef struct pkdContext {
     /*
     ** Light cone variables.
     */
-    double lcOffset0[184];
-    double lcOffset1[184];
-    double lcOffset2[184];
+    double lcOffset0[5112];
+    double lcOffset1[5112];
+    double lcOffset2[5112];
     asyncFileInfo afiLightCone;
     LIGHTCONEP *pLightCone;
     int nLightCone, nLightConeMax;
