@@ -875,7 +875,8 @@ def make_specific_cosmology_transfer_function_caller():
 
 # ======================== Start of code for creating input files for multiple runs ========================
 
-
+def double_quoted_string(s):
+    return '"' + s + '"'
     
 def change_one_value_in_ini_file(file_name, key, new_value):
     list_of_lines = []
@@ -907,6 +908,10 @@ def project_directory():
     # Return parent directory of directory containing script.
     # See also https://stackoverflow.com/questions/2860153/how-do-i-get-the-parent-directory-in-python
     # for alternative solutions.
+    # Current values:
+    # Wilkes: /rds/project/dirac_vol5/rds-dirac-dp153/lfi_project
+    # Tursa: /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project
+    # Splinter: /share/splinter/ucapwhi/lfi_project
     script_directory = os.path.dirname(os.path.abspath(sys.modules['__main__'].__file__))
     return os.path.dirname(script_directory)
     
@@ -949,7 +954,7 @@ def create_input_files_for_multiple_runs():
         run_num_one_based = run_num_zero_based + 1
         
         # Amend the code here to restrict to just certain directories.
-        if (True):
+        if (run_num_one_based == 22):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
@@ -958,7 +963,7 @@ def create_input_files_for_multiple_runs():
             this_run_directory = os.path.join(runs_directory, "run" + run_string)
             this_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path())
             this_control_file_name = os.path.join(this_run_directory, control_file_name_no_path)
-            
+            run_script_name = os.path.join(this_run_directory, "pkdgrav3_and_post_process.sh")
             
         
             # Make directory
@@ -968,7 +973,7 @@ def create_input_files_for_multiple_runs():
             copyfile(original_job_script_file_name, this_job_script_file_name)
             change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', '35:59:00')
             change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH -J ', 'pgr3_{}'.format(run_string))
-            change_one_value_in_ini_file(this_job_script_file_name, 'application=', '"/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/pkdgrav3_and_post_process.sh"'.format(runs_letter(), run_string))
+            change_one_value_in_ini_file(this_job_script_file_name, 'application=', double_quoted_string(run_script_name))
             
             # Transfer function
             cosmology_object = make_specific_cosmology_transfer_function(this_run_directory,
@@ -1002,7 +1007,6 @@ def create_input_files_for_multiple_runs():
             
             
             # Run script
-            run_script_name = os.path.join(this_run_directory, "pkdgrav3_and_post_process.sh")
             with open(run_script_name, 'w') as out_file:
                 out_file.write("#!/usr/bin/env bash\n") # See https://stackoverflow.com/questions/10376206/what-is-the-preferred-bash-shebang for the full discussion...
                 out_file.write("module load python/3.8\n")
@@ -1094,12 +1098,11 @@ if __name__ == '__main__':
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    #create_input_files_for_multiple_runs()
+    create_input_files_for_multiple_runs()
     #create_launch_script()
     #calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
-    print(project_directory())
-
+    
     pass
     
     
