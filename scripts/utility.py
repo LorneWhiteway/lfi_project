@@ -898,8 +898,18 @@ def change_one_value_in_ini_file(file_name, key, new_value):
             outfile.write(line)
     
 
+# See https://stackoverflow.com/questions/606561/how-to-get-filename-of-the-main-module-in-python
+def get_exec_path():
+    return os.path.dirname(os.path.abspath(sys.modules['__main__'].__file__))
+
+
 def project_directory():
-    return "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/"
+    # Return parent directory of directory containing script.
+    # See also https://stackoverflow.com/questions/2860153/how-do-i-get-the-parent-directory-in-python
+    # for alternative solutions.
+    script_directory = os.path.dirname(os.path.abspath(sys.modules['__main__'].__file__))
+    return os.path.dirname(script_directory)
+    
     
 def zfilled_run_num(run_num):
     return str(run_num).zfill(3)
@@ -1084,10 +1094,11 @@ if __name__ == '__main__':
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    create_input_files_for_multiple_runs()
+    #create_input_files_for_multiple_runs()
     #create_launch_script()
     #calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
+    print(project_directory())
 
     pass
     
