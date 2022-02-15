@@ -903,50 +903,73 @@ def change_one_value_in_ini_file(file_name, key, new_value):
 def get_exec_path():
     return os.path.dirname(os.path.abspath(sys.modules['__main__'].__file__))
 
-
-def project_directory():
-    # Return parent directory of directory containing script.
-    # See also https://stackoverflow.com/questions/2860153/how-do-i-get-the-parent-directory-in-python
-    # for alternative solutions.
-    # Current values:
-    # Wilkes: /rds/project/dirac_vol5/rds-dirac-dp153/lfi_project
-    # Tursa: /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project
-    # Splinter: /share/splinter/ucapwhi/lfi_project
-    script_directory = os.path.dirname(os.path.abspath(sys.modules['__main__'].__file__))
-    return os.path.dirname(script_directory)
+# location can be 'wilkes', 'tursa', 'splinter' or 'current'
+def project_directory(location):
+    if location == 'wilkes':
+        return "/rds/project/dirac_vol5/rds-dirac-dp153/lfi_project"
+    elif location == 'tursa':
+        return "/mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project"
+    elif location == 'splinter':
+        return "/share/splinter/ucapwhi/lfi_project"
+    elif location == 'current':
+        # Return parent directory of directory containing script.
+        # See also https://stackoverflow.com/questions/2860153/how-do-i-get-the-parent-directory-in-python
+        # for alternative solutions.
+        script_directory = os.path.dirname(os.path.abspath(sys.modules['__main__'].__file__))
+        return os.path.dirname(script_directory)
     
     
 def zfilled_run_num(run_num):
     return str(run_num).zfill(3)
 
 
-def job_script_file_name_no_path():
-    return 'cuda_job_script_wilkes'
+def job_script_file_name_no_path(location):
+    return 'cuda_job_script_{}'.format(location)
     
 def runs_letter():
-    return 'E'
+    return 'G'
     
     
 def make_file_executable(file_name):
     st = os.stat(file_name)
     os.chmod(file_name, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH) # See https://stackoverflow.com/questions/12791997/
+    
+    
+def write_run_script(location, run_string, run_script_file_name, list_of_set_environment_commands):
+    with open(run_script_file_name, 'w') as out_file:
+        out_file.write("#!/usr/bin/env bash\n") # See https://stackoverflow.com/questions/10376206/what-is-the-preferred-bash-shebang for the full discussion...
+        for e in list_of_set_environment_commands:
+            out_file.write(e)
+            
+        out_file.write("cd {}/runs{}/run{}/\n".format(project_directory(location), runs_letter(), run_string))
+        out_file.write("{}/pkdgrav3/build_wilkes/pkdgrav3 ./control.par > ./output.txt\n".format(project_directory(location)))
+        out_file.write("python3 {}/scripts/pkdgrav3_postprocess.py -l -d -f . >> ./output.txt\n".format(project_directory(location)))
+        out_file.write("cd {}/runs{}/\n".format(format(project_directory(location)), runs_letter()))
+        out_file.write("tar czvf run{}.tar.gz ./run{}/\n".format(run_string, run_string))
+        out_file.write("test -f ./run{}.tar.gz && rm ./run{}/run*\n".format(run_string, run_string))
+    make_file_executable(run_script_file_name)
+    
 
 
 def create_input_files_for_multiple_runs():
 
-    runs_directory = os.path.join(project_directory(), "runs{}".format(runs_letter()))
+    runs_directory = os.path.join(project_directory("current"), "runs{}".format(runs_letter()))
     
-    cosmo_params_base_file_name_dict = {'C' : "params_run_1.txt", 'E' : "params_run_2.txt"}
+    cosmo_params_base_file_name_dict = {'C' : "params_run_1.txt", 'E' : "params_run_2.txt", 'G' : "params_run_3.txt"}
     cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, cosmo_params_base_file_name_dict[runs_letter()])
     cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',').reshape([-1,6]) # The 'reshape' handles the num_runs=1 case.
     num_runs = cosmo_params_for_all_runs.shape[0]
     
-    original_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path())
+    tursa_numa_wrapper_file_name_no_path = "wrapper.sh"
+    
+    original_wilkes_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path("wilkes"))
+    original_tursa_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path("tursa"))
+    original_numa_wrapper_file_name = os.path.join(runs_directory, tursa_numa_wrapper_file_name_no_path)
     
     control_file_name_no_path = 'control.par'
     original_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
     
-    random_seed_offset_dict = {'C' : 0, 'E' : 128}
+    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'G' : 192}
     random_seed_offset = random_seed_offset_dict[runs_letter()]
     
     
@@ -954,27 +977,35 @@ def create_input_files_for_multiple_runs():
         run_num_one_based = run_num_zero_based + 1
         
         # Amend the code here to restrict to just certain directories.
-        if (run_num_one_based == 22):
+        if (True):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
             run_string = zfilled_run_num(run_num_one_based)
             
             this_run_directory = os.path.join(runs_directory, "run" + run_string)
-            this_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path())
+            this_wilkes_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path("wilkes"))
+            this_tursa_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path("tursa"))
             this_control_file_name = os.path.join(this_run_directory, control_file_name_no_path)
-            run_script_name = os.path.join(this_run_directory, "pkdgrav3_and_post_process.sh")
+            run_script_name_wilkes = os.path.join(this_run_directory, "pkdgrav3_and_post_process_wilkes.sh")
+            run_script_name_tursa = os.path.join(this_run_directory, "pkdgrav3_and_post_process_tursa.sh")
             
         
             # Make directory
             os.makedirs(this_run_directory, exist_ok = True)
             
-            # Job script
-            copyfile(original_job_script_file_name, this_job_script_file_name)
-            change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', '35:59:00')
-            change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH -J ', 'pgr3_{}'.format(run_string))
-            change_one_value_in_ini_file(this_job_script_file_name, 'application=', double_quoted_string(run_script_name))
+            # Wilkes job script
+            copyfile(original_wilkes_job_script_file_name, this_wilkes_job_script_file_name)
+            change_one_value_in_ini_file(this_wilkes_job_script_file_name, '#SBATCH --time=', '35:59:00')
+            change_one_value_in_ini_file(this_wilkes_job_script_file_name, '#SBATCH -J ', 'pgr3_{}'.format(run_string))
+            change_one_value_in_ini_file(this_wilkes_job_script_file_name, 'application=', double_quoted_string(run_script_name_wilkes))
             
+            # Tursa job script
+            copyfile(original_tursa_job_script_file_name, this_tursa_job_script_file_name)
+            change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --time=', '47:59:00')
+            change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --job-name=', 'pgr3_{}'.format(run_string))
+            change_one_value_in_ini_file(this_tursa_job_script_file_name, 'application=', double_quoted_string(run_script_name_tursa))
+
             # Transfer function
             cosmology_object = make_specific_cosmology_transfer_function(this_run_directory,
                 Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
@@ -1006,18 +1037,23 @@ def create_input_files_for_multiple_runs():
             change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "2048 # NSide for output lightcone healpix maps.")
             
             
-            # Run script
-            with open(run_script_name, 'w') as out_file:
-                out_file.write("#!/usr/bin/env bash\n") # See https://stackoverflow.com/questions/10376206/what-is-the-preferred-bash-shebang for the full discussion...
-                out_file.write("module load python/3.8\n")
-                out_file.write("source /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/env/bin/activate\n")
-                out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/\n".format(runs_letter(), run_string))
-                out_file.write("/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/pkdgrav3/build_wilkes/pkdgrav3 ./control.par > ./output.txt\n")
-                out_file.write("python3 /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/scripts/pkdgrav3_postprocess.py -l -d -f . >> ./output.txt\n")
-                out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/\n".format(runs_letter()))
-                out_file.write("tar czvf run{}.tar.gz ./run{}/\n".format(run_string, run_string))
-                out_file.write("test -f ./run{}.tar.gz && rm ./run{}/run*\n".format(run_string, run_string))
-            make_file_executable(run_script_name)
+            # Wilkes run script
+            wilkes_set_environment_commands = ["module load python/3.8\n", "source {}/env/bin/activate\n".format(project_directory("wilkes"))]
+            write_run_script("wilkes", run_string, run_script_name_wilkes, wilkes_set_environment_commands)
+
+            
+            # Tursa run script
+            tursa_set_environment_commands = ["source {}/set_environment_tursa.sh\n".format(project_directory("tursa"))]
+            write_run_script("tursa", run_string, run_script_name_tursa, tursa_set_environment_commands)
+                        
+            
+            # Tursa numa wrapper
+            this_numa_wrapper_file_name = os.path.join(this_run_directory, tursa_numa_wrapper_file_name_no_path)
+            copyfile(original_numa_wrapper_file_name, this_numa_wrapper_file_name)
+            
+            
+            
+            
             
 
 def create_launch_script():
