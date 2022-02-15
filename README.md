@@ -35,6 +35,8 @@ LW has made the following changes to this code:
 
 7. Amended mdl2/mpi/mdl.c so that hwloc_topology_destroy is called only if bDedicated == 1 (as otherwise the topology object will not have been initialised and the call to hwloc_topology_destroy will cause a crash).
 
+8. Increased number of replications of the simulation box at 'lightcone creation' time from 6^3 to 20^3. This change incorporates code made available by Janis Fluri (https://cosmo-gitlab.phys.ethz.ch/jafluri/pkdgrav3_dev) - many thanks to Janis! This change affected lightcone.cxx, pkd.c and pkd.h.
+
 ## Information about working with the splinter cluster
 
 1. Project directory is `/share/splinter/ucapwhi/lfi_project`.
