@@ -489,7 +489,7 @@ def build_z_values_file(directory):
     
     box_size = float(get_from_control_file(control_file_name, "dBoxSize"))
 
-    # Prepand step 0 values
+    # Prepend step 0 values
     starting_z = float(get_from_control_file(control_file_name, "dRedFrom"))
     s_arr = np.concatenate(([0], s_arr))
     z_arr = np.concatenate(([starting_z], z_arr))
@@ -497,11 +497,14 @@ def build_z_values_file(directory):
     cmd_arr = cosmo.comoving_distance(z_arr).value # In Mpc/h
     cmd_over_box_arr = cmd_arr / box_size # Unitless
     
+    slice_volume = (4.0 / 3.0) * math.pi * (cmd_arr[:-1]**3 - cmd_arr[1:]**3) # In (Mpc/h)^3
+    slice_volume_over_box_volume = slice_volume / box_size**3
     
-    header = "Step,z_far,z_near,delta_z,cmd_far(Mpc/h),cmd_near(Mpc/h),delta_cmd(Mpc/h),cmd/box_far,cmd/box_near,delta_cmd/box"
+    
+    header = "Step,z_far,z_near,delta_z,cmd_far(Mpc/h),cmd_near(Mpc/h),delta_cmd(Mpc/h),cmd/box_far,cmd/box_near,delta_cmd/box,cmvolume,cmvolume/boxvolume"
     
     
-    np.savetxt(output_filename, np.column_stack((s_arr[1:], z_arr[:-1], z_arr[1:], (z_arr[:-1]-z_arr[1:]), cmd_arr[:-1], cmd_arr[1:], (cmd_arr[:-1]-cmd_arr[1:]), cmd_over_box_arr[:-1], cmd_over_box_arr[1:], (cmd_over_box_arr[:-1]-cmd_over_box_arr[1:]))), fmt=["%i", "%.6f", "%.6f", "%.6f", "%.6f", "%.6f", "%.6f", "%.6f", "%.6f", "%.6f"], delimiter=",", header=header)
+    np.savetxt(output_filename, np.column_stack((s_arr[1:], z_arr[:-1], z_arr[1:], (z_arr[:-1]-z_arr[1:]), cmd_arr[:-1], cmd_arr[1:], (cmd_arr[:-1]-cmd_arr[1:]), cmd_over_box_arr[:-1], cmd_over_box_arr[1:], (cmd_over_box_arr[:-1]-cmd_over_box_arr[1:]), slice_volume, slice_volume_over_box_volume)), fmt=["%i", "%.6f", "%.6f", "%.6f", "%.6f", "%.6f", "%.6f", "%.6f", "%.6f", "%.6f", "%.2f", "%.6f"], delimiter=",", header=header)
     
 
 
@@ -943,7 +946,7 @@ def write_run_script(location, run_string, run_script_file_name, list_of_set_env
             
         out_file.write("cd {}/runs{}/run{}/\n".format(project_directory(location), runs_letter(), run_string))
         out_file.write("{}/pkdgrav3/build_wilkes/pkdgrav3 ./control.par > ./output.txt\n".format(project_directory(location)))
-        out_file.write("python3 {}/scripts/pkdgrav3_postprocess.py -l -d -f . >> ./output.txt\n".format(project_directory(location)))
+        out_file.write("python3 {}/scripts/pkdgrav3_postprocess.py -l -d -z -f . >> ./output.txt\n".format(project_directory(location)))
         out_file.write("cd {}/runs{}/\n".format(format(project_directory(location)), runs_letter()))
         out_file.write("tar czvf run{}.tar.gz ./run{}/\n".format(run_string, run_string))
         out_file.write("test -f ./run{}.tar.gz && rm ./run{}/run*\n".format(run_string, run_string))
