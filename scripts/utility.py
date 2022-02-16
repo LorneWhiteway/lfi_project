@@ -945,7 +945,7 @@ def write_run_script(location, run_string, run_script_file_name, list_of_set_env
             out_file.write(e)
             
         out_file.write("cd {}/runs{}/run{}/\n".format(project_directory(location), runs_letter(), run_string))
-        out_file.write("{}/pkdgrav3/build_wilkes/pkdgrav3 ./control.par > ./output.txt\n".format(project_directory(location)))
+        out_file.write("{}/pkdgrav3/build_{}/pkdgrav3 ./control.par > ./output.txt\n".format(project_directory(location), location))
         out_file.write("python3 {}/scripts/pkdgrav3_postprocess.py -l -d -z -f . >> ./output.txt\n".format(project_directory(location)))
         out_file.write("cd {}/runs{}/\n".format(format(project_directory(location)), runs_letter()))
         out_file.write("tar czvf run{}.tar.gz ./run{}/\n".format(run_string, run_string))
@@ -1053,7 +1053,7 @@ def create_input_files_for_multiple_runs():
             # Tursa numa wrapper
             this_numa_wrapper_file_name = os.path.join(this_run_directory, tursa_numa_wrapper_file_name_no_path)
             copyfile(original_numa_wrapper_file_name, this_numa_wrapper_file_name)
-            
+            make_file_executable(this_numa_wrapper_file_name)
             
             
             
