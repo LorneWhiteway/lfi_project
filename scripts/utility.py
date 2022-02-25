@@ -861,7 +861,7 @@ def make_specific_cosmology_transfer_function(directory, Omega0_m, sigma8, w, Om
 
 
 def make_specific_cosmology_transfer_function_caller():
-    make_specific_cosmology_transfer_function("/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsC/run002",
+    make_specific_cosmology_transfer_function("/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/foo",
         Omega0_m = 0.249628758416763685,
         sigma8 = 0.950496160083634467,
         w = -0.792417404234305733,
@@ -1133,11 +1133,11 @@ if __name__ == '__main__':
     #get_float_from_control_file_test_harness()
     #compare_two_time_spacings()
     #create_dummy_output_file()
-    #make_specific_cosmology_transfer_function_caller()
+    make_specific_cosmology_transfer_function_caller()
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    create_input_files_for_multiple_runs()
+    #create_input_files_for_multiple_runs()
     #create_launch_script()
     #calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
