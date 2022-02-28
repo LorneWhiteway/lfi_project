@@ -41,26 +41,26 @@ LW has made the following changes to this code:
 
 1. Project directory is `/share/splinter/ucapwhi/lfi_project`.
 
-2. In what follows, `<GPU_NAME>` should be replaced by one of `v100` or `k80`, depending on which GPU you wish to use.
+2. In what follows, you can replace `v100` with `k80` to use the other splinter GPU.
 
 ### How to log on to one of the splinter GPU nodes
 ```
-srun -p GPU --gres=gpu:<GPU_NAME>:1 --pty tcsh
+srun -p GPU --gres=gpu:v100:1 --pty tcsh
 ```
 
 ### How to build pkdgrav3 for use by a splinter GPU
 - Log on to a GPU and go to the project directory.
-- Run `./cm.csh build_splinter_<GPU_NAME>`. You will need to type `y` to confirm the build directory name.
+- Run `./cm.csh build_splinter_v100`. You will need to type `y` to confirm the build directory name.
 
 ### How to run one of the experiments on a splinter GPU
 - Log on to splinter (but don't log on to a GPU)
 - Go to the project directory, and from there to `/experiments/<experiment>`
-- `sbatch --export=ALL,experiment_name='<experiment>' ../../scripts/cuda_job_script_splinter_<GPU_NAME>`
+- `sbatch --export=ALL,experiment_name='<experiment>' ../../scripts/cuda_job_script_splinter_v100`
 
 
 ## Information about working with the Wilkes cluster
 
-1. Address is `login-icelake.hpc.cam.ac.uk` (or `login-gpu.hpc.cam.ac.uk`, but this latter address puts you in a place where an inconsistency in the module files makes it hard to run slurm)
+1. Two possible addresses: `login-icelake.hpc.cam.ac.uk` (but note that with this address you can't run the nbody code) or `login-gpu.hpc.cam.ac.uk` (but note that with this address you can't run slurm).
 
 2. Project directory is `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`.
 
@@ -175,6 +175,12 @@ Here I put the source code 'one level down' as otherwise there were problems at 
 7. ./configure --prefix=/mnt/lustre/tursafs1/home/dp153/dp153/shared/hdf5-1.10.7
 8. make
 9. make install
+
+#### Further Tursa configuration changes
+
+1. Install nbodykit using the same instructions as for Wilkes
+2. Also in the `env` directory, run `pip install "dask[assay]" --upgrade`
+3. Add `opal_cuda_support=0` to `$HOME/.openmpi/mca-params.conf` to suppress a CUDA warning when running nbodykit. You will still get an OenFabric warning, though...
 
 
 ## Python scripts
