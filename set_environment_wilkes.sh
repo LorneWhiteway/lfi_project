@@ -10,8 +10,8 @@
 # or
 # > source ./set_environment.sh USE
 
-TRUE=0
-FALSE=1
+TRUE=1
+FALSE=0
 
 BUILD_MODE=$FALSE
 if [[ $# > 0 ]]; then
@@ -48,5 +48,3 @@ if [[ $BUILD_MODE == $TRUE ]]; then
 fi
 
 source env/bin/activate
-
-
