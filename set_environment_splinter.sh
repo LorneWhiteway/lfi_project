@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# Sets environment for building or using pkdgrav3 on Tursa ampere nodes.
+# Sets environment for building or using pkdgrav3 on Splinter.
 
 # One (optional) command line parameter that should be BUILD (to use when building PKDGRAV3)
 #   or USE (when using PKDGRAV3 and associated utilities). Default is USE.
 
 # Example:
-# > source ./set_environment_tursa.sh BUILD
+# > source ./set_environment.sh BUILD
 # or
-# > source ./set_environment_tursa.sh USE
+# > source ./set_environment.sh USE
 
 TRUE=1
 FALSE=0
@@ -26,32 +26,27 @@ else
 	echo "Setting environment variables for USING pkdgrav3..."
 fi	
 
-BASE_MODULE_1=use.own
-BASE_MODULE_2=use.lfi
-COMPILER_MODULE=lfi-gcc-9.3.0
-CUDA_MODULE=cuda/11.4.1
-MPI_MODULE=openmpi/4.1.1-cuda11.4.1
-GSL_MODULE=lfi-gsl-2.7
-FFTW_MODULE=lfi-fftw-3.3.10
-HDF5_MODULE=lfi-hdf5-1.10.7
-CMAKE_MODULE=lfi-cmake-3.22.1
+MPI_MODULE=rocks-openmpi
+COMPILER_MODULE=dev_tools/sep2019/gcc-7.4.0 # dev_tools/sep2019/gcc-9.2.0 is more up-to-date - but nvcc insists on gcc version <= 8
+CMAKE_MODULE=dev_tools/sep2019/cmake-3.15.3
+GSL_MODULE=science/sep2019/gsl-2.6
+FFTW_MODULE=fft/nov2019/fftw-3.3.4
+HDF5_MODULE=dev_tools/may2018/hdf5-1.10.2 # hdf5 isn't in /usr/include/ on the CORE16 compute servers.
+PYTHON_MODULE=dev_tools/oct2018/python-Anaconda-3-5.3.0
 
 
 module purge
-module load $BASE_MODULE_1
-module load $BASE_MODULE_2
-module load $COMPILER_MODULE
-module load $CUDA_MODULE
 module load $MPI_MODULE
+module load $COMPILER_MODULE
 module load $GSL_MODULE
 module load $FFTW_MODULE
 module load $HDF5_MODULE
-
 	
+
 if [[ $BUILD_MODE == $TRUE ]]; then
 	module load $CMAKE_MODULE
+else
+	module load $PYTHON_MODULE
 fi
-
-source /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/env/bin/activate
 
 

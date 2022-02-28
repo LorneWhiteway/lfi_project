@@ -39,22 +39,6 @@ if ($BUILD_MODE) then
 	module load $CMAKE_MODULE
 else
 	module load $PYTHON_MODULE
-	# For cosmic_web_utilities. Note that this gets rid of other settings in PYTHONPATH - this might be a problem
-	echo Setting PYTHONPATH to /share/splinter/ucapwhi/cosmic_web/hong_dey
-	setenv PYTHONPATH /share/splinter/ucapwhi/cosmic_web/hong_dey
 endif
-
-# Added 18 October 2021 in attempt to allow direct compiling of cuda
-if ($BUILD_MODE) then
-	# Got this from https://github.com/jetsonhacks/buildLibrealsense2TX/issues/13
-	setenv CUDA_HOME /usr/local/cuda
-	# From https://stackoverflow.com/questions/40968061/bad-modifier-in:
-	# To clarify what's going on here: tcsh allows "variable modifiers" in the form of $varname:modifier, so if your
-	# variable name is followed by a :text you need to use the ${..} syntax to make it clearer that the :text isn't
-	# part of the variable modifier.
-	setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64
-	setenv PATH ${PATH}:$CUDA_HOME/bin
-endif
-
 
 
