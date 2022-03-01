@@ -930,7 +930,7 @@ def job_script_file_name_no_path(location):
     return 'cuda_job_script_{}'.format(location)
     
 def runs_letter():
-    return 'G'
+    return 'H'
     
     
 def make_file_executable(file_name):
@@ -938,19 +938,43 @@ def make_file_executable(file_name):
     os.chmod(file_name, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH) # See https://stackoverflow.com/questions/12791997/
     
     
+# Note that the lines in list_of_set_environment_commands should be '\n' terminated.
 def write_run_script(location, run_string, run_script_file_name, list_of_set_environment_commands):
     with open(run_script_file_name, 'w') as out_file:
         out_file.write("#!/usr/bin/env bash\n") # See https://stackoverflow.com/questions/10376206/what-is-the-preferred-bash-shebang for the full discussion...
         for e in list_of_set_environment_commands:
             out_file.write(e)
-            
+        # Go to the run directory
         out_file.write("cd {}/runs{}/run{}/\n".format(project_directory(location), runs_letter(), run_string))
+        # Delete any residual 'stop' file that would prevent the monitor from running.
+        out_file.write("rm -f {}/runs{}/run{}/monitor_stop.txt\n".format(project_directory(location), runs_letter(), run_string))
+        # Start the monitor running in the background.
+        out_file.write("{}/scripts/monitor.py {}/runs{}/run{}/ > {}/runs{}/run{}/monitor_output.txt &\n".format(project_directory(location),  project_directory(location), runs_letter(), run_string, project_directory(location), runs_letter(), run_string))
+        # Run pkdgrav3
         out_file.write("{}/pkdgrav3/build_{}/pkdgrav3 ./control.par > ./output.txt\n".format(project_directory(location), location))
+        # Create a 'stop' file to stop the monitor program gracefully. This might take up to 5 minutes to have an effect, but that's OK
+        # as the remaining steps in this batch file will probably take longer. And it's no big deal of the monitor program stops
+        # ungracefully.
+        out_file.write("echo stop > {}/runs{}/run{}/monitor_stop.txt\n".format(project_directory(location), runs_letter(), run_string))
+        # Do the post-processing of pkdgrav3 output
         out_file.write("python3 {}/scripts/pkdgrav3_postprocess.py -l -d -z -f . >> ./output.txt\n".format(project_directory(location)))
+        # Go to the parent directory
         out_file.write("cd {}/runs{}/\n".format(format(project_directory(location)), runs_letter()))
+        # Zip up all the files
         out_file.write("tar czvf run{}.tar.gz ./run{}/\n".format(run_string, run_string))
+        # If the zip worked OK, then delete most of the files in the run directory
         out_file.write("test -f ./run{}.tar.gz && rm ./run{}/run*\n".format(run_string, run_string))
     make_file_executable(run_script_file_name)
+    
+    
+def write_run_script_test_harness():
+
+    location = "wilkes"
+    run_string = "001"
+    run_script_file_name = "./foo.sh"
+    list_of_set_environment_commands = ["source something\n"]
+    write_run_script(location, run_string, run_script_file_name, list_of_set_environment_commands)
+    
     
 
 
@@ -1133,7 +1157,7 @@ if __name__ == '__main__':
     #get_float_from_control_file_test_harness()
     #compare_two_time_spacings()
     #create_dummy_output_file()
-    make_specific_cosmology_transfer_function_caller()
+    #make_specific_cosmology_transfer_function_caller()
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
@@ -1141,6 +1165,7 @@ if __name__ == '__main__':
     #create_launch_script()
     #calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
+    write_run_script_test_harness()
     
     pass
     
