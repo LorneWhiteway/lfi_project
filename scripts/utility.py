@@ -45,6 +45,37 @@ def get_from_control_file_test_harness():
 # ======================== End of code for reading control file ========================
 
 
+# ======================== Start of code for reading log file ========================
+
+# Typical input file name will be 'run.log'. Output is inclusive at both ends
+# (i.e. includes both starting redshift and z=0).
+def get_array_of_z_values_from_log_file(log_file_name):
+    # Return the second column (thanks to NJ for pointing out that the
+    # data could be found here...)
+    return np.loadtxt(log_file_name, delimiter=" ")[:,1]
+    
+    
+# Typical input file name will be 'run.log'.
+def get_parameter_from_log_file(log_file_name, parameter_name):
+    with open(log_file_name, "r") as f:
+        for line in f:
+            if parameter_name in line:
+                tokenised_string = line.split(" ")
+                for (token, i) in zip(tokenised_string, range(len(tokenised_string))):
+                    if token == parameter_name or token == (parameter_name + ":"):
+                        if i < len(tokenised_string) - 1:
+                            return float(tokenised_string[i + 1])
+    raise SystemError("Could not find parameter {} in log file {}".format(parameter_name, log_file_name))
+    
+    
+def get_parameter_from_log_file_test_harness():
+    log_file_name = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsI/run001/run.log"
+    parameter_name = "dOmega0"
+    print(get_parameter_from_log_file(log_file_name, parameter_name))
+    
+
+
+# ======================== End of code for reading log file ========================
 
 
 # ======================== Start of code for reading raw lightcone files ========================
@@ -308,9 +339,6 @@ def get_dark_type():
 # This is an edited version the code in the readtipsy.py file distributed with PKDGRAV3.
 # Returns an array with elements of type get_dark_type()
 def read_one_box(file_name):
-
-    
-
     with open(file_name, 'rb') as in_file:
 
         header = np.fromfile(in_file, dtype=get_header_type(), count=1)
@@ -451,48 +479,24 @@ def match_points_between_boxes():
 
 # ======================== Start of code for reading PKDGRAV3 output ========================
 
-# The file to be read by this routine can be created by running PKDGRAV3 and piping the output to file.
-def read_one_output_file(filename):
 
-    step_list = []
-    time_list = []
-    z_list = []
-    
-    with open(filename, 'r') as infile:
-        for el in infile:
-            step_string = "Writing output for step "
-            if step_string in el:
-                step = int(el.split(step_string)[1])
-                step_list.append(step)
-            if "Time:" in el and "Redshift:" in el and not "Expansion factor" in el:
-                t = float(el.split()[0].split(":")[1]) # Time
-                time_list.append(t)
-                z = float(el.split()[1].split(":")[1]) # redshift
-                z_list.append(z)
-                
-    return (np.array(step_list), np.array(time_list), np.array(z_list))
-            
-    
-def build_z_values_file(directory):
 
-    input_filename = directory + "/output.txt"
-    control_file_name = directory + "/control.par"
-    output_filename = directory + "/z_values.txt"
+    
+def build_z_values_file(directory, out_name):
+
+    log_file_name = os.path.join(directory, "{}.log".format(out_name))
+    control_file_name = os.path.join(directory,  "control.par")
+    output_filename = os.path.join(directory, "z_values.txt")
     
     print("Writing data to {}...".format(output_filename))
     
+    z_arr = get_array_of_z_values_from_log_file(log_file_name)
+    s_arr = range(z_arr.shape[0])
     
-    (s_arr, t_arr, z_arr) = read_one_output_file(input_filename)
-    
-    Om0 = float(get_from_control_file(control_file_name, "dOmega0"))
-    cosmo = FlatLambdaCDM(H0=100.0, Om0=Om0)
+    Om0 = get_parameter_from_log_file(log_file_name, "dOmega0")
+    cosmo = FlatLambdaCDM(H0=100.0, Om0=Om0) # Will only be approximately correct.
     
     box_size = float(get_from_control_file(control_file_name, "dBoxSize"))
-
-    # Prepend step 0 values
-    starting_z = float(get_from_control_file(control_file_name, "dRedFrom"))
-    s_arr = np.concatenate(([0], s_arr))
-    z_arr = np.concatenate(([starting_z], z_arr))
     
     cmd_arr = cosmo.comoving_distance(z_arr).value # In Mpc/h
     cmd_over_box_arr = cmd_arr / box_size # Unitless
@@ -528,20 +532,20 @@ def pkdgrav3_postprocess(directory, do_lightcone_files, do_delete, do_mollview_i
     
     print("Processing {}".format(directory))
     
-    outName = get_from_control_file(control_file_name, "achOutName") # Standard value is 'run'.
+    out_name = get_from_control_file(control_file_name, "achOutName") # Standard value is 'run'.
     
     
-    if do_lightcone_files and (do_force or not file_spec_has_files(os.path.join(directory, outName + ".*.lightcone.npy"))):
-        save_all_lightcone_files(os.path.join(directory, outName + ".*.hpb"), nside, do_delete, False)
+    if do_lightcone_files and (do_force or not file_spec_has_files(os.path.join(directory, out_name + ".*.lightcone.npy"))):
+        save_all_lightcone_files(os.path.join(directory, out_name + ".*.hpb"), nside, do_delete, False)
         
-    if do_mollview_images and (do_force or not file_spec_has_files(os.path.join(directory, outName + ".*.lightcone.mollview.png"))):
+    if do_mollview_images and (do_force or not file_spec_has_files(os.path.join(directory, out_name + ".*.lightcone.mollview.png"))):
         save_all_lightcone_image_files(directory, True)
     
-    if do_ortho_images and (do_force or not file_spec_has_files(os.path.join(directory, outName + ".*.lightcone.orthview.png"))):
+    if do_ortho_images and (do_force or not file_spec_has_files(os.path.join(directory, out_name + ".*.lightcone.orthview.png"))):
         save_all_lightcone_image_files(directory, False)
     
     if do_z_file and (do_force or not file_spec_has_files(os.path.join(directory, "z_values.txt"))):
-        build_z_values_file(directory)
+        build_z_values_file(directory, out_name)
         
     if do_status:
         status(directory)
@@ -699,22 +703,23 @@ def compare_two_time_spacings():
         plt.savefig(save_file_name)
 
 
-def create_dummy_output_file():
-    # create dmmy output files to reserve disk space
-    directory = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_probtest"
-    control_file_name = directory + "/control.par"
-    nside = int(get_from_control_file(control_file_name, "nSideHealpix"))
-    num_steps = int(get_from_control_file(control_file_name, "nSteps"))
-    
-    n_pixels = hp.nside2npix(nside)
-    empty_map = np.zeros(n_pixels)
-    
-    print("Writing {} dummy output files each with {} pixels".format(num_steps, n_pixels))
-    
-    for i in range(num_steps):
-        output_file_name = directory + "/dummy.{}.npy".format(str(i+1).zfill(5))
-        print("Writing {}".format(output_file_name))
-        hp.write_map(output_file_name, empty_map, overwrite=True)
+## Good code, but no longer needed
+#def create_dummy_output_file():
+#    # create dummy output files to reserve disk space
+#    directory = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_probtest"
+#    control_file_name = directory + "/control.par"
+#    nside = int(get_from_control_file(control_file_name, "nSideHealpix"))
+#    num_steps = int(get_from_control_file(control_file_name, "nSteps"))
+#    
+#    n_pixels = hp.nside2npix(nside)
+#    empty_map = np.zeros(n_pixels)
+#    
+#    print("Writing {} dummy output files each with {} pixels".format(num_steps, n_pixels))
+#    
+#    for i in range(num_steps):
+#        output_file_name = directory + "/dummy.{}.npy".format(str(i+1).zfill(5))
+#        print("Writing {}".format(output_file_name))
+#        hp.write_map(output_file_name, empty_map, overwrite=True)
     
 
 # ======================== End of other utilities ========================    
@@ -871,7 +876,13 @@ def make_specific_cosmology_transfer_function_caller():
         P_k_max = 100.0)
     
     
-    
+def make_specific_cosmology(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, P_k_max):
+    from nbodykit.lab import cosmology
+    cosmology_object = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=(Omega0_m-Omega0_b), w0_fld=w, n_s=n_s, P_k_max=P_k_max).match(sigma8=sigma8)
+    cosmology_parameters_file_name = os.path.join(directory, "nbodykit_cosmology.txt")
+    np.savetxt(cosmology_parameters_file_name, cosmology_summary(cosmology_object), fmt = '%s')
+    return cosmology_object
+
     
 # ======================== End of code for handling transfer functions ========================
 
@@ -929,8 +940,6 @@ def zfilled_run_num(run_num):
 def job_script_file_name_no_path(location):
     return 'cuda_job_script_{}'.format(location)
     
-def runs_letter():
-    return 'H'
     
     
 def make_file_executable(file_name):
@@ -939,27 +948,27 @@ def make_file_executable(file_name):
     
     
 # Note that the lines in list_of_set_environment_commands should be '\n' terminated.
-def write_run_script(location, run_string, run_script_file_name, list_of_set_environment_commands):
+def write_run_script(location, runs_letter, run_string, run_script_file_name, list_of_set_environment_commands):
     with open(run_script_file_name, 'w') as out_file:
         out_file.write("#!/usr/bin/env bash\n") # See https://stackoverflow.com/questions/10376206/what-is-the-preferred-bash-shebang for the full discussion...
         for e in list_of_set_environment_commands:
             out_file.write(e)
         # Go to the run directory
-        out_file.write("cd {}/runs{}/run{}/\n".format(project_directory(location), runs_letter(), run_string))
+        out_file.write("cd {}/runs{}/run{}/\n".format(project_directory(location), runs_letter, run_string))
         # Delete any residual 'stop' file that would prevent the monitor from running.
-        out_file.write("rm -f {}/runs{}/run{}/monitor_stop.txt\n".format(project_directory(location), runs_letter(), run_string))
+        out_file.write("rm -f {}/runs{}/run{}/monitor_stop.txt\n".format(project_directory(location), runs_letter, run_string))
         # Start the monitor running in the background.
-        out_file.write("{}/scripts/monitor.py {}/runs{}/run{}/ > {}/runs{}/run{}/monitor_output.txt &\n".format(project_directory(location),  project_directory(location), runs_letter(), run_string, project_directory(location), runs_letter(), run_string))
+        out_file.write("{}/scripts/monitor.py {}/runs{}/run{}/ > {}/runs{}/run{}/monitor_output.txt &\n".format(project_directory(location),  project_directory(location), runs_letter, run_string, project_directory(location), runs_letter, run_string))
         # Run pkdgrav3
         out_file.write("{}/pkdgrav3/build_{}/pkdgrav3 ./control.par > ./output.txt\n".format(project_directory(location), location))
         # Create a 'stop' file to stop the monitor program gracefully. This might take up to 5 minutes to have an effect, but that's OK
         # as the remaining steps in this batch file will probably take longer. And it's no big deal of the monitor program stops
         # ungracefully.
-        out_file.write("echo stop > {}/runs{}/run{}/monitor_stop.txt\n".format(project_directory(location), runs_letter(), run_string))
+        out_file.write("echo stop > {}/runs{}/run{}/monitor_stop.txt\n".format(project_directory(location), runs_letter, run_string))
         # Do the post-processing of pkdgrav3 output
         out_file.write("python3 {}/scripts/pkdgrav3_postprocess.py -l -d -z -f . >> ./output.txt\n".format(project_directory(location)))
         # Go to the parent directory
-        out_file.write("cd {}/runs{}/\n".format(format(project_directory(location)), runs_letter()))
+        out_file.write("cd {}/runs{}/\n".format(format(project_directory(location)), runs_letter))
         # Zip up all the files
         out_file.write("tar czvf run{}.tar.gz ./run{}/\n".format(run_string, run_string))
         # If the zip worked OK, then delete most of the files in the run directory
@@ -970,21 +979,22 @@ def write_run_script(location, run_string, run_script_file_name, list_of_set_env
 def write_run_script_test_harness():
 
     location = "wilkes"
+    runs_letter = "Z"
     run_string = "001"
     run_script_file_name = "./foo.sh"
     list_of_set_environment_commands = ["source something\n"]
-    write_run_script(location, run_string, run_script_file_name, list_of_set_environment_commands)
+    write_run_script(location, runs_letter, run_string, run_script_file_name, list_of_set_environment_commands)
     
     
 
 
-def create_input_files_for_multiple_runs():
+def create_input_files_for_multiple_runs(runs_letter):
 
-    runs_directory = os.path.join(project_directory("current"), "runs{}".format(runs_letter()))
+    runs_directory = os.path.join(project_directory("current"), "runs{}".format(runs_letter))
     
-    cosmo_params_base_file_name_dict = {'C' : "params_run_1.txt", 'E' : "params_run_2.txt", 'G' : "params_run_3.txt"}
-    cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, cosmo_params_base_file_name_dict[runs_letter()])
-    cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',').reshape([-1,6]) # The 'reshape' handles the num_runs=1 case.
+    cosmo_params_base_file_name_dict = {'C' : "params_run_1.txt", 'E' : "params_run_2.txt", 'I' : "params_run_3.txt"}
+    cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, cosmo_params_base_file_name_dict[runs_letter])
+    cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',').reshape([-1,7]) # The 'reshape' handles the num_runs=1 case.
     num_runs = cosmo_params_for_all_runs.shape[0]
     
     tursa_numa_wrapper_file_name_no_path = "wrapper.sh"
@@ -996,15 +1006,18 @@ def create_input_files_for_multiple_runs():
     control_file_name_no_path = 'control.par'
     original_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
     
-    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'G' : 192}
-    random_seed_offset = random_seed_offset_dict[runs_letter()]
+    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192}
+    random_seed_offset = random_seed_offset_dict[runs_letter]
+    
+    batch_number_dict = {'I' : 3}
+    batch_number = batch_number_dict[runs_letter]
     
     
     for run_num_zero_based in range(num_runs):
         run_num_one_based = run_num_zero_based + 1
         
         # Amend the code here to restrict to just certain directories.
-        if (True):
+        if (run_num_one_based > 2):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
@@ -1032,9 +1045,9 @@ def create_input_files_for_multiple_runs():
             change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --time=', '47:59:00')
             change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --job-name=', 'pgr3_{}'.format(run_string))
             change_one_value_in_ini_file(this_tursa_job_script_file_name, 'application=', double_quoted_string(run_script_name_tursa))
-
-            # Transfer function
-            cosmology_object = make_specific_cosmology_transfer_function(this_run_directory,
+            
+            # Cosmology object
+            cosmology_object = make_specific_cosmology(this_run_directory,
                 Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
                 sigma8 = cosmo_params_for_all_runs[run_num_zero_based, 1],
                 w = cosmo_params_for_all_runs[run_num_zero_based, 2],
@@ -1043,21 +1056,25 @@ def create_input_files_for_multiple_runs():
                 n_s = cosmo_params_for_all_runs[run_num_zero_based, 5],
                 P_k_max=100.0)
                 
-            OmegaDE = cosmology_object.Ode0
+            ###OmegaDE = cosmology_object.Ode0
 
             # Control file
             copyfile(original_control_file_name, this_control_file_name)
-            change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./transfer_function.txt"')
-            change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(1.0-OmegaDE) + "    # 1-dOmegaDE")
-            change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(OmegaDE) + "    # Equal to Omega_fld in transfer function")
-            change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 1]))
-            # Work around pkdgrav3 ini file parsing bug - doesn't like negative numbers.
-            acos_w_string = "2.0*math.cos({})  # {}".format(math.acos(cosmo_params_for_all_runs[run_num_zero_based, 2] / 2.0), cosmo_params_for_all_runs[run_num_zero_based, 2])
-            change_one_value_in_ini_file(this_control_file_name, 'w0              = ', acos_w_string)
-            change_one_value_in_ini_file(this_control_file_name, 'h               = ', str(cosmo_params_for_all_runs[run_num_zero_based, 4]))
-            change_one_value_in_ini_file(this_control_file_name, 'dSpectral       = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
+            ###change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./transfer_function.txt"')
+            ###change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(1.0-OmegaDE) + "    # 1-dOmegaDE")
+            ###change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(OmegaDE) + "    # Equal to Omega_fld in transfer function")
+            ###change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 1]))
+            #### Work around pkdgrav3 ini file parsing bug - doesn't like negative numbers.
+            ###acos_w_string = "2.0*math.cos({})  # {}".format(math.acos(cosmo_params_for_all_runs[run_num_zero_based, 2] / 2.0), cosmo_params_for_all_runs[run_num_zero_based, 2])
+            ###change_one_value_in_ini_file(this_control_file_name, 'w0              = ', acos_w_string)
+            ###change_one_value_in_ini_file(this_control_file_name, 'h               = ', str(cosmo_params_for_all_runs[run_num_zero_based, 4]))
+            change_one_value_in_ini_file(this_control_file_name, 'dSpectral        = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
+            change_one_value_in_ini_file(this_control_file_name, 'dNormalization   = ', "{} # calculated from sigma_8 = {}".format(cosmology_object.A_s, cosmology_object.sigma8))
             
-            change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "          # Random seed")
+            hdf5_file_name = '"./class_processed_batch{}_{}.hdf5"'.format(str(batch_number), run_string)
+            change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', hdf5_file_name)
+            
+            change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "        # Random seed")
             
             change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "1250       # Mpc/h")
             change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1080       # Simulation has nGrid^3 particles")
@@ -1066,13 +1083,12 @@ def create_input_files_for_multiple_runs():
             
             # Wilkes run script
             wilkes_set_environment_commands = ["module load python/3.8\n", "source {}/env/bin/activate\n".format(project_directory("wilkes"))]
-            write_run_script("wilkes", run_string, run_script_name_wilkes, wilkes_set_environment_commands)
+            write_run_script("wilkes", runs_letter, run_string, run_script_name_wilkes, wilkes_set_environment_commands)
 
             
             # Tursa run script
             tursa_set_environment_commands = ["source {}/set_environment_tursa.sh\n".format(project_directory("tursa"))]
-            write_run_script("tursa", run_string, run_script_name_tursa, tursa_set_environment_commands)
-                        
+            write_run_script("tursa", runs_letter, run_string, run_script_name_tursa, tursa_set_environment_commands)
             
             # Tursa numa wrapper
             this_numa_wrapper_file_name = os.path.join(this_run_directory, tursa_numa_wrapper_file_name_no_path)
@@ -1083,15 +1099,15 @@ def create_input_files_for_multiple_runs():
             
             
 
-def create_launch_script():
-    launch_script_file_name = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/launch.sh".format(runs_letter())
+def create_launch_script(runs_letter):
+    launch_script_file_name = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/launch.sh".format(runs_letter)
     print("Writing to {}...".format(launch_script_file_name))
     with open(launch_script_file_name, "w") as out_file:
         for run_num_zero_based in range(128):
             run_num_one_based = run_num_zero_based + 1
             if (True):
                 run_string = zfilled_run_num(run_num_one_based)
-                out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/\n".format(runs_letter(), run_string))
+                out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/\n".format(runs_letter, run_string))
                 out_file.write("sbatch ./{}\n".format(job_script_file_name_no_path()))
     make_file_executable(launch_script_file_name)
 
@@ -1151,24 +1167,20 @@ if __name__ == '__main__':
     #show_one_shell_example()
     #match_points_between_boxes()
     #read_one_box_example()
-    #intersection_of_shell_and_cells()
     #save_all_lightcone_image_files("/share/splinter/ucapwhi/lfi_project/experiments/k80_1024_4096_900/", True)
     #compare_two_lightcones_by_power_spectra()
     #get_float_from_control_file_test_harness()
     #compare_two_time_spacings()
-    #create_dummy_output_file()
     #make_specific_cosmology_transfer_function_caller()
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    #create_input_files_for_multiple_runs()
+    create_input_files_for_multiple_runs('I')
     #create_launch_script()
     #calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
-    write_run_script_test_harness()
+    #write_run_script_test_harness()
+    #get_parameter_from_log_file_test_harness()
     
     pass
-    
-    
-
     
