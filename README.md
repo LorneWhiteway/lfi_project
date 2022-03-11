@@ -220,14 +220,46 @@ The first tomographic slice of the lightcone that pkdgrav3 populates is the one 
 
 ### monitor.py
 
-This script may be used to do 'on-the-fly' post-processing (with the goal of reducing peak disk usage). It runs in a permanent loop, repeatedly doing the same taks as would be done by pkdgrav3_postprocess.py with options '-l -d -f'. Usage:
+This script does 'on-the-fly' post-processing (with the goal of reducing peak disk usage). It runs in a permanent loop, repeatedly doing the same tasks as would be done by pkdgrav3_postprocess.py with options '-l -d -f'. Usage:
 
 Syntax: 
 ```
 monitor.py directory
 ```
-The script operates on 'directory' as well as recursively on all subdirectories of 'directory'. The script periodically sleeps, upon awakening it searches for a file called 'monitor_stop.txt' in 'directroy', and it stops if this file exists. On addition, at startup if the file 'monitor_wait.txt' exists in 'directory' then the script will pause, only continuing when this file no longer exists.
+The script operates on 'directory' as well as recursively on all subdirectories of 'directory'. The script periodically sleeps, upon awakening it searches for a file called 'monitor_stop.txt' in 'directory', and it stops if this file exists. On addition, at startup if the file 'monitor_wait.txt' exists in 'directory' then the script will pause, only continuing when this file no longer exists.
 
+
+### expand_shell_script.py
+
+This script creates shell scripts that can act on a specified range. Specify the name of a 'template' shell script; this script may contain the special string "{}" in various places, in which case a new shell script will be created containing repeats of the template with "{}" replaced by specified integers (zero padded to length three). 
+Syntax: 
+```
+expand_shell_script.py original_shell_script_file_name new_shell_script_file_name list_of_jobs...
+```
+
+Example:
+```
+expand_shell_script.py copy_template.sh copy.sh 1-8,10 x3 x5
+```
+If in this example copy_template.py contained
+```
+cp ./run{}/run.log ./run{}.log
+```
+then copy.sh would be created and would contain
+```
+cp ./run001/run.log ./run001.log
+cp ./run002/run.log ./run002.log
+cp ./run004/run.log ./run004.log
+cp ./run006/run.log ./run006.log
+cp ./run007/run.log ./run007.log
+cp ./run008/run.log ./run008.log
+cp ./run010/run.log ./run010.log
+```
+
+Note that 'x' stands for 'exclude'. More complicated strings are possible, such as
+```
+1-32 64-128 140 141,142 x23-30 x75,76 26
+```
 
 ### utility.py
 

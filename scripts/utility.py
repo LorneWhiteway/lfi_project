@@ -1162,6 +1162,58 @@ def show_last_unprocessed_file():
 
 # ======================== End of code for creating input files for multiple runs ========================
 
+
+# ======================== Start of code for expand_shell_script ========================
+
+# This functionality is exposed by the module expand_shell_script.py.
+
+# Converts a string such as "1-128 x14,15,26,53" into a list of integers
+def decode_list_of_jobs_string(s):
+
+    res_set = set()
+    for token in s.split():
+        # token might be for example 'x1-5,7' or '5,6,8,9,'
+        include = True
+        if token[0].lower() == 'x':
+            token = token[1:]
+            include = False
+        
+        for subtoken in token.split(","):
+            # subtoken might be for example '1-3' or '7'
+            parsed_subtoken = subtoken.split('-')
+            vals = []
+            if len(parsed_subtoken) == 1:
+                vals.append(int(parsed_subtoken[0]))
+            elif len(parsed_subtoken) == 2:
+                vals.extend(range(int(parsed_subtoken[0]), int(parsed_subtoken[1]) + 1))
+            else:
+                raise AssertionError("Could not parse expression {}".format(subtoken))
+            for v in vals:
+                if include:
+                    res_set.add(v)
+                else:
+                    res_set.discard(v)
+                
+    return sorted(list(res_set))
+    
+    
+def expand_shell_script(original_shell_script_file_name, new_shell_script_file_name, list_of_jobs_string):
+
+    print(original_shell_script_file_name)
+    print(new_shell_script_file_name)
+    print(list_of_jobs_string)
+    print(decode_list_of_jobs_string(list_of_jobs_string))
+
+    with open(new_shell_script_file_name, 'w') as out_file:
+        for job in decode_list_of_jobs_string(list_of_jobs_string):
+            with open(original_shell_script_file_name, 'r') as in_file:
+                for line in in_file:
+                    out_file.write(line.replace("{}", str(job).zfill(3)))
+    make_file_executable(new_shell_script_file_name)
+
+        
+# ======================== End of code for expand_shell_script ========================
+
 if __name__ == '__main__':
     
     #show_one_shell_example()
@@ -1175,12 +1227,12 @@ if __name__ == '__main__':
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    create_input_files_for_multiple_runs('I')
+    #create_input_files_for_multiple_runs('I')
     #create_launch_script()
     #calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
     #write_run_script_test_harness()
     #get_parameter_from_log_file_test_harness()
-    
+     
     pass
     
