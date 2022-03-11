@@ -231,7 +231,7 @@ The script operates on 'directory' as well as recursively on all subdirectories 
 
 ### expand_shell_script.py
 
-This script creates shell scripts that can act on a specified range. Specify the name of a 'template' shell script; this script may contain the special string "{}" in various places, in which case a new shell script will be created containing repeats of the template with "{}" replaced by specified integers (zero padded to length three). 
+This script creates shell scripts. Specify the name of a 'template' shell script; this script may contain the special string "{}" in various places, in which case a new shell script will be created containing repeats of the template with "{}" replaced by specified integers (zero padded to length three). 
 Syntax: 
 ```
 expand_shell_script.py original_shell_script_file_name new_shell_script_file_name list_of_jobs...
