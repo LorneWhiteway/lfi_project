@@ -268,7 +268,6 @@ This script contains various functions that may be called 'by hand' particularly
 | Function | Purpose |
 | --- | --- |
 | create_input_files_for_multiple_runs | Creates a set of input files for a number of runs. For each run the input files include a pkdgrav3 control file (control.par), a transfer function file (transfer_function.txt), a text file listing the cosmological parameters used in the transfer function file (transfer_function_cosmology.txt), a bash script to run pkdgrav3 and then do postprocessing (pkdgrav3_and_post_process.sh), and a SLURM job script (cuda_job_script_wilkes). |
-| create_launch_script | Creates a bash script to call [sbatch](https://slurm.schedmd.com/sbatch.html) multiple times. |
 
 
 

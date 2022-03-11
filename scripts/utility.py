@@ -1094,24 +1094,6 @@ def create_input_files_for_multiple_runs(runs_letter):
             this_numa_wrapper_file_name = os.path.join(this_run_directory, tursa_numa_wrapper_file_name_no_path)
             copyfile(original_numa_wrapper_file_name, this_numa_wrapper_file_name)
             make_file_executable(this_numa_wrapper_file_name)
-            
-            
-            
-            
-
-def create_launch_script(runs_letter):
-    launch_script_file_name = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/launch.sh".format(runs_letter)
-    print("Writing to {}...".format(launch_script_file_name))
-    with open(launch_script_file_name, "w") as out_file:
-        for run_num_zero_based in range(128):
-            run_num_one_based = run_num_zero_based + 1
-            if (True):
-                run_string = zfilled_run_num(run_num_one_based)
-                out_file.write("cd /rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/\n".format(runs_letter, run_string))
-                out_file.write("sbatch ./{}\n".format(job_script_file_name_no_path()))
-    make_file_executable(launch_script_file_name)
-
-
 
 
 def start_time_end_time(directory):
@@ -1228,7 +1210,6 @@ if __name__ == '__main__':
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
     #create_input_files_for_multiple_runs('I')
-    #create_launch_script()
     #calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
     #write_run_script_test_harness()
