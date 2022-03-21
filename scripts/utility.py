@@ -810,7 +810,7 @@ def make_specific_cosmology(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, nc
     cosmology_object = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=Omega0_cdm, w0_fld=w, n_s=n_s, m_ncdm=ncdm, P_k_max=P_k_max).match(sigma8=sigma8)
     
     # Check that all this yields the expected Omega0_m:
-    assert abs(cosmology_object.Omega0_m/Omega0_m - 1.0) < 1e-6, "Failed to match input Omega0_m when creating cosmology object: target = {}, actual = {}".format(Omega0_m, cosmology_object.Omega0_m)
+    assert abs(cosmology_object.Omega0_m/Omega0_m - 1.0) < 2e-6, "Failed to match input Omega0_m when creating cosmology object: target = {}, actual = {}".format(Omega0_m, cosmology_object.Omega0_m)
     
     cosmology_parameters_file_name = os.path.join(directory, "nbodykit_cosmology.txt")
     np.savetxt(cosmology_parameters_file_name, cosmology_summary(cosmology_object), fmt = '%s')
