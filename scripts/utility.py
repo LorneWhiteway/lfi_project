@@ -798,6 +798,26 @@ def cosmology_summary(cosmo):
     return summary
     
     
+# Omega0_m is the sum of the energy densities for b, cdm and nu.
+# ncdm is the total neutrino mass in eV.
+def make_specific_cosmology(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, ncdm, P_k_max):
+    from nbodykit.lab import cosmology
+    
+    # Inferred neutrino energy density
+    Omega0_nu = ncdm / (93.14 * h * h)
+    # Implied cdm energy density
+    Omega0_cdm = Omega0_m - Omega0_b - Omega0_nu
+    cosmology_object = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=Omega0_cdm, w0_fld=w, n_s=n_s, m_ncdm=ncdm, P_k_max=P_k_max).match(sigma8=sigma8)
+    
+    # Check that all this yields the expected Omega0_m:
+    assert abs(cosmology_object.Omega0_m/Omega0_m - 1.0) < 1e-6, "Failed to match input Omega0_m when creating cosmology object: target = {}, actual = {}".format(Omega0_m, cosmology_object.Omega0_m)
+    
+    cosmology_parameters_file_name = os.path.join(directory, "nbodykit_cosmology.txt")
+    np.savetxt(cosmology_parameters_file_name, cosmology_summary(cosmology_object), fmt = '%s')
+    return cosmology_object
+
+
+
 def trim_rows_containing_nan(a):
     # Credit: https://note.nkmk.me/en/python-numpy-nan-remove/
     return a[~np.isnan(a).any(axis=1), :]
@@ -842,15 +862,13 @@ def make_specific_cosmology_transfer_function(directory, Omega0_m, sigma8, w, Om
     from nbodykit.lab import cosmology
 
     transfer_function_file_name = os.path.join(directory, "transfer_function.txt")
-    cosmology_parameters_file_name = os.path.join(directory, "transfer_function_cosmology.txt")
-
+    
     k = set_of_wavenumbers()
-    cosmology_object = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=(Omega0_m-Omega0_b), w0_fld=w, n_s=n_s, m_ncdm=ncdm, P_k_max=P_k_max).match(sigma8=sigma8)
+    cosmology_object = make_specific_cosmology(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, ncdm, P_k_max)
     transfer_function = np.column_stack([k, cosmology.power.transfers.CLASS(cosmology_object, 0.0)(k)])
     transfer_function = trim_rows_containing_nan(transfer_function)
     np.savetxt(transfer_function_file_name, transfer_function, delimiter = " ", fmt = "%10.5E")
-    np.savetxt(cosmology_parameters_file_name, cosmology_summary(cosmology_object), fmt = '%s')
-    
+        
     linear_power_file_name = os.path.join(directory, "linear_power.txt")
     linear_power = np.column_stack([k, cosmology.power.linear.LinearPower(cosmology_object, 0.0, transfer='CLASS')(k)])
     linear_power = trim_rows_containing_nan(linear_power)
@@ -878,13 +896,6 @@ def make_specific_cosmology_transfer_function_caller():
         P_k_max = 100.0)
     
     
-# ncdm is the total neutrino mass in eV.
-def make_specific_cosmology(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, ncdm, P_k_max):
-    from nbodykit.lab import cosmology
-    cosmology_object = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=(Omega0_m-Omega0_b), w0_fld=w, n_s=n_s, m_ncdm=ncdm, P_k_max=P_k_max).match(sigma8=sigma8)
-    cosmology_parameters_file_name = os.path.join(directory, "nbodykit_cosmology.txt")
-    np.savetxt(cosmology_parameters_file_name, cosmology_summary(cosmology_object), fmt = '%s')
-    return cosmology_object
 
     
 # ======================== End of code for handling transfer functions ========================
@@ -1020,7 +1031,7 @@ def create_input_files_for_multiple_runs(runs_letter):
         run_num_one_based = run_num_zero_based + 1
         
         # Amend the code here to restrict to just certain directories.
-        if (true):
+        if (run_num_one_based == 1):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
