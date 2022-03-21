@@ -836,7 +836,8 @@ def set_of_wavenumbers():
     7.68740E+03,1.07286E+04])
     
    
-def make_specific_cosmology_transfer_function(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, P_k_max):
+# ncdm is the total neutrino mass in eV.
+def make_specific_cosmology_transfer_function(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, ncdm, P_k_max):
 
     from nbodykit.lab import cosmology
 
@@ -844,7 +845,7 @@ def make_specific_cosmology_transfer_function(directory, Omega0_m, sigma8, w, Om
     cosmology_parameters_file_name = os.path.join(directory, "transfer_function_cosmology.txt")
 
     k = set_of_wavenumbers()
-    cosmology_object = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=(Omega0_m-Omega0_b), w0_fld=w, n_s=n_s, P_k_max=P_k_max).match(sigma8=sigma8)
+    cosmology_object = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=(Omega0_m-Omega0_b), w0_fld=w, n_s=n_s, m_ncdm=ncdm, P_k_max=P_k_max).match(sigma8=sigma8)
     transfer_function = np.column_stack([k, cosmology.power.transfers.CLASS(cosmology_object, 0.0)(k)])
     transfer_function = trim_rows_containing_nan(transfer_function)
     np.savetxt(transfer_function_file_name, transfer_function, delimiter = " ", fmt = "%10.5E")
@@ -873,12 +874,14 @@ def make_specific_cosmology_transfer_function_caller():
         Omega0_b = 0.043508831007317443,
         h = 0.716547375449984592,
         n_s = 0.951311068780816615,
+        ncdm = 0.06,
         P_k_max = 100.0)
     
     
-def make_specific_cosmology(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, P_k_max):
+# ncdm is the total neutrino mass in eV.
+def make_specific_cosmology(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, ncdm, P_k_max):
     from nbodykit.lab import cosmology
-    cosmology_object = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=(Omega0_m-Omega0_b), w0_fld=w, n_s=n_s, P_k_max=P_k_max).match(sigma8=sigma8)
+    cosmology_object = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=(Omega0_m-Omega0_b), w0_fld=w, n_s=n_s, m_ncdm=ncdm, P_k_max=P_k_max).match(sigma8=sigma8)
     cosmology_parameters_file_name = os.path.join(directory, "nbodykit_cosmology.txt")
     np.savetxt(cosmology_parameters_file_name, cosmology_summary(cosmology_object), fmt = '%s')
     return cosmology_object
@@ -992,7 +995,7 @@ def create_input_files_for_multiple_runs(runs_letter):
 
     runs_directory = os.path.join(project_directory("current"), "runs{}".format(runs_letter))
     
-    cosmo_params_base_file_name_dict = {'C' : "params_run_1.txt", 'E' : "params_run_2.txt", 'I' : "params_run_3.txt"}
+    cosmo_params_base_file_name_dict = {'C' : "params_run_1.txt", 'E' : "params_run_2.txt", 'I' : "params_run_3.txt", 'J' : "params_run_4.txt"}
     cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, cosmo_params_base_file_name_dict[runs_letter])
     cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',').reshape([-1,7]) # The 'reshape' handles the num_runs=1 case.
     num_runs = cosmo_params_for_all_runs.shape[0]
@@ -1006,10 +1009,10 @@ def create_input_files_for_multiple_runs(runs_letter):
     control_file_name_no_path = 'control.par'
     original_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
     
-    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192}
+    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192, 'J' : 320}
     random_seed_offset = random_seed_offset_dict[runs_letter]
     
-    batch_number_dict = {'I' : 3}
+    batch_number_dict = {'I' : 3, 'J' : 4}
     batch_number = batch_number_dict[runs_letter]
     
     
@@ -1054,6 +1057,7 @@ def create_input_files_for_multiple_runs(runs_letter):
                 Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 3],
                 h = cosmo_params_for_all_runs[run_num_zero_based, 4],
                 n_s = cosmo_params_for_all_runs[run_num_zero_based, 5],
+                ncdm = cosmo_params_for_all_runs[run_num_zero_based, 6],
                 P_k_max=100.0)
                 
             ###OmegaDE = cosmology_object.Ode0
@@ -1209,7 +1213,7 @@ if __name__ == '__main__':
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    #create_input_files_for_multiple_runs('I')
+    create_input_files_for_multiple_runs('J')
     #calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
     #write_run_script_test_harness()
