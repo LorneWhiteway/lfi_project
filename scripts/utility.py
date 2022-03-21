@@ -1020,7 +1020,7 @@ def create_input_files_for_multiple_runs(runs_letter):
         run_num_one_based = run_num_zero_based + 1
         
         # Amend the code here to restrict to just certain directories.
-        if (run_num_one_based > 2):
+        if (true):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
