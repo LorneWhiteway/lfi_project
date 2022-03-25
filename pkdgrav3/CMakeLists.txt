@@ -42,7 +42,11 @@ find_package(GSL REQUIRED)      # GNU Scientific Library
 find_package(HDF5 COMPONENTS C HL)
 
 
-find_package(FFTW REQUIRED)
+#find_package(FFTW REQUIRED)
+set(FFTW_FOUND TRUE)
+set(FFTW_LIBRARIES ${FFTW_ROOT}/lib)
+set(FFTW_INCLUDES ${FFTW_ROOT}/include)
+
 #find_package(PythonLibs)
 # _GNU_SOURCE gives us more options
 INCLUDE(CheckCSourceCompiles)
