@@ -1006,7 +1006,7 @@ def create_input_files_for_multiple_runs(runs_letter):
 
     runs_directory = os.path.join(project_directory("current"), "runs{}".format(runs_letter))
     
-    cosmo_params_base_file_name_dict = {'C' : "params_run_1.txt", 'E' : "params_run_2.txt", 'I' : "params_run_3.txt", 'J' : "params_run_4.txt"}
+    cosmo_params_base_file_name_dict = {'C' : "params_run_1.txt", 'E' : "params_run_2.txt", 'I' : "params_run_3.txt", 'J' : "params_run_4.txt", 'K' : "params_run_5.txt"}
     cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, cosmo_params_base_file_name_dict[runs_letter])
     cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',').reshape([-1,7]) # The 'reshape' handles the num_runs=1 case.
     num_runs = cosmo_params_for_all_runs.shape[0]
@@ -1020,10 +1020,10 @@ def create_input_files_for_multiple_runs(runs_letter):
     control_file_name_no_path = 'control.par'
     original_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
     
-    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192, 'J' : 320}
+    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192, 'J' : 320, 'K' : 384}
     random_seed_offset = random_seed_offset_dict[runs_letter]
     
-    batch_number_dict = {'I' : 3, 'J' : 4}
+    batch_number_dict = {'I' : 3, 'J' : 4, 'K' : 5}
     batch_number = batch_number_dict[runs_letter]
     
     
@@ -1224,7 +1224,7 @@ if __name__ == '__main__':
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    create_input_files_for_multiple_runs('J')
+    create_input_files_for_multiple_runs('K')
     #calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
     #write_run_script_test_harness()
