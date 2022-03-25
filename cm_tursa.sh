@@ -3,7 +3,7 @@
 # Takes optional command-line argument to specify build directory name. Defaults to 'build'.
 
 if [[ $# == 0 ]]; then
-	BUILD_DIR="build"
+	BUILD_DIR="build_tursa"
 else
 	BUILD_DIR=$1
 fi
