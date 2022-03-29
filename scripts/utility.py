@@ -1006,8 +1006,10 @@ def create_input_files_for_multiple_runs(runs_letter):
 
     runs_directory = os.path.join(project_directory("current"), "runs{}".format(runs_letter))
     
-    cosmo_params_base_file_name_dict = {'C' : "params_run_1.txt", 'E' : "params_run_2.txt", 'I' : "params_run_3.txt", 'J' : "params_run_4.txt", 'K' : "params_run_5.txt", 'L' : "params_run_6.txt"}
-    cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, cosmo_params_base_file_name_dict[runs_letter])
+    batch_number_dict = {'I' : 3, 'J' : 4, 'K' : 5, 'L' : 6, 'M' : 7}
+    batch_number = batch_number_dict[runs_letter]
+
+    cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, "params_run_{}.txt".format(batch_number))
     cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',').reshape([-1,7]) # The 'reshape' handles the num_runs=1 case.
     num_runs = cosmo_params_for_all_runs.shape[0]
     
@@ -1020,18 +1022,16 @@ def create_input_files_for_multiple_runs(runs_letter):
     control_file_name_no_path = 'control.par'
     original_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
     
-    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192, 'J' : 320, 'K' : 384, 'L' : 401}
+    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192, 'J' : 320, 'K' : 384, 'L' : 401, 'M' : 530}
     random_seed_offset = random_seed_offset_dict[runs_letter]
     
-    batch_number_dict = {'I' : 3, 'J' : 4, 'K' : 5, 'L' : 6}
-    batch_number = batch_number_dict[runs_letter]
     
     
     for run_num_zero_based in range(num_runs):
         run_num_one_based = run_num_zero_based + 1
         
         # Amend the code here to restrict to just certain directories.
-        if (True):
+        if (run_num_one_based > 25):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
@@ -1148,10 +1148,10 @@ def calculate_each_run_time_and_show_Gantt_chart():
 
 def show_last_unprocessed_file():
     print(datetime.datetime.now().time())
-    for run_num_zero_based in range(128):
+    for run_num_zero_based in range(129):
         run_num_one_based = run_num_zero_based + 1
         run_string = zfilled_run_num(run_num_one_based)
-        this_directory = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/".format(runs_letter(), run_string)
+        this_directory = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/".format('L', run_string)
         these_files = sorted(glob.glob(os.path.join(this_directory, "*.0")))
         if these_files:
             print(these_files[-1])
@@ -1224,7 +1224,7 @@ if __name__ == '__main__':
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    create_input_files_for_multiple_runs('L')
+    create_input_files_for_multiple_runs('M')
     #calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
     #write_run_script_test_harness()
