@@ -1006,7 +1006,7 @@ def create_input_files_for_multiple_runs(runs_letter):
 
     runs_directory = os.path.join(project_directory("current"), "runs{}".format(runs_letter))
     
-    batch_number_dict = {'I' : 3, 'J' : 4, 'K' : 5, 'L' : 6, 'M' : 7}
+    batch_number_dict = {'I' : 3, 'J' : 4, 'K' : 5, 'L' : 6, 'M' : 7, 'N' : 8}
     batch_number = batch_number_dict[runs_letter]
 
     cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, "params_run_{}.txt".format(batch_number))
@@ -1022,7 +1022,7 @@ def create_input_files_for_multiple_runs(runs_letter):
     control_file_name_no_path = 'control.par'
     original_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
     
-    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192, 'J' : 320, 'K' : 384, 'L' : 401, 'M' : 530}
+    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192, 'J' : 320, 'K' : 384, 'L' : 401, 'M' : 530, 'N' : 658}
     random_seed_offset = random_seed_offset_dict[runs_letter]
     
     
@@ -1031,7 +1031,7 @@ def create_input_files_for_multiple_runs(runs_letter):
         run_num_one_based = run_num_zero_based + 1
         
         # Amend the code here to restrict to just certain directories.
-        if (run_num_one_based > 25):
+        if (True):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
@@ -1224,7 +1224,7 @@ if __name__ == '__main__':
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    create_input_files_for_multiple_runs('M')
+    create_input_files_for_multiple_runs('N')
     #calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
     #write_run_script_test_harness()
