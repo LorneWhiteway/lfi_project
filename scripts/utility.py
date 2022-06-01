@@ -10,7 +10,6 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg') # See http://stackoverflow.com/questions/2801882/generating-a-png-with-matplotlib-when-display-is-undefined
 import matplotlib.pyplot as plt
-import healpy as hp
 from astropy.cosmology import FlatLambdaCDM
 import datetime
 import os
@@ -152,6 +151,8 @@ def show_object_count_file(object_count_file_name):
 # basefilename will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/run.00001.hpb"
 # The actual files to be read will then have names like "/share/splinter/ucapwhi/lfi_project/experiments/simple/run.00001.hpb.0"
 def one_healpix_map_from_basefilename(basefilename, nside):
+
+    import healpy as hp
     
     hpb_type = np.dtype([('grouped', '=i4'),('ungrouped', '=i4'), ('potential', '=f4')])
     
@@ -192,6 +193,8 @@ def basefilename_list_from_filespec(filespec):
 # a) no processing is done if files for step '97' exist (as in this case the run is almost finished and regular 
 # post-processing will do the rest); b) a step is post-processed only if it is more than one hour old.
 def save_all_lightcone_files(filespec, nside, delete_hpb_files_when_done, on_the_fly):
+
+    import healpy as hp
 
     
     # This will be a pickle file storing a dictionary linking the tomographic slice number to the object count.
@@ -268,6 +271,8 @@ def save_all_lightcone_files(filespec, nside, delete_hpb_files_when_done, on_the
                     
     
 def plot_lightcone_files(list_of_npy_filenames, do_show = True, do_save = False, mollview_format = None):
+
+    import healpy as hp
 
     if mollview_format is None:
         mollview_format = False
@@ -386,6 +391,8 @@ def read_one_box_example():
 
 # File_name will be something like "/share/splinter/ucapwhi/lfi_project/experiments/simple/run.00100"
 def show_one_shell(file_name, shell_low, shell_high, nside):
+
+    import healpy as hp
 
     d = read_one_box(file_name)
     ra_list = []
@@ -646,6 +653,9 @@ def monitor(directory):
     
     
 def compare_two_lightcones_by_power_spectra():
+
+    import healpy as hp
+    
     file_name_array = ["/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/run.00067.lightcone.npy", "/share/splinter/ucapwhi/lfi_project/experiments/v100_1024_4096_900/run.00130.lightcone.npy"]
     
     delta_array = [(m/np.mean(m))-1.0 for m in [np.load(f) for f in file_name_array]]
