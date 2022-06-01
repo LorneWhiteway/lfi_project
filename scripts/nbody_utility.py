@@ -7,8 +7,13 @@
 """
 
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from nbodykit.lab import *
+from nbodykit.source.catalog import BinaryCatalog
+from nbodykit.algorithms.fftpower import FFTPower
+import utility
+import datetime
 
 
 def hello_world():
@@ -18,6 +23,8 @@ def hello_world():
 
 
 def compare_with_euclid():
+
+    
 
     file_name = "/share/splinter/ucapwhi/lfi_project/data/euclid_z0_transfer_combined.dat"
     d = np.loadtxt(file_name, delimiter = " ")
@@ -120,6 +127,152 @@ def compare_two_transfer_functions():
     plt.ylabel('Euclid transfer fn / new transfer fn')
     plt.show()
     
+def calculate_power_spectrum_of_simulation_box():
+
+    #simulation_box_filename = "/share/testde/ucapwhi/lfi_project/runsI/run016/run.00100"
+    #num_objects = 1259712000
+    
+    simulation_box_filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_256_1000/run.00100"
+    num_objects = 134217728
+    
+    binary_output_filename = simulation_box_filename + ".dat"
+    
+    if False:
+        print("{} Reading file {}...".format(datetime.datetime.now().time(), simulation_box_filename))
+        d = utility.read_one_box(simulation_box_filename)
+        print("{} Finished reading file.".format(datetime.datetime.now().time()))
+        
+        e = np.column_stack((d['x']+0.5, d['y']+0.5, d['z']+0.5))
+        print(e.shape[0])
+        
+        print("{} Writing file {}...".format(datetime.datetime.now().time(), binary_output_filename))
+        # See https://nbodykit.readthedocs.io/en/latest/catalogs/reading.html#Binary-Data
+        with open(binary_output_filename, 'wb') as ff:
+            e.tofile(ff)
+            ff.seek(0)
+        print("{} Finished writing file.".format(datetime.datetime.now().time()))
+    
+    print("{} Reading file {}...".format(datetime.datetime.now().time(), binary_output_filename))
+    f = BinaryCatalog(binary_output_filename, [('Position', ('f8', 3))], size=num_objects)
+    print("{} Finished reading file.".format(datetime.datetime.now().time()))
+    
+    print(f)
+    print("columns = ", f.columns) # default Weight,Selection also present
+    print("total size = ", f.csize)
+    
+    print("{} About to create mesh".format(datetime.datetime.now().time()))
+    mesh = f.to_mesh(Nmesh=32, BoxSize=1, dtype='f4')
+    print(mesh)
+    print("{} Finished creating mesh".format(datetime.datetime.now().time()))
+    
+    print("{} About to create FFTPower object".format(datetime.datetime.now().time()))
+    r = FFTPower(mesh, mode='1d', dk=0.005, kmin=0.01)
+    print("{} Finished creating FFTPower object".format(datetime.datetime.now().time()))
+    
+    Pk = r.power
+    print(Pk)
+    
+    
+    
+
+
+
+def LogNormalCatalogExample():
+    print("From https://nbodykit.readthedocs.io/en/latest/cookbook/fftpower.html")
+    redshift = 0.55
+    cosmo = cosmology.Planck15
+    Plin = cosmology.LinearPower(cosmo, redshift, transfer='EisensteinHu')
+    b1 = 2.0
+
+    cat = LogNormalCatalog(Plin=Plin, nbar=3e-4, BoxSize=1380., Nmesh=256, bias=b1, seed=42)
+    print(cat)
+    
+    AnalyzeCatalog(cat)
+    
+    
+def ArrayCatalogExample():
+    from nbodykit.source.catalog import ArrayCatalog
+    
+    print("https://nbodykit.readthedocs.io/en/latest/catalogs/reading.html#array-data")
+
+    # generate the fake data
+    num_data = 4096*4096
+    BoxSize = 1380
+    data = numpy.empty(num_data, dtype=[('Position', ('f8', 3))])
+    data['Position'] = numpy.random.uniform(size=(num_data, 3)) * BoxSize
+
+    # save to a npy file
+    numpy.save("npy-example.npy", data)
+
+    data = numpy.load("npy-example.npy")
+
+    # initialize the catalog
+    cat = ArrayCatalog(data, BoxSize=BoxSize, Nmesh=128)
+    print(cat)
+    
+    AnalyzeCatalog(cat)
+    
+    
+    
+    
+def AnalyzeCatalog(cat):
+
+    #line_of_sight = [0,0,1]
+    #cat['RSDPosition'] = cat['Position'] + cat['VelocityOffset'] * line_of_sight
+    #mesh = cat.to_mesh(resampler ='tsc', Nmesh=256, compensated=True, position='RSDPosition')
+
+    mesh = cat.to_mesh(resampler='tsc', compensated=True, position='Position')
+    
+    r = FFTPower(mesh, mode='1d', dk=0.005, kmin=0.01)
+    Pk = r.power
+    print(Pk)
+    
+    print(Pk.coords)
+    for k in Pk.attrs:
+        print("%s = %s" %(k, str(Pk.attrs[k])))
+        
+        
+    plt.switch_backend('Qt5Agg')
+        
+    
+    #plt.loglog(Pk['k'], Pk['power'].real - Pk.attrs['shotnoise'])
+    plt.loglog(Pk['k'], Pk['power'].real)
+
+    # format the axes
+    plt.xlabel(r"$k$ [$h \ \mathrm{Mpc}^{-1}$]")
+    plt.ylabel(r"$P(k)$ [$h^{-3}\mathrm{Mpc}^3$]")
+    plt.xlim(0.01, 0.6)
+    
+    plt.show()
+    
+
+
+
+def foo():
+    with open('./binary-example.dat', 'wb') as ff:
+        pos = numpy.random.random(size=(1024, 3)) # fake Position column
+        vel = numpy.random.random(size=(1024, 3)) # fake Velocity column
+        pos.tofile(ff); vel.tofile(ff); ff.seek(0)
+
+    # create the binary catalog
+    f = BinaryCatalog(ff.name, [('Position', ('f8', 3)), ('Velocity', ('f8', 3))], size=1024)
+
+    print(f)
+    print("columns = ", f.columns) # default Weight,Selection also present
+    print("total size = ", f.csize)
+    
+    ps = FFTPower(f.to_mesh(Nmesh=100, BoxSize=10, dtype='f8'), '1d')
+    r = ps.run()
+    print(r)
+    print(r[0])
+    print(r[0].shape)
+    print(r[0].coords)
+    print(r[0]['power'])
+    #for name in r[0].power.variables:
+    #    var = r[0].power[name]
+    #    print("'%s' has shape %s and dtype %s" %(name, var.shape, var.dtype))
+    
+    
     
 
 if __name__ == '__main__':
@@ -129,5 +282,11 @@ if __name__ == '__main__':
     #compare_with_euclid()
     #make_specific_cosmology_transfer_function()
     #compare_two_transfer_functions()
-    make_specific_cosmology_transfer_function_caller()
+    #make_specific_cosmology_transfer_function_caller()
+    #calculate_power_spectrum_of_simulation_box()
+    #foo()
+    #LogNormalCatalogExample()
+    ArrayCatalogExample()
+    
+    
     
