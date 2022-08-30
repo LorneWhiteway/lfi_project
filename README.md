@@ -37,25 +37,46 @@ LW has made the following changes to this code:
 
 8. Increased number of replications of the simulation box at 'lightcone creation' time from 6^3 to 20^3. This change incorporates code made available by Janis Fluri (https://cosmo-gitlab.phys.ethz.ch/jafluri/pkdgrav3_dev) - many thanks to Janis! This change affected lightcone.cxx, pkd.c and pkd.h.
 
-## Information about working with the splinter cluster
+9. Amended pkdgrav3/mdl2/CMakeLists.txt to change the cmake minimum version from 3.1 to 3.12 and to set cmake policy 0074 to NEW behaviour. This is needed to ensure that the environment variable FFTW_ROOT is paid attention to by the FindFFTW.cmake module (which is located in \pkdgrav3\mdl2\).
 
-1. Project directory is `/share/splinter/ucapwhi/lfi_project`.
+## Information about working with the UCL hypatia cluster
 
-2. In what follows, you can replace `v100` with `k80` to use the other splinter GPU.
+1. Project directory is `/share/rcifdata/ucapwhi/lfi_project`.
 
-### How to log on to one of the splinter GPU nodes
+### How to load environment variables
+- Log on to hypatia
+- Go to the project directory
+- Run `source ./set_environment_hypatia.sh`
+
+### How to log on to one of the hypatia GPU nodes
 ```
-srun -p GPU --gres=gpu:v100:1 --pty tcsh
+srun -p GPU --gres=gpu:a100:1 --pty bash
 ```
 
-### How to build pkdgrav3 for use by a splinter GPU
+### How to build pkdgrav3 for use by the hypatia GPU
 - Log on to a GPU and go to the project directory.
-- Run `./cm.csh build_splinter_v100`. You will need to type `y` to confirm the build directory name.
+- Run `./cm_hypatia.sh build_hypatia_a100`. You will need to type `y` to confirm the build directory name.
 
-### How to run one of the experiments on a splinter GPU
-- Log on to splinter (but don't log on to a GPU)
+### How to run one of the experiments on a hypatia GPU
+- Log on to hypatia (but don't log on to a GPU)
 - Go to the project directory, and from there to `/experiments/<experiment>`
+- TODO: The following needs to be updated.
 - `sbatch --export=ALL,experiment_name='<experiment>' ../../scripts/cuda_job_script_splinter_v100`
+
+### Working with python on hypatia
+Still to be done. Presumably follow the same idea as for Wilkes.
+
+### Additional info
+The hypatia installation has its own copy of FFTW 3.3.10, compiled with all the necessary options. This is in a subdirectory fftw-3.3.10 of the project directory. The instructions for creating this:
+1. cd /share/rcifdata/ucapwhi/lfi_project/
+2. wget https://www.fftw.org/fftw-3.3.10.tar.gz
+3. tar -xvf fftw-3.3.10.tar.gz
+4. cd fftw-3.3.10
+5. ./configure --enable-float --enable-shared --enable-threads --enable-mpi --prefix=/mnt/lustre/tursafs1/home/dp153/dp153/shared/fftw-3.3.10
+6. make
+7. make install
+
+I then created a module file for FFTW: /home/ucapwhi/privatemodules/ucapwhi/fftw/3.3.10. Need to `module load use.own` before loading this module (so that module load recognises this directory). This is not as sophisticated as what I did with tursa - could improve this.
 
 
 ## Information about working with the Wilkes cluster
@@ -181,6 +202,27 @@ Here I put the source code 'one level down' as otherwise there were problems at 
 1. Install nbodykit using the same instructions as for Wilkes
 2. Also in the `env` directory, run `pip install "dask[assay]" --upgrade`
 3. Add `opal_cuda_support=0` to `$HOME/.openmpi/mca-params.conf` to suppress a CUDA warning when running nbodykit. You will still get an OenFabric warning, though...
+
+## Information about working with the UCL splinter cluster
+
+1. Project directory is `/share/splinter/ucapwhi/lfi_project`.
+
+2. In what follows, you can replace `v100` with `k80` to use the other splinter GPU.
+
+### How to log on to one of the splinter GPU nodes
+```
+srun -p GPU --gres=gpu:v100:1 --pty tcsh
+```
+
+### How to build pkdgrav3 for use by a splinter GPU
+- Log on to a GPU and go to the project directory.
+- Run `./cm.csh build_splinter_v100`. You will need to type `y` to confirm the build directory name.
+
+### How to run one of the experiments on a splinter GPU
+- Log on to splinter (but don't log on to a GPU)
+- Go to the project directory, and from there to `/experiments/<experiment>`
+- `sbatch --export=ALL,experiment_name='<experiment>' ../../scripts/cuda_job_script_splinter_v100`
+
 
 
 ## Python scripts
