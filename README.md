@@ -67,16 +67,16 @@ srun -p GPU --gres=gpu:a100:1 --pty bash
 Still to be done. Presumably follow the same idea as for Wilkes.
 
 ### Additional info
-The hypatia installation has its own copy of FFTW 3.3.10, compiled with all the necessary options. This is in a subdirectory fftw-3.3.10 of the project directory. The instructions for creating this:
+The hypatia installation has its own copy of FFTW 3.3.10, compiled with all the necessary options. This is in a subdirectory /fftw-3.3.10 of the project directory. The instructions for creating this:
 1. cd /share/rcifdata/ucapwhi/lfi_project/
 2. wget https://www.fftw.org/fftw-3.3.10.tar.gz
 3. tar -xvf fftw-3.3.10.tar.gz
-4. cd fftw-3.3.10
-5. ./configure --enable-float --enable-shared --enable-threads --enable-mpi --prefix=/mnt/lustre/tursafs1/home/dp153/dp153/shared/fftw-3.3.10
+4. cd ./fftw-3.3.10
+5. ./configure --enable-float --enable-shared --enable-threads --enable-mpi --prefix=/share/rcifdata/ucapwhi/lfi_project/fftw-3.3.10
 6. make
 7. make install
 
-I then created a module file for FFTW: /home/ucapwhi/privatemodules/ucapwhi/fftw/3.3.10. Need to `module load use.own` before loading this module (so that module load recognises this directory). This is not as sophisticated as what I did with tursa - could improve this.
+There is a module file for FFTW: /home/ucapwhi/privatemodules/ucapwhi/fftw/3.3.10. Note the need to `module load use.own` before loading this module (so that module load recognises this directory). This is not as sophisticated as what I did with tursa - could improve this.
 
 
 ## Information about working with the Wilkes cluster
