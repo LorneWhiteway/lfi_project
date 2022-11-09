@@ -173,8 +173,29 @@ def calculate_power_spectrum_of_simulation_box():
     print(Pk)
     
     
-    
+def PKDGrav3Example():
 
+    simulation_box_filename = "/share/testde/ucapwhi/lfi_project/runsO/run029/run.00100"
+    BoxSize = 1250 #Mpc/h
+    
+    #simulation_box_filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_256_1000/run.00100"
+    #BoxSize = 1000 #Mpc/h
+    
+    d = utility.read_one_box(simulation_box_filename)
+    
+    num_data = d['x'].shape[0]
+    print("num_data = {}".format(num_data))
+    
+    data = numpy.empty(num_data, dtype=[('Position', (d['x'].dtype, 3))])
+    
+    data['Position'] = (np.column_stack([d['x'], d['y'], d['z']]) + 0.5) * BoxSize
+    
+    cat = ArrayCatalog(data, BoxSize=BoxSize, Nmesh=1024)
+    
+    print(cat)
+    
+    AnalyzeCatalog(cat, simulation_box_filename + ".ps_results")
+    
 
 
 def LogNormalCatalogExample():
@@ -187,7 +208,7 @@ def LogNormalCatalogExample():
     cat = LogNormalCatalog(Plin=Plin, nbar=3e-4, BoxSize=1380., Nmesh=256, bias=b1, seed=42)
     print(cat)
     
-    AnalyzeCatalog(cat)
+    AnalyzeCatalog(cat, None)
     
     
 def ArrayCatalogExample():
@@ -195,7 +216,7 @@ def ArrayCatalogExample():
     
     print("https://nbodykit.readthedocs.io/en/latest/catalogs/reading.html#array-data")
 
-    # generate the fake data
+    # generate random data
     num_data = 4096*4096
     BoxSize = 1380
     data = numpy.empty(num_data, dtype=[('Position', ('f8', 3))])
@@ -210,20 +231,18 @@ def ArrayCatalogExample():
     cat = ArrayCatalog(data, BoxSize=BoxSize, Nmesh=128)
     print(cat)
     
-    AnalyzeCatalog(cat)
+    AnalyzeCatalog(cat, None)
     
     
     
     
-def AnalyzeCatalog(cat):
+def AnalyzeCatalog(cat, file_to_save_results):
 
-    #line_of_sight = [0,0,1]
-    #cat['RSDPosition'] = cat['Position'] + cat['VelocityOffset'] * line_of_sight
-    #mesh = cat.to_mesh(resampler ='tsc', Nmesh=256, compensated=True, position='RSDPosition')
-
-    mesh = cat.to_mesh(resampler='tsc', compensated=True, position='Position')
+    mesh = cat.to_mesh(resampler='tsc', compensated=True)
     
-    r = FFTPower(mesh, mode='1d', dk=0.005, kmin=0.01)
+    kmin = 0.01
+    
+    r = FFTPower(mesh, mode='1d', dk=0.005, kmin=kmin)
     Pk = r.power
     print(Pk)
     
@@ -231,47 +250,31 @@ def AnalyzeCatalog(cat):
     for k in Pk.attrs:
         print("%s = %s" %(k, str(Pk.attrs[k])))
         
+    if file_to_save_results:
+        r.save(file_to_save_results)
+        
         
     plt.switch_backend('Qt5Agg')
-        
-    
-    #plt.loglog(Pk['k'], Pk['power'].real - Pk.attrs['shotnoise'])
-    plt.loglog(Pk['k'], Pk['power'].real)
+
+    plt.loglog(Pk['k'], Pk['power'].real - Pk.attrs['shotnoise'])
 
     # format the axes
     plt.xlabel(r"$k$ [$h \ \mathrm{Mpc}^{-1}$]")
     plt.ylabel(r"$P(k)$ [$h^{-3}\mathrm{Mpc}^3$]")
-    plt.xlim(0.01, 0.6)
+    
+    # kmax will be pi*NMesh/BoxLength...
+    #plt.xlim(kmin, 0.6)
     
     plt.show()
     
-
-
-
+    
+    
 def foo():
-    with open('./binary-example.dat', 'wb') as ff:
-        pos = numpy.random.random(size=(1024, 3)) # fake Position column
-        vel = numpy.random.random(size=(1024, 3)) # fake Velocity column
-        pos.tofile(ff); vel.tofile(ff); ff.seek(0)
-
-    # create the binary catalog
-    f = BinaryCatalog(ff.name, [('Position', ('f8', 3)), ('Velocity', ('f8', 3))], size=1024)
-
-    print(f)
-    print("columns = ", f.columns) # default Weight,Selection also present
-    print("total size = ", f.csize)
-    
-    ps = FFTPower(f.to_mesh(Nmesh=100, BoxSize=10, dtype='f8'), '1d')
-    r = ps.run()
-    print(r)
-    print(r[0])
-    print(r[0].shape)
-    print(r[0].coords)
-    print(r[0]['power'])
-    #for name in r[0].power.variables:
-    #    var = r[0].power[name]
-    #    print("'%s' has shape %s and dtype %s" %(name, var.shape, var.dtype))
-    
+    filename = "/share/testde/ucapwhi/lfi_project/runsO/run029/run.00100.ps_results"
+    r = FFTPower.load(filename)
+    Pk = r.power
+    print(Pk)
+    np.save("./foo1.npy", np.array([Pk['k'], Pk['power'].real - Pk.attrs['shotnoise']]))
     
     
 
@@ -286,7 +289,10 @@ if __name__ == '__main__':
     #calculate_power_spectrum_of_simulation_box()
     #foo()
     #LogNormalCatalogExample()
-    ArrayCatalogExample()
-    
+    #ArrayCatalogExample()
+    #
+    #foo()
+    PKDGrav3Example()
+    foo()
     
     
