@@ -941,7 +941,7 @@ def change_one_value_in_ini_file(file_name, key, new_value):
 def get_exec_path():
     return os.path.dirname(os.path.abspath(sys.modules['__main__'].__file__))
 
-# location can be 'wilkes', 'tursa', 'splinter' or 'current'
+# location can be 'wilkes', 'tursa', 'splinter', 'hypatia', or 'current'
 def project_directory(location):
     if location == 'wilkes':
         return "/rds/project/dirac_vol5/rds-dirac-dp153/lfi_project"
@@ -949,6 +949,8 @@ def project_directory(location):
         return "/mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project"
     elif location == 'splinter':
         return "/share/splinter/ucapwhi/lfi_project"
+    elif location == 'hypatia':
+        return "/share/rcifdata/ucapwhi/lfi_project"
     elif location == 'current':
         # Return parent directory of directory containing script.
         # See also https://stackoverflow.com/questions/2860153/how-do-i-get-the-parent-directory-in-python
@@ -1028,6 +1030,7 @@ def create_input_files_for_multiple_runs(runs_letter):
     original_wilkes_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path("wilkes"))
     original_tursa_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path("tursa"))
     original_numa_wrapper_file_name = os.path.join(runs_directory, tursa_numa_wrapper_file_name_no_path)
+    original_hypatia_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path("hypatia"))
     
     control_file_name_no_path = 'control.par'
     original_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
@@ -1050,9 +1053,11 @@ def create_input_files_for_multiple_runs(runs_letter):
             this_run_directory = os.path.join(runs_directory, "run" + run_string)
             this_wilkes_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path("wilkes"))
             this_tursa_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path("tursa"))
+            this_hypatia_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path("hypatia"))
             this_control_file_name = os.path.join(this_run_directory, control_file_name_no_path)
             run_script_name_wilkes = os.path.join(this_run_directory, "pkdgrav3_and_post_process_wilkes.sh")
             run_script_name_tursa = os.path.join(this_run_directory, "pkdgrav3_and_post_process_tursa.sh")
+            run_script_name_hypatia = os.path.join(this_run_directory, "pkdgrav3_and_post_process_hypatia.sh")
             
         
             # Make directory
@@ -1070,6 +1075,12 @@ def create_input_files_for_multiple_runs(runs_letter):
             change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(batch_number, run_string))
             change_one_value_in_ini_file(this_tursa_job_script_file_name, 'application=', double_quoted_string(run_script_name_tursa))
             
+            # Hypatia job script
+            copyfile(original_hypatia_job_script_file_name, this_hypatia_job_script_file_name)
+            change_one_value_in_ini_file(this_hypatia_job_script_file_name, '#SBATCH --time=', '35:59:00')
+            change_one_value_in_ini_file(this_hypatia_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(batch_number, run_string))
+            change_one_value_in_ini_file(this_hypatia_job_script_file_name, 'application=', double_quoted_string(run_script_name_hypatia))
+
             # Cosmology object
             cosmology_object = make_specific_cosmology(this_run_directory,
                 Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
@@ -1109,7 +1120,6 @@ def create_input_files_for_multiple_runs(runs_letter):
             # Wilkes run script
             wilkes_set_environment_commands = ["module load python/3.8\n", "source {}/env/bin/activate\n".format(project_directory("wilkes"))]
             write_run_script("wilkes", runs_letter, run_string, run_script_name_wilkes, wilkes_set_environment_commands)
-
             
             # Tursa run script
             tursa_set_environment_commands = ["source {}/set_environment_tursa.sh\n".format(project_directory("tursa"))]
@@ -1119,6 +1129,13 @@ def create_input_files_for_multiple_runs(runs_letter):
             this_numa_wrapper_file_name = os.path.join(this_run_directory, tursa_numa_wrapper_file_name_no_path)
             copyfile(original_numa_wrapper_file_name, this_numa_wrapper_file_name)
             make_file_executable(this_numa_wrapper_file_name)
+            
+            # Hypatia run script
+            ## TODO - test this.
+            hypatia_set_environment_commands = ["module load python/3.8\n", "source {}/env/bin/activate\n".format(project_directory("hypatia"))]
+            write_run_script("hypatia", runs_letter, run_string, run_script_name_hypatia, hypatia_set_environment_commands)
+            
+            
 
 
 def start_time_end_time(directory):
@@ -1234,7 +1251,7 @@ if __name__ == '__main__':
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    create_input_files_for_multiple_runs('S')
+    create_input_files_for_multiple_runs('R')
     #calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
     #write_run_script_test_harness()

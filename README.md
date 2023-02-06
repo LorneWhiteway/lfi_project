@@ -64,7 +64,24 @@ srun -p GPU --gres=gpu:a100:1 --pty bash
 - `sbatch --export=ALL,experiment_name='<experiment>' ../../scripts/cuda_job_script_splinter_v100`
 
 ### Working with python on hypatia
-Still to be done. Presumably follow the same idea as for Wilkes.
+
+I have set up a virtual Python environment in the subdirectory `env` of the project directory. This is convenient as we can install our own software there. This is activated automatically by running `source ./set_environment_hypatia.sh` in the project directory.
+
+For reference (e.g. in case it needs to be repeated), here's how the virtual environment was created:
+- Go to the project directory
+- `module load python/3.6.4`
+- `python3 -m venv env`
+- `source env/bin/activate`
+- `cd env`
+- `pip install --upgrade pip`
+- `pip install healpy`
+- Then for nbodykit: (see https://nbodykit.readthedocs.io/en/latest/getting-started/install.html#installing-nbodykit-with-pip)
+- `pip install cython`
+- `pip install mpi4py`
+- `pip install nbodykit`
+- `pip install "dask[array]" --upgrade`
+
+
 
 ### Additional info
 The hypatia installation has its own copy of FFTW 3.3.10, compiled with all the necessary options. This is in a subdirectory /fftw-3.3.10 of the project directory. The instructions for creating this:

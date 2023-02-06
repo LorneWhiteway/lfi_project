@@ -48,7 +48,8 @@ if [[ $BUILD_MODE == $TRUE ]]; then
 	module load $CMAKE_MODULE
 fi
 
-#source env/bin/activate
+# See README file entry 'Working with python on hypatia'
+source env/bin/activate
 
 # Set environment variables used by CMake
 #export FFTW3_ROOT=/share/rcifdata/ucapwhi/lfi_project/fftw-3.3.10/
