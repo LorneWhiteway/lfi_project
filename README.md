@@ -369,3 +369,8 @@ t = cosmology.power.transfers.CLASS(cosmology.Planck15,0.0)(k)
 print(t) # Should be 1.0
 ```
 
+
+## Google document with summary of which runs have been done
+
+Google document [here](https://docs.google.com/spreadsheets/d/1lfNehrNxl7ggto7P6gNRRfGNA4YKRRgE8VzDfqTWOqQ/edit#gid=0).
+
