@@ -369,8 +369,13 @@ t = cosmology.power.transfers.CLASS(cosmology.Planck15,0.0)(k)
 print(t) # Should be 1.0
 ```
 
+## Storage of output files
+Output files are stored:
+- on splinter, at /share/testde/ucapwhi/lfi_project. Recall that when manipulating files on testde, it is best to ssh to nas-0-1 (e.g. ssh ucapwhi@nas-0-1).
+- on NERSC, at /global/cfs/cdirs/des/dirac_sims/original_files.
+
 
 ## Google document with summary of which runs have been done
-
 Google document [here](https://docs.google.com/spreadsheets/d/1lfNehrNxl7ggto7P6gNRRfGNA4YKRRgE8VzDfqTWOqQ/edit#gid=0).
+
 
