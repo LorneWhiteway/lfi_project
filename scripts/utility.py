@@ -1016,7 +1016,7 @@ def create_input_files_for_multiple_runs(runs_letter):
 
     runs_directory = os.path.join(project_directory("current"), "runs{}".format(runs_letter))
     
-    batch_number_dict = {'I' : 3, 'J' : 4, 'K' : 5, 'L' : 6, 'M' : 7, 'N' : 8, 'O' : 9, 'P' : 10}
+    batch_number_dict = {'I' : 3, 'J' : 4, 'K' : 5, 'L' : 6, 'M' : 7, 'N' : 8, 'O' : 9, 'P' : 10, 'Q' : 11, 'R' : 12, 'S' : 13}
     batch_number = batch_number_dict[runs_letter]
 
     cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, "params_run_{}.txt".format(batch_number))
@@ -1032,7 +1032,7 @@ def create_input_files_for_multiple_runs(runs_letter):
     control_file_name_no_path = 'control.par'
     original_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
     
-    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192, 'J' : 320, 'K' : 384, 'L' : 401, 'M' : 530, 'N' : 658, 'O' : 690, 'P' : 722}
+    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192, 'J' : 320, 'K' : 384, 'L' : 401, 'M' : 530, 'N' : 658, 'O' : 690, 'P' : 722, 'Q' : 754, 'R' : 786, 'S' : 818}
     random_seed_offset = random_seed_offset_dict[runs_letter]
     
     
@@ -1041,7 +1041,7 @@ def create_input_files_for_multiple_runs(runs_letter):
         run_num_one_based = run_num_zero_based + 1
         
         # Amend the code here to restrict to just certain directories.
-        if (True):
+        if (run_num_one_based > 8):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
@@ -1061,13 +1061,13 @@ def create_input_files_for_multiple_runs(runs_letter):
             # Wilkes job script
             copyfile(original_wilkes_job_script_file_name, this_wilkes_job_script_file_name)
             change_one_value_in_ini_file(this_wilkes_job_script_file_name, '#SBATCH --time=', '35:59:00')
-            change_one_value_in_ini_file(this_wilkes_job_script_file_name, '#SBATCH -J ', 'pgr3_{}'.format(run_string))
+            change_one_value_in_ini_file(this_wilkes_job_script_file_name, '#SBATCH -J ', 'p{}_{}'.format(batch_number, run_string))
             change_one_value_in_ini_file(this_wilkes_job_script_file_name, 'application=', double_quoted_string(run_script_name_wilkes))
             
             # Tursa job script
             copyfile(original_tursa_job_script_file_name, this_tursa_job_script_file_name)
             change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --time=', '47:59:00')
-            change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --job-name=', 'pgr3_{}'.format(run_string))
+            change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(batch_number, run_string))
             change_one_value_in_ini_file(this_tursa_job_script_file_name, 'application=', double_quoted_string(run_script_name_tursa))
             
             # Cosmology object
@@ -1234,7 +1234,7 @@ if __name__ == '__main__':
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    create_input_files_for_multiple_runs('P')
+    create_input_files_for_multiple_runs('S')
     #calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
     #write_run_script_test_harness()
