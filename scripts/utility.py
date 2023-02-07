@@ -1044,7 +1044,7 @@ def create_input_files_for_multiple_runs(runs_letter):
         run_num_one_based = run_num_zero_based + 1
         
         # Amend the code here to restrict to just certain directories.
-        if (run_num_one_based > 8):
+        if (run_num_one_based == 12):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
@@ -1132,7 +1132,7 @@ def create_input_files_for_multiple_runs(runs_letter):
             
             # Hypatia run script
             ## TODO - test this.
-            hypatia_set_environment_commands = ["module load python/3.8\n", "source {}/env/bin/activate\n".format(project_directory("hypatia"))]
+            hypatia_set_environment_commands = ["module load python/3.6.4\n", "source {}/env/bin/activate\n".format(project_directory("hypatia"))]
             write_run_script("hypatia", runs_letter, run_string, run_script_name_hypatia, hypatia_set_environment_commands)
             
             
@@ -1251,7 +1251,7 @@ if __name__ == '__main__':
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    create_input_files_for_multiple_runs('R')
+    create_input_files_for_multiple_runs('S')
     #calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
     #write_run_script_test_harness()
