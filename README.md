@@ -55,7 +55,7 @@ srun -p GPU --gres=gpu:a100:1 --pty bash
 
 ### How to build pkdgrav3 for use by the hypatia GPU
 - Log on to a GPU and go to the project directory.
-- Run `./cm_hypatia.sh build_hypatia_a100`. You will need to type `y` to confirm the build directory name.
+- Run `./cm_hypatia.sh build_hypatia`. You will need to type `y` to confirm the build directory name.
 
 ### How to run one of the experiments on a hypatia GPU
 - Log on to hypatia (but don't log on to a GPU)
