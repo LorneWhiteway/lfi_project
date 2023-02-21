@@ -47,13 +47,13 @@ LW has made the following changes to this code:
 1. Go to the parent directory of the project directory.
 2. git clone https://github.com/LorneWhiteway/lfi_project.git
 3. cd ./lfi_project. You are now in the project directory.
-3. Follow the instructions in 'Creating a suitable version of FFTW for hypatia' below to create a suitable version of FFTW and to create a module file for this version.
-4. Follow the instructions in 'How to build pkdgrav3 for use by the hypatia GPU' below to build pkdgrav3.
+4. Follow the instructions in 'Creating a suitable version of FFTW for hypatia' below to create a suitable version of FFTW and to create a module file for this version.
+5. Follow the instructions below in 'Working with python on hypatia' to to create a virtual Python environment.modules.
+6. Follow the instructions in 'How to build pkdgrav3 for use by the hypatia GPU' below to build pkdgrav3.
 
 ### How to load environment variables
-- Log on to hypatia
 - Go to the project directory
-- Run `source ./set_environment_hypatia.sh`
+- `source ./set_environment_hypatia.sh`
 
 ### How to log on to one of the hypatia GPU nodes
 ```
@@ -63,30 +63,14 @@ srun -p GPU --gres=gpu:a100:1 --pty bash
 ### How to build pkdgrav3 for use by the hypatia GPU
 - Log on to a GPU (see instructions elsewhere in this README) and go to the project directory.
 - Run `./cm_hypatia.sh build_hypatia`. You will need to type `y` to confirm the build directory name.
+- Then `exit` from the GPU.
 
-### How to run one of the experiments on a hypatia GPU
+
+### How to run the 'fast' test on a hypatia GPU
 - Log on to hypatia (but don't log on to a GPU)
-- Go to the project directory, and from there to `/experiments/<experiment>`
-- TODO: The following needs to be updated.
-- `sbatch --export=ALL,experiment_name='<experiment>' ../../scripts/cuda_job_script_splinter_v100`
+- Go to the project directory, and from there to `/experiments/fast`
+- `sbatch cuda_job_script_hypatia`
 
-### Working with python on hypatia
-
-I have set up a virtual Python environment in the subdirectory `env` of the project directory. This is convenient as we can install our own software there. This is activated automatically by running `source ./set_environment_hypatia.sh` in the project directory.
-
-For reference (e.g. in case it needs to be repeated), here's how the virtual environment was created:
-- Go to the project directory
-- `module load python/3.6.4`
-- `python3 -m venv env`
-- `source env/bin/activate`
-- `cd env`
-- `pip install --upgrade pip`
-- `pip install healpy`
-- Then for nbodykit: (see https://nbodykit.readthedocs.io/en/latest/getting-started/install.html#installing-nbodykit-with-pip)
-- `pip install cython`
-- `pip install mpi4py`
-- `pip install nbodykit`
-- `pip install "dask[array]" --upgrade`
 
 ### Creating a suitable version of FFTW for hypatia
 The hypatia installation needs its own copy of FFTW 3.3.10, compiled with all the necessary options. This goes in a subdirectory /fftw-3.3.10 of the project directory. To create this:
@@ -101,6 +85,24 @@ The hypatia installation needs its own copy of FFTW 3.3.10, compiled with all th
 Then create the module file for this installation. To do this:
 1. Copy the module file '3.3.1' from '...(project directory)/hypatia/modulefiles/fftw/' to '~/privatemodules/pkdgrav3/fftw/'
 2. Edit this copy so that 'FFTW_ROOT' points to '(project directory)/fftw-3.3.10'
+
+
+### Working with python on hypatia
+To set up a virtual Python environment in the subdirectory `env` of the project directory:
+- Go to the project directory
+- `module load python/3.6.4`
+- `python3 -m venv env`
+- `source env/bin/activate`
+- `cd env`
+- `pip install --upgrade pip`
+- ` `
+- Then for nbodykit: (see https://nbodykit.readthedocs.io/en/latest/getting-started/install.html#installing-nbodykit-with-pip):
+-    `pip install cython`
+-    `pip install mpi4py`
+-    `pip install nbodykit`
+-    `pip install "dask[array]" --upgrade`
+
+It is convenient to have this environment as we can install our own software there. The environment is activated automatically by running `source ./set_environment_hypatia.sh` in the project directory.
 
 
 ## Information about working with the Wilkes cluster
@@ -125,6 +127,7 @@ For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-g
 ### How to build pkdgrav3 for use by the Wilkes GPUs
 - Log on to a GPU and go to the project directory.
 - Run `./cm_wilkes.sh build_wilkes`. You will need to type `y` to confirm the build directory name.
+- Then `exit` from the GPU.
 
 ### How to run one of the experiments on the Wilkes GPUs
 - Log on to Wilkes (but don't log on to a GPU)
@@ -172,6 +175,7 @@ However, it probably isn't necessary to use this (as you can build pkdgrav3 usin
 
 - Go to the project directory.
 - Run `./cm_tursa.sh build_tursa`. You will need to type `y` to confirm the build directory name.
+- Then `exit` from the GPU.
 
 ### How I installed dependent libraries on Tursa
 
@@ -241,6 +245,7 @@ srun -p GPU --gres=gpu:v100:1 --pty tcsh
 ### How to build pkdgrav3 for use by a splinter GPU
 - Log on to a GPU and go to the project directory.
 - Run `./cm.csh build_splinter_v100`. You will need to type `y` to confirm the build directory name.
+- Then `exit` from the GPU.
 
 ### How to run one of the experiments on a splinter GPU
 - Log on to splinter (but don't log on to a GPU)

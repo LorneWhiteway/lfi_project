@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Runs cmake and then make to build pkdgrav3.
 # Takes optional command-line argument to specify build directory name. Defaults to 'build'.
 
 if [[ $# == 0 ]]; then
@@ -14,8 +15,8 @@ echo "Proceed? (y/n)"
 read ans
 
 if [[ $ans == "y" ]]; then
-	cd /share/rcifdata/ucapwhi/lfi_project/
-	source ./set_environment_hypatia.sh BUILD
+	cd ${LFI_PROJECT_DIRECTORY}
+	source ./set_environment_hypatia.sh
 	##git clone https://bitbucket.org/dpotter/pkdgrav3.git
 	cd ./pkdgrav3
 	rm -rf ./$BUILD_DIR
