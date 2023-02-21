@@ -18,7 +18,7 @@ module-whatis "Adds FFTW-3.3.10 to your environment"
 # Set environment variable used by CMake
 # Note that LFI_PROJECT_DIRECTORY will get set by set_environment_hypatia.sh
 
-set           FFTW_ROOT         ${LFI_PROJECT_DIRECTORY}/fftw-3.3.10
+set           FFTW_ROOT         $env(LFI_PROJECT_DIRECTORY)/fftw-3.3.10
 
 setenv        FFTW_ROOT         ${FFTW_ROOT}
 prepend-path  PATH              ${FFTW_ROOT}/bin
