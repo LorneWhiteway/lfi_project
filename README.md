@@ -95,7 +95,7 @@ To set up a virtual Python environment in the subdirectory `env` of the project 
 - `source env/bin/activate`
 - `cd env`
 - `pip install --upgrade pip`
-- ` `
+- `pip install healpy`
 - Then for nbodykit: (see https://nbodykit.readthedocs.io/en/latest/getting-started/install.html#installing-nbodykit-with-pip):
 -    `pip install cython`
 -    `pip install mpi4py`
