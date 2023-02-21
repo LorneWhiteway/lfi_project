@@ -41,7 +41,12 @@ LW has made the following changes to this code:
 
 ## Information about working with the UCL hypatia cluster
 
-1. Project directory is `/share/rcifdata/ucapwhi/lfi_project`.
+1. The 'project directory' is the directory in which the project has been installed (i.e. the directory containing this readme file). For LW this is `/share/rcifdata/ucapwhi/lfi_project`.
+
+## One-time work to install lfi_project on hypatia
+1. git clone the repository from https://github.com/LorneWhiteway/lfi_project.git to the project directory.
+2. Follow the instructions in 'Creating a suitable version of FFTW for hypatia' below to create a suitable version of FFTW and to create a module file for this version.
+3. Follow the instructions in 'How to build pkdgrav3 for use by the hypatia GPU' below to build pkdgrav3.
 
 ### How to load environment variables
 - Log on to hypatia
@@ -54,7 +59,7 @@ srun -p GPU --gres=gpu:a100:1 --pty bash
 ```
 
 ### How to build pkdgrav3 for use by the hypatia GPU
-- Log on to a GPU and go to the project directory.
+- Log on to a GPU (see instructions elsewhere in this README) and go to the project directory.
 - Run `./cm_hypatia.sh build_hypatia`. You will need to type `y` to confirm the build directory name.
 
 ### How to run one of the experiments on a hypatia GPU
@@ -81,19 +86,19 @@ For reference (e.g. in case it needs to be repeated), here's how the virtual env
 - `pip install nbodykit`
 - `pip install "dask[array]" --upgrade`
 
-
-
-### Additional info
-The hypatia installation has its own copy of FFTW 3.3.10, compiled with all the necessary options. This is in a subdirectory /fftw-3.3.10 of the project directory. The instructions for creating this:
+### Creating a suitable version of FFTW for hypatia
+The hypatia installation needs its own copy of FFTW 3.3.10, compiled with all the necessary options. This goes in a subdirectory /fftw-3.3.10 of the project directory. To create this:
 1. Go to the project directory
 2. wget https://www.fftw.org/fftw-3.3.10.tar.gz
 3. tar -xvf fftw-3.3.10.tar.gz
 4. cd ./fftw-3.3.10
-5. ./configure --enable-float --enable-shared --enable-threads --enable-mpi --prefix=/share/rcifdata/ucapwhi/lfi_project/fftw-3.3.10
+5. ./configure --enable-float --enable-shared --enable-threads --enable-mpi --prefix=(project directory)/fftw-3.3.10
 6. make
 7. make install
 
-There is a module file for FFTW: /home/ucapwhi/privatemodules/ucapwhi/fftw/3.3.10. Note the need to `module load use.own` before loading this module (so that module load recognises this directory). This is not as sophisticated as what I did with tursa - could improve this.
+Then create the module file for this installation. To do this:
+1. Copy the module file '3.3.1' from '...(project directory)/hypatia/modulefiles/fftw/' to '~/privatemodules/pkdgrav3/fftw'
+2. Edit this copy so that 'FFTW_ROOT' points to '(project directory)/fftw-3.3.10'
 
 
 ## Information about working with the Wilkes cluster
