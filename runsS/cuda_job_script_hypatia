@@ -3,8 +3,8 @@
 #SBATCH -p GPU
 #requesting one node
 #SBATCH -N1
-#requesting 1 cpu
-#SBATCH -n1
+#requesting 12 cpus
+#SBATCH -n12
 #requesting 1 GPU
 #SBATCH --gres=gpu:a100:1
 #SBATCH --job-name=pkdgrav3

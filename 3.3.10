@@ -16,7 +16,9 @@ module-whatis "Adds FFTW-3.3.10 to your environment"
 ## c) Edit this copy so that FFTW_ROOT is set to the subdirectory 'fftw-3.3.10' of the lfi_project directory.
 
 # Set environment variable used by CMake
-set           FFTW_ROOT         /share/rcifdata/ucapwhi/lfi_project/fftw-3.3.10/
+set           FFTW_ROOT         /share/rcifdata/ucapwhi/lfi_project/fftw-3.3.10
+
+setenv        FFTW_ROOT         ${FFTW_ROOT}
 prepend-path  PATH              ${FFTW_ROOT}/bin
 prepend-path  LD_LIBRARY_PATH	${FFTW_ROOT}/lib
 prepend-path  LIBRARY_PATH	    ${FFTW_ROOT}/lib
