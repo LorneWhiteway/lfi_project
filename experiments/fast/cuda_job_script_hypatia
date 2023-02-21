@@ -8,26 +8,22 @@
 #requesting 1 GPU
 #SBATCH --gres=gpu:a100:1
 #SBATCH --job-name=pkdgrav3
-## TODO: Update the email address
-#SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
-#SBATCH --mail-type=END,FAIL
 #SBATCH --time=0-01:00:00
 #SBATCH --mem=36000
 
 
 # Go to the project directory
-## TODO: Update the project directory
-cd /share/rcifdata/ucapwhi/lfi_project/
+cd ${LFI_PROJECT_DIRECTORY}/
 
 # Load the module files
-source ./set_environment_hypatia.sh USE
+source ./set_environment_hypatia.sh
 
 # Go to the output directory
 cd ./experiments/fast/
 	
 # Run pkdgrav3
 export OMP_NUM_THREADS=32
-../../pkdgrav3/build_hypatia/pkdgrav3 ./control.par > ./output.txt
+${LFI_PROJECT_DIRECTORY}/pkdgrav3/build_hypatia/pkdgrav3 ./control.par > ./output.txt
 
 
 
