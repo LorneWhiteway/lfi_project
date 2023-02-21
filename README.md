@@ -85,7 +85,7 @@ For reference (e.g. in case it needs to be repeated), here's how the virtual env
 
 ### Additional info
 The hypatia installation has its own copy of FFTW 3.3.10, compiled with all the necessary options. This is in a subdirectory /fftw-3.3.10 of the project directory. The instructions for creating this:
-1. cd /share/rcifdata/ucapwhi/lfi_project/
+1. Go to the project directory
 2. wget https://www.fftw.org/fftw-3.3.10.tar.gz
 3. tar -xvf fftw-3.3.10.tar.gz
 4. cd ./fftw-3.3.10

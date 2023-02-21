@@ -1,0 +1,23 @@
+#%Module -*- tcl -*-
+##
+## FFTW 3.3.10
+##
+proc ModulesHelp { } {
+     puts stderr "\tEnables FFTW-3.3.10"
+}
+
+module-whatis "Adds FFTW-3.3.10 to your environment"
+
+## This module file is to be used when installing lfi_project on hypatia.
+
+## One-time setup step when installing lfi_project on hypatia:
+## a) Create subdirectory 'pkdgrav3' in the subdirectory 'privatemodules' of your home directory;
+## b) Copy this file to this new 'pkdgrav3' subdirectory;
+## c) Edit this copy so that FFTW_ROOT is set to the subdirectory 'fftw-3.3.10' of the lfi_project directory.
+
+# Set environment variable used by CMake
+set           FFTW_ROOT         /share/rcifdata/ucapwhi/lfi_project/fftw-3.3.10/
+prepend-path  PATH              ${FFTW_ROOT}/bin
+prepend-path  LD_LIBRARY_PATH	${FFTW_ROOT}/lib
+prepend-path  LIBRARY_PATH	    ${FFTW_ROOT}/lib
+prepend-path  CPATH		        ${FFTW_ROOT}/include
