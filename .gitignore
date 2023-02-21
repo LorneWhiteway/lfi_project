@@ -3,6 +3,8 @@ scripts/slurm*
 MPI_test/mpi_test
 AVX_test/avx_test
 
+fftw-3.3.10/
+
 
 experiments/*/run*
 experiments/*/example*
