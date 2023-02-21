@@ -26,32 +26,20 @@ else
 	echo "Setting environment variables for USING pkdgrav3..."
 fi
 
-USEOWN=use.own
-MPI_MODULE=rocks-openmpi
-COMPILER_MODULE=gcc/10.1.0
-GSL_MODULE=gsl/2.6
-#FFTW_MODULE=ucapwhi/fftw/3.3.10
-FFTW_MODULE=pkdgrav3/fftw/3.3.10
-HDF5_MODULE=hdf5/1.12.1
-CMAKE_MODULE=cmake/3.17.3
 
 module purge
-module load $USEOWN
-module load $MPI_MODULE
-module load $COMPILER_MODULE
-module load $GSL_MODULE
-module load $FFTW_MODULE
-module load $HDF5_MODULE
+module load use.own
+module load rocks-openmpi
+module load gcc/10.1.0
+module load gsl/2.6
+module load pkdgrav3/fftw/3.3.10 # See README for more information about this module file.
+module load hdf5/1.12.1
 
 	
 if [[ $BUILD_MODE == $TRUE ]]; then
-	module load $CMAKE_MODULE
+	module load cmake/3.17.3
 fi
 
 # See README file entry 'Working with python on hypatia'
 source env/bin/activate
-
-# Set environment variables used by CMake
-#export FFTW_ROOT=/share/rcifdata/ucapwhi/lfi_project/fftw-3.3.10/
-
 
