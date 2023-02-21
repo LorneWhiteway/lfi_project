@@ -8,26 +8,26 @@
 #requesting 1 GPU
 #SBATCH --gres=gpu:a100:1
 #SBATCH --job-name=pkdgrav3
+## TODO: Update the email address
 #SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
 #SBATCH --mail-type=END,FAIL
 #SBATCH --time=0-01:00:00
 #SBATCH --mem=36000
 
 
-## Call this job script using syntax like this:
-## sbatch cuda_job_script_hypatia
-
+# Go to the project directory
+## TODO: Update the project directory
+cd /share/rcifdata/ucapwhi/lfi_project/
 
 # Load the module files
-source /share/rcifdata/ucapwhi/lfi_project/set_environment_hypatia.sh USE
+source ./set_environment_hypatia.sh USE
 
 # Go to the output directory
-cd /share/rcifdata/ucapwhi/lfi_project/experiments/fast/
+cd ./experiments/fast/
 	
 # Run pkdgrav3
-#/share/rcifdata/ucapwhi/lfi_project/pkdgrav3/build_hypatia/pkdgrav3 -sz 32 ./control.par > ./output.txt
 export OMP_NUM_THREADS=32
-/share/rcifdata/ucapwhi/lfi_project/pkdgrav3/build_hypatia/pkdgrav3 ./control.par > ./output.txt
+../../pkdgrav3/build_hypatia/pkdgrav3 ./control.par > ./output.txt
 
 
 
