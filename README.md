@@ -41,12 +41,14 @@ LW has made the following changes to this code:
 
 ## Information about working with the UCL hypatia cluster
 
-1. The 'project directory' is the directory in which the project has been installed (i.e. the directory containing this readme file). For LW this is `/share/rcifdata/ucapwhi/lfi_project`.
+1. The 'project directory' is the directory in which the project has been installed (i.e. the directory containing this readme file). This directory can be located anywhere on hypatia; it will always be called 'lfi_project'. For LW this is `/share/rcifdata/ucapwhi/lfi_project`.
 
-## One-time work to install lfi_project on hypatia
-1. git clone the repository from https://github.com/LorneWhiteway/lfi_project.git to the project directory.
-2. Follow the instructions in 'Creating a suitable version of FFTW for hypatia' below to create a suitable version of FFTW and to create a module file for this version.
-3. Follow the instructions in 'How to build pkdgrav3 for use by the hypatia GPU' below to build pkdgrav3.
+### One-time work to install lfi_project on hypatia
+1. Go to the parent directory of the project directory.
+2. git clone https://github.com/LorneWhiteway/lfi_project.git
+3. cd ./lfi_project. You are now in the project directory.
+3. Follow the instructions in 'Creating a suitable version of FFTW for hypatia' below to create a suitable version of FFTW and to create a module file for this version.
+4. Follow the instructions in 'How to build pkdgrav3 for use by the hypatia GPU' below to build pkdgrav3.
 
 ### How to load environment variables
 - Log on to hypatia
@@ -97,7 +99,7 @@ The hypatia installation needs its own copy of FFTW 3.3.10, compiled with all th
 7. make install
 
 Then create the module file for this installation. To do this:
-1. Copy the module file '3.3.1' from '...(project directory)/hypatia/modulefiles/fftw/' to '~/privatemodules/pkdgrav3/fftw'
+1. Copy the module file '3.3.1' from '...(project directory)/hypatia/modulefiles/fftw/' to '~/privatemodules/pkdgrav3/fftw/'
 2. Edit this copy so that 'FFTW_ROOT' points to '(project directory)/fftw-3.3.10'
 
 
