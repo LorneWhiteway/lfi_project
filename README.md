@@ -17,13 +17,13 @@ pkdgrav3 creates lightcone snapshots by extracting objects from a thin shell of 
 
 ## Changes made to pkdgrav3:
 
-Original version of pkdgrav3 was 3.0.4, master branch commit d908272.
+Original version of pkdgrav3 was 3.0.4, master branch commit [d908272](https://bitbucket.org/dpotter/pkdgrav3/commits/d908272f2eb8be32ab1061d498dc8122e70dc7c9).
 
 LW has made the following changes to this code:
 
 1. Amended the top level CMakeLists.txt to allow tostd and psout to see MPI include files.
 
-2. Amended cudautil.cu to fix calls to cudaSetDevice and to cudaGetDeviceProperties to handle the case in which iCore is negative. See my notes p. 69.
+2. Amended cudautil.cu to fix calls to cudaSetDevice and to cudaGetDeviceProperties to handle the case in which iCore is negative. See LW's notes p. 69.
 
 3. Added some helpful compile-time output to ewald.cxx so that we can see which SIMD compiler flags are set (which ones are set depends crucially on the chipset of the CPU on which the code is compiled).
 
