@@ -82,9 +82,6 @@ The hypatia installation needs its own copy of FFTW 3.3.10, compiled with all th
 6. make
 7. make install
 
-Then create the module file for this installation. To do this:
-1. Copy the module file '3.3.1' from '...(project directory)/hypatia/modulefiles/fftw/' to '~/privatemodules/pkdgrav3/fftw/'
-
 
 ### Working with python on hypatia
 To set up a virtual Python environment in the subdirectory `env` of the project directory:

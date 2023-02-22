@@ -13,11 +13,11 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 export LFI_PROJECT_DIRECTORY=$SCRIPT_DIR
 
 module purge
-module load use.own
+#module load use.own
 module load rocks-openmpi
 module load gcc/10.1.0
 module load gsl/2.6
-module load pkdgrav3/fftw/3.3.10 # See README for more information about this module file.
+module load ${SCRIPT_DIR}/hypatia/modulefiles/fftw/3.3.10 # See README for more information about this module file.
 module load hdf5/1.12.1
 module load cmake/3.17.3
 

@@ -8,8 +8,6 @@ proc ModulesHelp { } {
 
 module-whatis "Adds FFTW-3.3.10 (built with options needed by PKDGRAV3) to your environment"
 
-## IMPORTANT: One-time setup step when installing lfi_project on hypatia: copy this file to '~/privatemodules/pkdgrav3/'.
-
 # 'set FFTW_ROOT' sets a value local to this file. Note that LFI_PROJECT_DIRECTORY will get set by set_environment_hypatia.sh
 # 'setenv FFTW_ROOT' sets an environment variable to be used by CMake.
 
