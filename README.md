@@ -47,7 +47,7 @@ LW has made the following changes to this code:
 1. Go to what you want to be the parent directory of the project directory.
 2. `git clone https://github.com/LorneWhiteway/lfi_project.git`
 3. `cd ./lfi_project`. You are now in the project directory.
-4. Follow the instructions in 'Creating a suitable version of FFTW for hypatia' below to create a suitable version of FFTW and to create a module file for this version.
+4. Follow the instructions in 'Creating a suitable version of FFTW for hypatia' below to create a suitable version of FFTW.
 5. Follow the instructions below in 'Working with python on hypatia' to to create a virtual Python environment.modules.
 6. Follow the instructions in 'How to build pkdgrav3 for use by the hypatia GPU' below to build pkdgrav3.
 
