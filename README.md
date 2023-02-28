@@ -344,7 +344,12 @@ pkdgrav3 requires an input file containing a transfer function (to specify the i
 
 The script 'utility.py' has a function called 'make_specific_cosmology_transfer_function' that may be used to create transfer function files.
 
-We are currently putting transfer function files in the same directory as the control file for that run.
+Transfer function files are in the same directory as the control file for that run.
+
+Updated info:
+- For runs C and E (also known as runs 1 and 2) we used a transfer function file. You will find that in each run directory (e.g. .runsC/run001) there will be a file 'transfer_function.txt' that stores the transfer function information and a file 'transfer_function_cosmology.txt' that stores the cosmology used to create the transfer function. The transfer function file was created using the routine 'make_specific_cosmology_transfer_function' in ./scripts/utility.py. The first column in the transfer function file has the wavenumber in units of h/Mpc.
+- For the remaining runs (I through S i.e. 3 through 13) we instead used a 'Concept' HDF5 file, which Niall produced (such files are needed to allow pkdgrav3 to better understand neutrinos - NJ: is this correct?). In each run directory (e.g. ./runsR/run012) you will find a file with a name such as 'class_processed_batch12_012.hdf5' (the name will vary from run to run - you can find the correct name for each run by checking the item achClassFilename in control.par). Niall will have more info about how these files are created. Alas I don't have any information about the structure of these files, or how to use the information contained therein.
+
 
 ### nbodykit on splinter
 
