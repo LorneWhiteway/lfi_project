@@ -127,17 +127,17 @@ def compare_two_transfer_functions():
     plt.ylabel('Euclid transfer fn / new transfer fn')
     plt.show()
     
-def calculate_power_spectrum_of_simulation_box():
+def calculate_power_spectrum_of_simulation_box_old():
 
-    #simulation_box_filename = "/share/testde/ucapwhi/lfi_project/runsI/run016/run.00100"
-    #num_objects = 1259712000
+    simulation_box_filename = "/share/testde/ucapwhi/lfi_project/runsI/run016/run.00100"
+    num_objects = 1259712000
     
-    simulation_box_filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_256_1000/run.00100"
-    num_objects = 134217728
+    #simulation_box_filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_256_1000/run.00100"
+    #num_objects = 134217728
     
     binary_output_filename = simulation_box_filename + ".dat"
     
-    if False:
+    if True:
         print("{} Reading file {}...".format(datetime.datetime.now().time(), simulation_box_filename))
         d = utility.read_one_box(simulation_box_filename)
         print("{} Finished reading file.".format(datetime.datetime.now().time()))
@@ -172,7 +172,8 @@ def calculate_power_spectrum_of_simulation_box():
     Pk = r.power
     print(Pk)
     
-    
+# This is the function to call to calculate the PS of a pkdgrav3 z=0 simulation box.
+# See e.g. my Slack messeages to NJ on 12 June 2022 and 16 August 2023.    
 def PKDGrav3Example():
 
     simulation_box_filename = "/share/testde/ucapwhi/lfi_project/runsO/run029/run.00100"
@@ -181,7 +182,11 @@ def PKDGrav3Example():
     #simulation_box_filename = "/share/splinter/ucapwhi/lfi_project/experiments/gpu_512_256_1000/run.00100"
     #BoxSize = 1000 #Mpc/h
     
+
+    print("{} About to call utility.read_one_box".format(datetime.datetime.now().time()))
     d = utility.read_one_box(simulation_box_filename)
+    print("{} Finished calling utility.read_one_box".format(datetime.datetime.now().time()))
+    
     
     num_data = d['x'].shape[0]
     print("num_data = {}".format(num_data))
@@ -190,7 +195,9 @@ def PKDGrav3Example():
     
     data['Position'] = (np.column_stack([d['x'], d['y'], d['z']]) + 0.5) * BoxSize
     
+    print("{} About to call ArrayCatalog".format(datetime.datetime.now().time()))
     cat = ArrayCatalog(data, BoxSize=BoxSize, Nmesh=1024)
+    print("{} Finished calling ArrayCatalog".format(datetime.datetime.now().time()))
     
     print(cat)
     
@@ -238,11 +245,15 @@ def ArrayCatalogExample():
     
 def AnalyzeCatalog(cat, file_to_save_results):
 
+    print("{} About to call cat.to_mesh".format(datetime.datetime.now().time()))
     mesh = cat.to_mesh(resampler='tsc', compensated=True)
+    print("{} Finished calling cat.to_mesh".format(datetime.datetime.now().time()))
     
-    kmin = 0.01
+    kmin = 0.005
     
+    print("{} About to call FFTPower".format(datetime.datetime.now().time()))
     r = FFTPower(mesh, mode='1d', dk=0.005, kmin=kmin)
+    print("{} Finished calling FFTPower".format(datetime.datetime.now().time()))
     Pk = r.power
     print(Pk)
     
@@ -252,7 +263,7 @@ def AnalyzeCatalog(cat, file_to_save_results):
         
     if file_to_save_results:
         r.save(file_to_save_results)
-        
+        np.save(file_to_save_results + ".npy", np.array([Pk['k'], Pk['power'].real - Pk.attrs['shotnoise']]))
         
     plt.switch_backend('Qt5Agg')
 
@@ -267,14 +278,8 @@ def AnalyzeCatalog(cat, file_to_save_results):
     
     plt.show()
     
-    
-    
-def foo():
-    filename = "/share/testde/ucapwhi/lfi_project/runsO/run029/run.00100.ps_results"
-    r = FFTPower.load(filename)
-    Pk = r.power
-    print(Pk)
-    np.save("./foo1.npy", np.array([Pk['k'], Pk['power'].real - Pk.attrs['shotnoise']]))
+ 
+
     
     
 
@@ -287,12 +292,8 @@ if __name__ == '__main__':
     #compare_two_transfer_functions()
     #make_specific_cosmology_transfer_function_caller()
     #calculate_power_spectrum_of_simulation_box()
-    #foo()
     #LogNormalCatalogExample()
     #ArrayCatalogExample()
-    #
-    #foo()
     PKDGrav3Example()
-    foo()
     
     
