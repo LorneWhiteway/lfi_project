@@ -20,6 +20,7 @@ import math
 import stat
 import time
 import pickle
+import subprocess
 
 
 # ======================== Start of code for reading control file ========================
@@ -1238,6 +1239,51 @@ def expand_shell_script(original_shell_script_file_name, new_shell_script_file_n
         
 # ======================== End of code for expand_shell_script ========================
 
+
+# ======================== Start of code for November 2023 project to create summary of runtimes for the Gower St sims ========================
+
+
+def list_of_run_archives(top_directory):
+    ret = []
+    for run_directory in glob.glob(os.path.join(top_directory, "run*/")):
+        ret.extend(glob.glob(os.path.join(run_directory, "*.tar.gz")))
+    return ret
+    
+# Returns a listing of the contents of an archive file.
+# Sample lines:
+#drwxr-sr-x dc-whit2/rds-dirac-dp153 0 2021-12-31 17:39 ./run121/
+#-rw-r--r-- dc-whit2/rds-dirac-dp153 100663424 2021-12-31 09:31 ./run121/run.00037.lightcone.npy
+#-rw-r--r-- dc-whit2/rds-dirac-dp153 100663424 2021-12-31 16:56 ./run121/run.00087.lightcone.npy
+#-rw-r--r-- dc-whit2/rds-dirac-dp153 100663424 2021-12-31 14:29 ./run121/run.00069.lightcone.npy
+#...
+def archive_listing(archive_file_name):
+    command = ["tar", "-tvf", archive_file_name]
+    print("Getting contents of {}".format(archive_file_name))
+    process = subprocess.run(command, stdout=subprocess.PIPE, universal_newlines = True) # From https://janakiev.com/blog/python-shell-commands/
+    return "".join(process.stdout).splitlines()
+    
+# Like start_time_end_time, but for use with archived results.
+def start_time_stop_time_from_archive_listing(archive_listing):
+    for file_description_line in archive_listing:
+        if "slurm-" in file_description_line or "machine.file." in file_description_line:
+            print(file_description_line)
+    return "Done"
+
+def gower_street_run_times():
+
+    top_directory = "/share/testde/ucapwhi/lfi_project/"
+    for run_archive in list_of_run_archives(top_directory):
+        print(start_time_stop_time_from_archive_listing(archive_listing(run_archive)))
+
+            
+
+        
+    
+
+
+# ======================== End of code for November 2023 project to create summary of runtimes for the Gower St sims ========================
+
+
 if __name__ == '__main__':
     
     #show_one_shell_example()
@@ -1251,11 +1297,15 @@ if __name__ == '__main__':
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    create_input_files_for_multiple_runs('S')
     #calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
     #write_run_script_test_harness()
     #get_parameter_from_log_file_test_harness()
+    gower_street_run_times()
+    
+    
+    #create_input_files_for_multiple_runs('S')
+    
      
     pass
     
