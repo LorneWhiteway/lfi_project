@@ -11,7 +11,7 @@ import matplotlib
 matplotlib.use('Agg') # See http://stackoverflow.com/questions/2801882/generating-a-png-with-matplotlib-when-display-is-undefined
 import matplotlib.pyplot as plt
 from astropy.cosmology import FlatLambdaCDM
-import datetime
+from datetime import datetime
 import os
 import contextlib
 import sys
@@ -1258,27 +1258,37 @@ def list_of_run_archives(top_directory):
 #...
 def archive_listing(archive_file_name):
     command = ["tar", "-tvf", archive_file_name]
-    print("Getting contents of {}".format(archive_file_name))
+    #print("Getting contents of {}".format(archive_file_name))
     process = subprocess.run(command, stdout=subprocess.PIPE, universal_newlines = True) # From https://janakiev.com/blog/python-shell-commands/
     return "".join(process.stdout).splitlines()
     
+def datetime_from_file_description_line(file_description_line):
+    return datetime.fromisoformat(" ".join(file_description_line.split()[3:5]))
+
+    
 # Like start_time_end_time, but for use with archived results.
-def start_time_stop_time_from_archive_listing(archive_listing):
+def start_datetime_stop_datetime_from_archive_listing(archive_listing):
+    null_datetime = datetime(2000, 1, 1)
+    start_datetime = null_datetime
+    end_datetime = null_datetime
     for file_description_line in archive_listing:
-        if "slurm-" in file_description_line or "machine.file." in file_description_line:
-            print(file_description_line)
-    return "Done"
+        if ".lockfile" in file_description_line:
+            start_datetime = datetime_from_file_description_line(file_description_line)
+        if "output.txt" in file_description_line:
+            end_datetime = datetime_from_file_description_line(file_description_line)
+    both_found = start_datetime != null_datetime and end_datetime != null_datetime
+    return [start_datetime if both_found else null_datetime, end_datetime if both_found else null_datetime]
+
 
 def gower_street_run_times():
-
     top_directory = "/share/testde/ucapwhi/lfi_project/"
     for run_archive in list_of_run_archives(top_directory):
-        print(start_time_stop_time_from_archive_listing(archive_listing(run_archive)))
+        [start_datetime, stop_datetime] = start_datetime_stop_datetime_from_archive_listing(archive_listing(run_archive))
+        run_walltime_in_hours = (stop_datetime - start_datetime).total_seconds() / 3600
+        print(run_archive, start_datetime, stop_datetime, run_walltime_in_hours)
+        with open("./gower_street_run_times.txt", "a") as f:
+            print(run_archive, start_datetime, stop_datetime, run_walltime_in_hours, file = f)
 
-            
-
-        
-    
 
 
 # ======================== End of code for November 2023 project to create summary of runtimes for the Gower St sims ========================
