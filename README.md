@@ -401,7 +401,7 @@ print(t) # Should be 1.0
 
 ## Storage of output files
 Output files are stored:
-- on splinter, at /share/testde/ucapwhi/lfi_project. Recall that when manipulating files on testde, it is best to ssh to nas-0-1 (e.g. ssh ucapwhi@nas-0-1).
+- on splinter, at /share/testde/ucapwhi/GowerStreetSims/. Recall that when manipulating files on testde, it is best to ssh to nas-0-1 (e.g. ssh ucapwhi@nas-0-1). This has been made public, with webaddress http://www.star.ucl.ac.uk/GowerStreetSims/.
 - on NERSC, at /global/cfs/cdirs/des/dirac_sims/original_files.
 
 
