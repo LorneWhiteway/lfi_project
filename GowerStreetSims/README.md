@@ -1,6 +1,6 @@
 # Gower Street Sims
 
-This is the public directory containing the Gower Street Simulations, a suite of approximately 800 n-body cosmological simulations created using Pkdgrav3 (https://bitbucket.org/dpotter/pkdgrav3/src). The simulations are described in section II.B.1 of https://arxiv.org/abs/2310.17557; a more detailed paper describing the simulations is in preparation.
+This is the public directory containing the Gower Street Simulations, a suite of approximately 800 n-body cosmological simulations created using Pkdgrav3 (https://arxiv.org/abs/1609.08621; https://bitbucket.org/dpotter/pkdgrav3/src). The simulations are described in section II.B.1 of https://arxiv.org/abs/2310.17557; a more detailed paper describing the simulations is in preparation.
 
 We do not provide the full four-dimensional simulation output (i.e. 3D positions of particles for a series of times slices). Rather, we provide the 'lightcone' data; this shows where on the sky the central observer would currently see each simulation object, which this information binned into redshift ranges i.e. tomographic bins.
 
