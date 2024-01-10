@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd"> 
+
+<HTML lang=en>
+
+<HEAD>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8" >
+<TITLE>Gower Street Simulations</TITLE>
+</HEAD>
+
+<BODY>
+<H1>Gower Street Simulations</H1>
+
+<BR>
+
+
+<p>This is the public directory containing the Gower Street Simulations, a suite of approximately 800 n-body cosmological simulations created using <a href=https://bitbucket.org/dpotter/PKDGRAV3/src">PKDGRAV3</a> (described <a href="https://arxiv.org/abs/1609.08621">here</a>). The simulations are described in section II.B.1 of <a href="https://arxiv.org/abs/2310.17557">Gatti et al.</a>; a more detailed paper describing the simulations is in preparation.</p>
+
+<p>We do not provide the full four-dimensional simulation output (i.e. 3D positions of particles for a series of times slices). Rather, we provide the 'lightcone' data; this shows where on the sky the central observer would currently see each simulation object, with this information binned both into redshift ranges (i.e. tomographic bins) and into pixels on the sky.</p>
+
+<p>The simulations are stored in several directories, with names such as 'runsC'. Within each directory there are several TAR archive files, with names such as 'run111.tar.gz'. Each such file contains one simulation.</p>
+
+<p>Detailed information about the simulations is available at <a href="https://docs.google.com/spreadsheets/d/1lfNehrNxl7ggto7P6gNRRfGNA4YKRRgE8VzDfqTWOqQ/edit#gid=0">this workbook</a>. Sheet 1 of this workbook describes the directories, while sheet 2 describes the individual simulations (including information about the cosmological parameters used for each simulation).</p>
+
+<p>PKDGRAV3 creates lightcone snapshots by extracting objects from thin shells of the appropriate radius within a 'superbox' consisting of 218 repeats of the simulation box in a 6x6x6 array (and we as observers are at the centre of the superbox). At early times some or all of the lightcone shell lies completely outside this superbox and in this case no lightcone file is saved. For runsI and later runs, the superbox used 8000 repeats of the simulation box in a 20x20x20 array.</p>
+
+<p>Each TAR archive file contains approximately 100 files, as follows:
+<ul>
+<li><b>Lightcone files</b>. These have names of the form run.XXXXX.lightcone.npy where XXXXX is a serial number (left padded with zeroes to have five digits) e.g. 'run.00068.lightcone.npy'. Each lightcone file refers to a particular redshift range i.e. tomographic bin, and contains a pixelised description of the simulation objects visible within that redshift range. The larger the number, the closer the bin to the observer. Each lightcone file is in numpy format i.e. maybe opened by the numpy <a href="https://numpy.org/doc/stable/reference/generated/numpy.load.html#numpy.load">load</a> command in Python. Each file contains a single Healpix array with NSIDE=2048, in RING format; the contents of the array are, per pixel, the number of objects visible in that pixel for that file's redshift range.
+<li><b>Incomplete lightcone files</b>, which have names such as 'run.00027.incomplete.npy'. These are lightcone files describe the nearest redshift range that is not completely enclosed in the simulation super-box; such files are incomplete and should not be used.
+<li><b>z_values.txt</b>. This is a text file describing the redshift ranges for the tomographic slices. The file has one header row; refer to this for details of the columns in the file. Each slice is described by the redshift, and by the comoving distance (calculated using a cosmology with the same matter density as that used in the simulation, and quoted both in Mpc/h and in box-length units), for the far endpoint and for the near endpoint of the slice; the width and volume of the slice (in the same terms) are also given.
+<li><b>control.par</b>. This is the control file (i.e. the ini file) for PKDGRAV3 for this run.
+<li><b>output.txt</b>. This is a text file that captured the output that PKDGRAV3 wrote to the screen while it was running.
+<li><b>run.log</b>. This is the log file that PKDGRAV3 created while it was running. Refer to the PKDGRAV3 documentation for the structure of this file.
+<li><b>All other files</b> are for internal use; their contents should not be relied on.
+</p>
+</ul>
+
+<p>The Gower Street Simulations are named after the <a href="https://en.wikipedia.org/wiki/Gower_Street,_London">London street</a> on which University College London is located.</p>
+
+<P><FONT size=-1>Last updated 10 January 2024.</FONT></P>
+</BODY>
+
+</HTML>
