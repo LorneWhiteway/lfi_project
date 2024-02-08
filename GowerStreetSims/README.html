@@ -14,15 +14,15 @@
 <BR>
 
 
-<p>This is the public directory containing the Gower Street Sims, a suite of approximately 800 n-body cosmological simulations created using <a href=https://bitbucket.org/dpotter/PKDGRAV3/src">PKDGRAV3</a> (described <a href="https://arxiv.org/abs/1609.08621">here</a>). The simulations are described in section II.B.1 of <a href="https://arxiv.org/abs/2310.17557">Gatti et al.</a>; a more detailed paper describing the simulations is in preparation.</p>
+<p>This is the public directory containing the Gower Street Sims, a suite of approximately 800 n-body cosmological simulations created using <a href="https://bitbucket.org/dpotter/PKDGRAV3/src">PKDGRAV3</a> (described <a href="https://arxiv.org/abs/1609.08621">here</a>). The simulations are described in section II.B.1 of <a href="https://arxiv.org/abs/2310.17557">Gatti et al.</a>; a more detailed paper describing the simulations is in preparation.</p>
 
 <p>We do not provide the full four-dimensional simulation output (i.e. 3D positions of particles for a series of times slices). Rather, we provide the 'lightcone' data; this shows where on the sky the central observer would currently see each simulation object, with this information binned both into redshift ranges (i.e. tomographic bins) and into pixels on the sky.</p>
 
-<p>The simulations are stored in several directories, with names such as 'runsC'. Within each directory there are several TAR archive files, with names such as 'run111.tar.gz'. Each such file contains one simulation.</p>
+<p>The simulations are stored as TAR archive files, with names such as 'sim00111.tar.gz'. Each such file contains one simulation.</p>
 
-<p>Detailed information about the simulations is available at <a href="https://docs.google.com/spreadsheets/d/1lfNehrNxl7ggto7P6gNRRfGNA4YKRRgE8VzDfqTWOqQ/edit#gid=0">this workbook</a>. Sheet 1 of this workbook describes the directories, while sheet 2 describes the individual simulations (including information about the cosmological parameters used for each simulation).</p>
+<p>Detailed information about the simulations is available at <a href="https://docs.google.com/spreadsheets/d/1lfNehrNxl7ggto7P6gNRRfGNA4YKRRgE8VzDfqTWOqQ/edit#gid=1432660006">this workbook</a>. Sheet 1 describes the simulations (including information about the cosmological parameters used for each simulation), while Sheet 2 gives information of historical interest about the batch jobs that created the simulations.</p>
 
-<p>PKDGRAV3 creates lightcone snapshots by extracting objects from thin shells of the appropriate radius within a 'superbox' consisting of 218 repeats of the simulation box in a 6x6x6 array (and we as observers are at the centre of the superbox). At early times some or all of the lightcone shell lies completely outside this superbox and in this case no lightcone file is saved. For runsI and later runs, the superbox used 8000 repeats of the simulation box in a 20x20x20 array.</p>
+<p>PKDGRAV3 creates lightcone snapshots by extracting objects from thin shells of the appropriate radius within a 'superbox' consisting of 218 repeats of the simulation box in a 6x6x6 array (and we as observers are at the centre of the superbox). At early times some or all of the lightcone shell lies completely outside this superbox and in this case no lightcone file is saved. For simulations 00193 onwards, the superbox used 8000 repeats of the simulation box in a 20x20x20 array.</p>
 
 <p>Each TAR archive file contains approximately 100 files, as follows:
 <ul>
@@ -38,7 +38,7 @@
 
 <p>The Gower Street Simulations are named after the <a href="https://en.wikipedia.org/wiki/Gower_Street,_London">London street</a> on which University College London is located.</p>
 
-<P><FONT size=-1>Last updated 10 January 2024.</FONT></P>
+<P><FONT size=-1>Last updated 8 February 2024.</FONT></P>
 </BODY>
 
 </HTML>
