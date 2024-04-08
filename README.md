@@ -157,7 +157,7 @@ For reference (e.g. in case it needs to be repeated), here's how the virtual env
 
 ## Information about working with the Tursa cluster
 
-1. Documentation for tursa is at https://epcced.github.io/dirac-docs/.
+1. Documentation for tursa is at https://epcced.github.io/dirac-docs/tursa-user-guide/.
 
 2. Project directory is `/mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project`.
 
