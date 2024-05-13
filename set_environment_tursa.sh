@@ -26,11 +26,12 @@ else
 	echo "Setting environment variables for USING pkdgrav3..."
 fi	
 
+MODULE_AFTER_PURGE=/home/y07/shared/tursa-modules/setup-env
 BASE_MODULE_1=use.own
 BASE_MODULE_2=use.lfi
 COMPILER_MODULE=lfi-gcc-9.3.0
-CUDA_MODULE=cuda/11.4.1
-MPI_MODULE=openmpi/4.1.1-cuda11.4.1
+CUDA_MODULE=cuda/12.3
+MPI_MODULE=openmpi/4.1.5-cuda12.3
 GSL_MODULE=lfi-gsl-2.7
 FFTW_MODULE=lfi-fftw-3.3.10
 HDF5_MODULE=lfi-hdf5-1.10.7
@@ -38,6 +39,7 @@ CMAKE_MODULE=lfi-cmake-3.22.1
 
 
 module purge
+module load $MODULE_AFTER_PURGE
 module load $BASE_MODULE_1
 module load $BASE_MODULE_2
 module load $COMPILER_MODULE
