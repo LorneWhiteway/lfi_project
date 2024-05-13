@@ -209,7 +209,7 @@ Tursa didn't have any of the dependent libraries installed, so I installed them 
 
 #### HDF5
 
-Here I put the source code 'one level down' as otherwise there were problems at 'make insall' time.
+Here I put the source code 'one level down' as otherwise there were problems at 'make install' time.
 
 1. cd /mnt/lustre/tursafs1/home/dp153/dp153/shared/
 2. mkdir hdf5-1.10.7
