@@ -11,7 +11,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
 #SBATCH --mail-type=FAIL
-#SBATCH --account=DP153
+#SBATCH --account=DP327
 #SBATCH --qos=standard
 
 ## Not sure if this is still needed...
