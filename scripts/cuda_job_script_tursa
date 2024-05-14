@@ -37,6 +37,9 @@ export OMP_NUM_THREADS=32
 #! (OMP_NUM_THREADS threads will be created):
 CMD="$application $options"
 
+#! LW copied the following (on 13May2024) from https://pkdgrav3.readthedocs.io/en/latest/install.html#openmpi-based-systems
+export OMPI_MCA_hwloc_base_binding_policy=none
+
 cd $workdir
 echo -e "Changed directory to `pwd`.\n"
 
