@@ -177,7 +177,7 @@ if (CUDA_FOUND)
 #  target_link_libraries(${PROJECT_NAME} ${CUDA_LIBRARIES})
   CUDA_INCLUDE_DIRECTORIES(${MDL_INCLUDES} ${OPENPA_INCLUDES})
   CUDA_COMPILE(cuda_files cudaewald.cu cudapppc.cu cudautil.cu
-	OPTIONS -arch compute_35
+	OPTIONS -arch compute_61
 		-I${CMAKE_CURRENT_SOURCE_DIR}/mdl2/openpa
 		-I${CMAKE_CURRENT_BINARY_DIR})
   target_sources(${PROJECT_NAME} PRIVATE ${cuda_files})
