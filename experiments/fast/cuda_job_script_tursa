@@ -18,7 +18,7 @@
 # Request right number of full nodes (32 cores by node fits any GPU compute nodes))
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=32
+#SBATCH --cpus-per-task=1
 #SBATCH --gres=gpu:1
 
 
@@ -41,7 +41,7 @@ options="$workdir/control.par >> $workdir/output.txt"
 # Consider setting OMP_NUM_THREADS and OMP_PLACES?
 # See Tursa recommended job file at https://epcced.github.io/dirac-docs/tursa-user-guide/scheduler/
 
-srun --nodes=1 --ntasks-per-node=1 --cpus-per-task=32 --hint=nomultithread --distribution=block:block gpu_launch.sh ${application} ${options} 
+srun --nodes=1 --ntasks-per-node=1 --cpus-per-task=1 --hint=nomultithread --distribution=block:block gpu_launch.sh ${application} ${options} 
 
 
 ## Now superseeded?
