@@ -1,63 +1,29 @@
 #!/bin/bash
 
-# sbatch ../../scripts/cuda_job_script_tursa
-# Run it from the directory in which the control file is located.
-
 # Based on information at https://epcced.github.io/dirac-docs/tursa-user-guide/scheduler/
 
 # Slurm job options
 #SBATCH --job-name=pkdgrav3
 #SBATCH --time=1:00:00
-#SBATCH --partition=gpu-a100-40
-# Allowed options are 'standard', 'low' and 'dev'.
-#SBATCH --qos=dev
 #SBATCH --account=DP327
 #SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
 #SBATCH --mail-type=FAIL
+#SBATCH --export=none
 
-# Request right number of full nodes (32 cores by node fits any GPU compute nodes))
+
 #SBATCH --nodes=1
+#SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=48
+#SBATCH --partition=gpu-a100-80
+#SBATCH --qos=dev
 #SBATCH --gres=gpu:1
+#SBATCH --mem=30000
+#SBATCH --hint=multithread
 
+export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
 
-## Not sure if this is still needed, so currently disabled...
-###SBATCH --mem=36000
-
-# Load the correct modules
 source /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/set_environment_tursa.sh USE
 
-# Full path to application executable: 
-application="/mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/pkdgrav3/build_tursa/pkdgrav3"
+gpu_launch.sh /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/pkdgrav3/build_tursa/pkdgrav3 ./control.par >> ./output.txt
 
-# Work directory (i.e. where the job will run):
-workdir="$SLURM_SUBMIT_DIR"  # The directory in which sbatch is run.
-
-# Note that here we are assuming that the job file is being submitted from the directory
-# in which the control file is located.
-#options="$workdir/control.par >> $workdir/output.txt"
-options=" ./control.par >> ./output.txt"
-
-# Consider setting OMP_NUM_THREADS and OMP_PLACES?
-# See Tursa recommended job file at https://epcced.github.io/dirac-docs/tursa-user-guide/scheduler/
-
-#srun --nodes=1 --ntasks-per-node=1 --cpus-per-task=1 --hint=nomultithread --distribution=block:block gpu_launch.sh ${application} ${options} 
-srun --nodes=1 --ntasks-per-node=1 --cpus-per-task=1 --hint=nomultithread --distribution=block:block gpu_launch.sh ../../pkdgrav3/build_tursa/pkdgrav3 ./control.par >> ./output.txt
-
-## Now superseeded?
-## Choose this for an MPI code using OpenMPI:
-## CMD="mpirun -npernode $mpi_tasks_per_node -np $np --map-by numa -x LD_LIBRARY_PATH --bind-to none ./wrapper.sh $application $options"
-# CMD="mpirun -npernode $mpi_tasks_per_node -np $np --map-by numa --bind-to none ./wrapper.sh $application $options"
-
-#cd $workdir
-#echo -e "Changed directory to `pwd`.\n"
-
-#JOBID=$SLURM_JOB_ID
-#echo -e "JobID: $JOBID\n======"
-#echo "Time: `date`"
-#echo "Running on master node: `hostname`"
-#echo "Current directory: `pwd`"
-#echo -e "\nnumtasks=$numtasks, numnodes=$numnodes, mpi_tasks_per_node=$mpi_tasks_per_node"
-#echo -e "\nExecuting command:\n==================\n$CMD\n"
-#eval $CMD
