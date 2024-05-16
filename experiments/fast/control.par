@@ -9,7 +9,7 @@ bDualTree       = 1    # Use two trees
 
 # Initial Condition
 dBoxSize        = 30         # Mpc/h
-nGrid           = 16         # Simulation has nGrid^3 particles
+nGrid           = 64         # Simulation has nGrid^3 particles
 b2LPT           = 1          # second order IC
 iSeed           = 314159265  # Random seed
 dRedFrom        = 49         # Starting redshift
