@@ -11,7 +11,7 @@ import matplotlib
 matplotlib.use('Agg') # See http://stackoverflow.com/questions/2801882/generating-a-png-with-matplotlib-when-display-is-undefined
 import matplotlib.pyplot as plt
 from astropy.cosmology import FlatLambdaCDM
-from datetime import datetime
+import datetime as dt
 import os
 import contextlib
 import sys
@@ -359,10 +359,10 @@ def read_one_box(file_name):
 def read_one_box_example():
     file_name = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/fast/run.00071"
     print("Reading file {}...".format(file_name))
-    print(datetime.datetime.now().time())
+    print(dt.datetime.now().time())
     d = read_one_box(file_name)
     print("Finished reading file.")
-    print(datetime.datetime.now().time())
+    print(dt.datetime.now().time())
     
     d_x = d['x']
     d_y = d['y']
@@ -601,7 +601,7 @@ def monitor(directory):
         monitor_core(directory)
         
             
-        print("Time now: {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+        print("Time now: {}".format(dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         print("Monitor will now sleep for {} seconds".format(sleep_time_in_seconds))
         print("When it wakes, it will check for {} and quit if this file exists".format(stop_file_name))
         sys.stdout.flush()
@@ -774,7 +774,7 @@ def status(directory):
 
     # Then deal with this directory
     print("========================================================================")
-    print("Status of {} as of {}".format(directory, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    print("Status of {} as of {}".format(directory, dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
     control_file_name = os.path.abspath(os.path.join(directory, "control.par"))
     out_name = ""
     if report_whether_file_exists("control file", control_file_name):
@@ -1175,7 +1175,7 @@ def calculate_each_run_time_and_show_Gantt_chart():
 
 
 def show_last_unprocessed_file():
-    print(datetime.datetime.now().time())
+    print(dt.datetime.now().time())
     for run_num_zero_based in range(129):
         run_num_one_based = run_num_zero_based + 1
         run_string = zfilled_run_num(run_num_one_based)
@@ -1263,7 +1263,7 @@ def archive_listing(archive_file_name):
     return "".join(process.stdout).splitlines()
     
 def datetime_from_file_description_line(file_description_line):
-    return datetime.fromisoformat(" ".join(file_description_line.split()[3:5]))
+    return dt.fromisoformat(" ".join(file_description_line.split()[3:5]))
 
     
 # Like start_time_end_time, but for use with archived results.
