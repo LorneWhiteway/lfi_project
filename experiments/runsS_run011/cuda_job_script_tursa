@@ -14,12 +14,14 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=48
 #SBATCH --partition=gpu-a100-80
 #SBATCH --qos=dev
 #SBATCH --gres=gpu:1
 #SBATCH --mem=30000
+#SBATCH --hint=multithread
 
-export OMP_NUM_THREADS=32
+export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
 
 source /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/set_environment_tursa.sh USE
 
