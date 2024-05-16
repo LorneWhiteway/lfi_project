@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Based on information at https://epcced.github.io/dirac-docs/tursa-user-guide/scheduler/
+
+# Slurm job options
+#SBATCH --job-name=pkdgrav3
+#SBATCH --time=1:00:00
+#SBATCH --account=DP327
+#SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
+#SBATCH --mail-type=FAIL
+#SBATCH --export=none
+
+
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --partition=gpu-a100-80
+#SBATCH --qos=dev
+#SBATCH --gres=gpu:1
+#SBATCH --mem=30000
+
+export OMP_NUM_THREADS=32
+
+source /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/set_environment_tursa.sh USE
+
+gpu_launch.sh /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/pkdgrav3/build_tursa/pkdgrav3 ./control.par >> ./output.txt
+
