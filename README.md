@@ -159,11 +159,11 @@ For reference (e.g. in case it needs to be repeated), here's how the virtual env
 
 1. Documentation for tursa is at https://epcced.github.io/dirac-docs/tursa-user-guide/.
 
-2. Project directory is `/mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project`.
+2. Project directory is `/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project`.
 
 ### How to log on to one of the Tursa GPU nodes
 ```
-srun --partition gpu --gres=gpu:1 --account=DP153 --qos=standard --time=0:30:00 --exclusive --pty bash
+srun --partition gpu --gres=gpu:1 --account=DP327 --qos=standard --time=0:30:00 --exclusive --pty bash
 ```
 However, it probably isn't necessary to use this (as you can build pkdgrav3 using the login node).
 
@@ -179,31 +179,31 @@ Tursa didn't have any of the dependent libraries installed, so I installed them 
 
 #### CMake
 
-1. cd /mnt/lustre/tursafs1/home/dp153/dp153/shared/
+1. cd /mnt/lustre/tursafs1/home/dp327/dp327/shared/
 2. wget https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1.tar.gz
 3. tar -xvf cmake-3.22.1.tar.gz
 4. cd cmake-3.22.1
-5. ./configure --prefix=/mnt/lustre/tursafs1/home/dp153/dp153/shared/cmake-3.22.1
+5. ./configure --prefix=/mnt/lustre/tursafs1/home/dp327/dp327/shared/cmake-3.22.1
 6. make
 7. make install
 
 #### GSL
 
-1. cd /mnt/lustre/tursafs1/home/dp153/dp153/shared/
+1. cd /mnt/lustre/tursafs1/home/dp327/dp327/shared/
 2. wget https://ftp.nluug.nl/pub/gnu/gsl/gsl-2.7.tar.gz
 3. tar -xvf gsl-2.7.tar.gz
 4. cd gsl-2.7
-5. ./configure --prefix=/mnt/lustre/tursafs1/home/dp153/dp153/shared/gsl-2.7
+5. ./configure --prefix=/mnt/lustre/tursafs1/home/dp327/dp327/shared/gsl-2.7
 6. make
 7. make install
 
 #### FFTW
 
-1. cd /mnt/lustre/tursafs1/home/dp153/dp153/shared/
+1. cd /mnt/lustre/tursafs1/home/dp327/dp327/shared/
 2. wget https://www.fftw.org/fftw-3.3.10.tar.gz
 3. tar -xvf fftw-3.3.10.tar.gz
 4. cd fftw-3.3.10
-5. ./configure --enable-float --enable-shared --enable-threads --enable-mpi --prefix=/mnt/lustre/tursafs1/home/dp153/dp153/shared/fftw-3.3.10
+5. ./configure --enable-float --enable-shared --enable-threads --enable-mpi --prefix=/mnt/lustre/tursafs1/home/dp327/dp327/shared/fftw-3.3.10
 6. make
 7. make install
 
@@ -211,13 +211,13 @@ Tursa didn't have any of the dependent libraries installed, so I installed them 
 
 Here I put the source code 'one level down' as otherwise there were problems at 'make install' time.
 
-1. cd /mnt/lustre/tursafs1/home/dp153/dp153/shared/
+1. cd /mnt/lustre/tursafs1/home/dp327/dp327/shared/
 2. mkdir hdf5-1.10.7
 3. cd hdf5-1.10.7
 4. wget https://www.hdfgroup.org/package/hdf5-1-10-7-tar-gz
 5. tar -xvf hdf5-1.10.7.tar.gz
 6. cd hdf5-1.10.7
-7. ./configure --prefix=/mnt/lustre/tursafs1/home/dp153/dp153/shared/hdf5-1.10.7
+7. ./configure --prefix=/mnt/lustre/tursafs1/home/dp327/dp327/shared/hdf5-1.10.7
 8. make
 9. make install
 

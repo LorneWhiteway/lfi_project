@@ -9,15 +9,15 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
 #SBATCH --mail-type=END,FAIL
-#SBATCH --account=DP153
+#SBATCH --account=DP327
 #SBATCH --qos=standard
 
 ## Call this job script using syntax like this:
 ## sbatch cuda_job_script_tursa
 
 # Load the module files
-source /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/set_environment_tursa.sh USE
+source /mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/set_environment_tursa.sh USE
 
-cd /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/cuda_test
-/mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/cuda_test/cuda_test > /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/cuda_test/output.txt
+cd /mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/cuda_test
+/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/cuda_test/cuda_test > /mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/cuda_test/output.txt
 

@@ -14,7 +14,7 @@ echo "Proceed? (y/n)"
 read ans
 
 if [[ $ans == "y" ]]; then
-	cd /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project
+	cd /mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project
 	source ./set_environment_tursa.sh BUILD
 	##git clone https://bitbucket.org/dpotter/pkdgrav3.git
 	cd ./pkdgrav3

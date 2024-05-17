@@ -12,7 +12,7 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
 #SBATCH --mail-type=FAIL
-#SBATCH --account=DP153
+#SBATCH --account=DP327
 #SBATCH --qos=standard
 
 ## Not sure if this is still needed...
@@ -25,10 +25,10 @@ mpi_tasks_per_node=$(echo "$SLURM_TASKS_PER_NODE" | sed -e  's/^\([0-9][0-9]*\).
 np=$[${numnodes}*${mpi_tasks_per_node}]
 
 
-source /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/set_environment_tursa.sh USE
+source /mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/set_environment_tursa.sh USE
 
 #! Full path to application executable: 
-application="/mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/pkdgrav3/build_tursa/pkdgrav3"
+application="/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/pkdgrav3/build_tursa/pkdgrav3"
 
 #! Work directory (i.e. where the job will run):
 workdir="$SLURM_SUBMIT_DIR"  # The directory in which sbatch is run.

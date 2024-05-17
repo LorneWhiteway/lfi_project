@@ -54,6 +54,6 @@ if [[ $BUILD_MODE == $TRUE ]]; then
 	module load $CMAKE_MODULE
 fi
 
-source /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/env/bin/activate
+source /mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/env/bin/activate
 
 

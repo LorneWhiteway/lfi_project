@@ -947,7 +947,7 @@ def project_directory(location):
     if location == 'wilkes':
         return "/rds/project/dirac_vol5/rds-dirac-dp153/lfi_project"
     elif location == 'tursa':
-        return "/mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project"
+        return "/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project"
     elif location == 'splinter':
         return "/share/splinter/ucapwhi/lfi_project"
     elif location == 'hypatia':

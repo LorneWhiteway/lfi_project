@@ -23,7 +23,7 @@
 
 export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
 
-source /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/set_environment_tursa.sh USE
+source /mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/set_environment_tursa.sh USE
 
-gpu_launch.sh /mnt/lustre/tursafs1/home/dp153/dp153/shared/lfi_project/pkdgrav3/build_tursa/pkdgrav3 ./control.par >> ./output.txt
+gpu_launch.sh /mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/pkdgrav3/build_tursa/pkdgrav3 ./control.par >> ./output.txt
 
