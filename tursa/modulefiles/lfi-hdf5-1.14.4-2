@@ -1,0 +1,6 @@
+#%Module -*- tcl -*-
+##
+##
+prepend-path    PATH              /mnt/lustre/tursafs1/home/dp327/dp327/shared/hdf5-1.14.4-2/bin
+prepend-path    LD_LIBRARY_PATH   /mnt/lustre/tursafs1/home/dp327/dp327/shared/hdf5-1.14.4-2/lib
+

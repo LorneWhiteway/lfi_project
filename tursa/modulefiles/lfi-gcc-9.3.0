@@ -10,7 +10,7 @@ set ModulesVersion 9.3.0
 proc ModulesHelp {} {
         global version
         puts stderr "\tAdds GCC 9.3.0 to your environment"
-        puts stderr "\tModified by LW to set environment variables CC, CXX and Fc as well"
+        puts stderr "\tModified by LW to set environment variables CC, CXX and FC as well"
         puts stderr "\n\tVersion $version\n"
 }
 

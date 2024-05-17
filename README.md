@@ -171,21 +171,11 @@ However, it probably isn't necessary to use this (as you can build pkdgrav3 usin
 
 - Go to the project directory.
 - Run `./cm_tursa.sh build_tursa`. You will need to type `y` to confirm the build directory name.
-- Then `exit` from the GPU.
+
 
 ### How I installed dependent libraries on Tursa
 
 Tursa didn't have any of the dependent libraries installed, so I installed them myself. Each library is installed in a sibling directory to the project directory. I also created module files (to be documented).
-
-#### CMake
-
-1. cd /mnt/lustre/tursafs1/home/dp327/dp327/shared/
-2. wget https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1.tar.gz
-3. tar -xvf cmake-3.22.1.tar.gz
-4. cd cmake-3.22.1
-5. ./configure --prefix=/mnt/lustre/tursafs1/home/dp327/dp327/shared/cmake-3.22.1
-6. make
-7. make install
 
 #### GSL
 
@@ -212,19 +202,19 @@ Tursa didn't have any of the dependent libraries installed, so I installed them 
 Here I put the source code 'one level down' as otherwise there were problems at 'make install' time.
 
 1. cd /mnt/lustre/tursafs1/home/dp327/dp327/shared/
-2. mkdir hdf5-1.10.7
-3. cd hdf5-1.10.7
-4. wget https://www.hdfgroup.org/package/hdf5-1-10-7-tar-gz
-5. tar -xvf hdf5-1.10.7.tar.gz
-6. cd hdf5-1.10.7
-7. ./configure --prefix=/mnt/lustre/tursafs1/home/dp327/dp327/shared/hdf5-1.10.7
+2. mkdir hdf5-1.14.4-2
+3. cd hdf5-1.14.4-2
+4. wget https://github.com/HDFGroup/hdf5/releases/download/hdf5_1.14.4.2/hdf5-1.14.4-2.tar.gz
+5. tar -xvf hdf5-1.14.4-2.tar.gz
+6. cd hdf5-1.14.4-2
+7. ./configure --prefix=/mnt/lustre/tursafs1/home/dp327/dp327/shared/hdf5-1.14.4-2/
 8. make
 9. make install
 
 #### Further Tursa configuration changes
 
-1. Install nbodykit using the same instructions as for Wilkes
-2. Also in the `env` directory, run `pip install "dask[assay]" --upgrade`
+1. Install nbodykit using the same instructions as for Wilkes (no need to load Python3 module).
+2. Also in the `env` directory, run `pip install "dask[assay]" --upgrade` (not sure if this is still needed).
 3. Add `opal_cuda_support=0` to `$HOME/.openmpi/mca-params.conf` to suppress a CUDA warning when running nbodykit. You will still get an OenFabric warning, though...
 
 ## Information about working with the UCL splinter cluster
