@@ -163,7 +163,7 @@ For reference (e.g. in case it needs to be repeated), here's how the virtual env
 
 ### How to log on to one of the Tursa GPU nodes
 ```
-srun --partition gpu --gres=gpu:1 --account=DP327 --qos=standard --time=0:30:00 --exclusive --pty bash
+srun --partition gpu --gres=gpu:1 --account=DP327 --qos=standard --nodes=1 --time=0:30:00 --pty bash
 ```
 However, it probably isn't necessary to use this (as you can build pkdgrav3 using the login node).
 
