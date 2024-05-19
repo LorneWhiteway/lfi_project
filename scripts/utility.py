@@ -283,30 +283,32 @@ def plot_lightcone_files(list_of_npy_filenames, do_show = True, do_save = False,
         map_t = np.load(filename)
         num_objects = np.sum(map_t)
         
-        # Histogram of pixel values
-        if False:
-            plt.hist(map_t, bins=np.max(map_t)+1)
-            plt.yscale('log', nonposy='clip') # See https://stackoverflow.com/questions/17952279/logarithmic-y-axis-bins-in-python
-            plt.show()
         
         if True:
-            map_t = np.log10(map_t) - np.log10(np.mean(map_t)) # log10(1+\delta)
-        
-        cmap=plt.get_cmap('magma')
-        
-        
-        if mollview_format:
-            hp.mollview(map_t, title=filename.replace("/share/splinter/ucapwhi/lfi_project/experiments/", ""), cbar=True, cmap=cmap)
-            #hp.graticule(dpar=30.0)
-            save_file_extension = "mollview.png"
+            # Histogram of pixel values
+            plt.hist(map_t, bins=np.max(map_t)+1)
+            plt.yscale('log', nonposy='clip') # See https://stackoverflow.com/questions/17952279/logarithmic-y-axis-bins-in-python
+            save_file_extension = "histogram.png"
         else:
-            rot = (50.0, -40.0, 0.0)
-            hp.orthview(map_t, rot=rot, title=filename.replace("/share/splinter/ucapwhi/lfi_project/experiments/", ""), cbar=True, cmap=cmap)
-            save_file_extension = "orthview.png"
+      
+            if True:
+                map_t = np.log10(map_t) - np.log10(np.mean(map_t)) # log10(1+\delta)
+            
+            cmap = plt.get_cmap('magma')
+            
+            
+            if mollview_format:
+                hp.mollview(map_t, title=filename.replace("/share/splinter/ucapwhi/lfi_project/experiments/", ""), cbar=True, cmap=cmap)
+                #hp.graticule(dpar=30.0)
+                save_file_extension = "mollview.png"
+            else:
+                rot = (50.0, -40.0, 0.0)
+                hp.orthview(map_t, rot=rot, title=filename.replace("/share/splinter/ucapwhi/lfi_project/experiments/", ""), cbar=True, cmap=cmap)
+                save_file_extension = "orthview.png"
 
         if do_save:
             save_file_name = filename.replace("npy", save_file_extension)
-            print("From {} created image file {} with {} objects".format(filename, save_file_name, num_objects))    
+            print("From {} created plot file {} with {} objects".format(filename, save_file_name, num_objects))    
             plt.savefig(save_file_name)
 
         
@@ -319,6 +321,14 @@ def save_all_lightcone_image_files(directory, mollview_format):
     file_list = glob.glob(os.path.join(directory, "*.npy"))
     file_list.sort()
     plot_lightcone_files(file_list, False, True, mollview_format)
+    
+def plot_two_lightcone_files():
+    list_of_npy_filenames = ["/share/splinter/ucapwhi/lfi_project/runsS/run011_wilkes/run.00060.lightcone.npy", "/share/splinter/ucapwhi/lfi_project/runsS/run011_tursa/run.00060.lightcone.npy"]
+    do_show = False
+    do_save = True
+    mollview_format = True
+    plot_lightcone_files(list_of_npy_filenames, do_show, do_save, mollview_format)
+    
     
 
 
@@ -1026,11 +1036,9 @@ def create_input_files_for_multiple_runs(runs_letter):
     cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',').reshape([-1,7]) # The 'reshape' handles the num_runs=1 case.
     num_runs = cosmo_params_for_all_runs.shape[0]
     
-    tursa_numa_wrapper_file_name_no_path = "wrapper.sh"
-    
+  
     original_wilkes_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path("wilkes"))
     original_tursa_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path("tursa"))
-    original_numa_wrapper_file_name = os.path.join(runs_directory, tursa_numa_wrapper_file_name_no_path)
     original_hypatia_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path("hypatia"))
     
     control_file_name_no_path = 'control.par'
@@ -1045,7 +1053,7 @@ def create_input_files_for_multiple_runs(runs_letter):
         run_num_one_based = run_num_zero_based + 1
         
         # Amend the code here to restrict to just certain directories.
-        if (run_num_one_based == 12):
+        if (run_num_one_based == 24):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
@@ -1126,10 +1134,6 @@ def create_input_files_for_multiple_runs(runs_letter):
             tursa_set_environment_commands = ["source {}/set_environment_tursa.sh\n".format(project_directory("tursa"))]
             write_run_script("tursa", runs_letter, run_string, run_script_name_tursa, tursa_set_environment_commands)
             
-            # Tursa numa wrapper
-            this_numa_wrapper_file_name = os.path.join(this_run_directory, tursa_numa_wrapper_file_name_no_path)
-            copyfile(original_numa_wrapper_file_name, this_numa_wrapper_file_name)
-            make_file_executable(this_numa_wrapper_file_name)
             
             # Hypatia run script
             ## TODO - test this.
@@ -1311,8 +1315,8 @@ if __name__ == '__main__':
     #show_last_unprocessed_file()
     #write_run_script_test_harness()
     #get_parameter_from_log_file_test_harness()
-    gower_street_run_times()
-    
+    #gower_street_run_times()
+    plot_two_lightcone_files()
     
     #create_input_files_for_multiple_runs('S')
     
