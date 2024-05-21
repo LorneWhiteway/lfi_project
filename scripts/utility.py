@@ -1316,9 +1316,9 @@ if __name__ == '__main__':
     #write_run_script_test_harness()
     #get_parameter_from_log_file_test_harness()
     #gower_street_run_times()
-    plot_two_lightcone_files()
+    #plot_two_lightcone_files()
     
-    #create_input_files_for_multiple_runs('S')
+    create_input_files_for_multiple_runs('S')
     
      
     pass
