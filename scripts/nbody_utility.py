@@ -249,7 +249,7 @@ def AnalyzeCatalog(cat, file_to_save_results):
     mesh = cat.to_mesh(resampler='tsc', compensated=True)
     print("{} Finished calling cat.to_mesh".format(datetime.datetime.now().time()))
     
-    kmin = 0.005
+    kmin = 0.0025
     
     print("{} About to call FFTPower".format(datetime.datetime.now().time()))
     r = FFTPower(mesh, mode='1d', dk=0.005, kmin=kmin)
@@ -285,7 +285,7 @@ def AnalyzeCatalog(cat, file_to_save_results):
 
 if __name__ == '__main__':
     
-    #hello_world()
+    hello_world()
     #make_amended_euclid_transfer_function()
     #compare_with_euclid()
     #make_specific_cosmology_transfer_function()
@@ -294,6 +294,6 @@ if __name__ == '__main__':
     #calculate_power_spectrum_of_simulation_box()
     #LogNormalCatalogExample()
     #ArrayCatalogExample()
-    PKDGrav3Example()
+    #PKDGrav3Example()
     
     
