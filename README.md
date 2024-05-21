@@ -39,6 +39,24 @@ LW has made the following changes to this code:
 
 9. Amended pkdgrav3/mdl2/CMakeLists.txt to change the cmake minimum version from 3.1 to 3.12 and to set cmake policy 0074 to NEW behaviour. This is needed to ensure that the environment variable FFTW_ROOT is paid attention to by the FindFFTW.cmake module (which is located in \pkdgrav3\mdl2\).
 
+## How to install a Python environment and nbodykit
+To set up a virtual Python environment in the subdirectory `env` of the project directory:
+- Go to the project directory
+- If necessary, load a module file for Python: `module load python/3.6.4` on Hypatia, `module load python/3.8` on Wilkes; not needed on Tursa.
+- `python3 -m venv env`
+- `source env/bin/activate`
+- `cd env`
+- `pip install --upgrade pip`
+- `pip install healpy==1.15.0`
+- Then for nbodykit: (see https://nbodykit.readthedocs.io/en/latest/getting-started/install.html#installing-nbodykit-with-pip):
+-    `pip install cython==0.29.33`
+-    `pip install mpi4py==3.1.4`
+-    `pip install nbodykit==0.3.15`
+-    `pip install "dask[array]" --upgrade`
+
+It is convenient to have this environment as we can install our own software there. The software versions listed are not the latest, but they are known to be compatible.
+
+
 ## Information about working with the UCL hypatia cluster
 
 1. The 'project directory' is the directory in which the project has been installed (i.e. the directory containing this readme file). This directory can be located anywhere on hypatia; it will always be called 'lfi_project'. For LW this is `/share/rcifdata/ucapwhi/lfi_project`.
@@ -83,24 +101,6 @@ The hypatia installation needs its own copy of FFTW 3.3.10, compiled with all th
 7. make install
 
 
-### Working with python on hypatia
-To set up a virtual Python environment in the subdirectory `env` of the project directory:
-- Go to the project directory
-- `module load python/3.6.4`
-- `python3 -m venv env`
-- `source env/bin/activate`
-- `cd env`
-- `pip install --upgrade pip`
-- `pip install healpy`
-- Then for nbodykit: (see https://nbodykit.readthedocs.io/en/latest/getting-started/install.html#installing-nbodykit-with-pip):
--    `pip install cython`
--    `pip install mpi4py`
--    `pip install nbodykit`
--    `pip install "dask[array]" --upgrade`
-
-It is convenient to have this environment as we can install our own software there. The environment is activated automatically by running `source ./set_environment_hypatia.sh` in the project directory.
-
-
 ## Information about working with the Wilkes cluster
 
 1. Two possible addresses: `login-icelake.hpc.cam.ac.uk` (but note that with this address you can't run the nbody code) or `login-gpu.hpc.cam.ac.uk` (but note that with this address you can't run slurm).
@@ -130,22 +130,6 @@ For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-g
 - Go to the project directory, and from there to `/experiments/<experiment>`
 - `sbatch ../../scripts/cuda_job_script_wilkes`
 
-### Working with python on the Wilkes cluster
-
-I have set up a virtual Python environment in the subdirectory `env` of the project directory. This is convenient as we can install our own software there. This is activated automatically by running `source ./set_environment_wilkes.sh` in the project directory.
-
-For reference (e.g. in case it needs to be repeated), here's how the virtual environment was created:
-- Go to the project directory
-- `module load python/3.8`
-- `python3 -m venv env`
-- `source env/bin/activate`
-- `cd env`
-- `pip install --upgrade pip`
-- `pip install healpy`
-- Then for nbodykit: (see https://nbodykit.readthedocs.io/en/latest/getting-started/install.html#installing-nbodykit-with-pip)
-- `pip install cython`
-- `pip install mpi4py`
-- `pip install nbodykit`
 
 ### Information about Wilkes specifically for LW
 
@@ -213,9 +197,7 @@ Here I put the source code 'one level down' as otherwise there were problems at 
 
 #### Further Tursa configuration changes
 
-1. Install nbodykit using the same instructions as for Wilkes (no need to load Python3 module).
-2. Also in the `env` directory, run `pip install "dask[array]" --upgrade` (not sure if this is still needed).
-3. Add `opal_cuda_support=0` to `$HOME/.openmpi/mca-params.conf` to suppress a CUDA warning when running nbodykit. You will still get an OenFabric warning, though...
+1. Add `opal_cuda_support=0` to `$HOME/.openmpi/mca-params.conf` to suppress a CUDA warning when running nbodykit. You will still get an OenFabric warning, though...
 
 ## Information about working with the UCL splinter cluster
 
