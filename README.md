@@ -14,6 +14,8 @@ pkdgrav3 is able to output lightcone files; as these are our only interest we ha
 
 pkdgrav3 creates lightcone snapshots by extracting objects from a thin shell of the appropriate radius within a 'superbox' consisting of 218 repeats of the simulation box in a 6x6x6 array (and we as observers are at the centre of the superbox). At early times the lightcone shell lies completely outside this box and hence is empty; in this case the post-processing script does not create a full healpix map (instead of creating an empty map).
 
+The paper [Jeffery et al. 2024](https://arxiv.org/abs/2403.02314) has further information. Lightcone snapshots created by this project have been made publically available as the [Gower Street Sims]( http://www.star.ucl.ac.uk/GowerStreetSims/). 
+
 
 ## Changes made to pkdgrav3:
 
@@ -39,110 +41,23 @@ LW has made the following changes to this code:
 
 9. Amended pkdgrav3/mdl2/CMakeLists.txt to change the cmake minimum version from 3.1 to 3.12 and to set cmake policy 0074 to NEW behaviour. This is needed to ensure that the environment variable FFTW_ROOT is paid attention to by the FindFFTW.cmake module (which is located in \pkdgrav3\mdl2\).
 
-## How to install a Python environment and nbodykit
-To set up a virtual Python environment in the subdirectory `env` of the project directory:
-- Go to the project directory
-- If necessary, load a module file for Python: `module load python/3.6.4` on Hypatia, `module load python/3.8` on Wilkes; not needed on Tursa.
-- `python3 -m venv env`
-- `source env/bin/activate`
-- `cd env`
-- `pip install --upgrade pip`
-- `pip install healpy==1.15.0`
-- Then for nbodykit: (see https://nbodykit.readthedocs.io/en/latest/getting-started/install.html#installing-nbodykit-with-pip):
--    `pip install cython==0.29.33`
--    `pip install mpi4py==3.1.4`
--    `pip install nbodykit==0.3.15`
--    `pip install "dask[array]" --upgrade`
+## How to install the software
 
-It is convenient to have this environment as we can install our own software there. The software versions listed are not the latest, but they are known to be compatible.
+The main high-level steps to install the software are:
+1. Checkout this repository using `git clone https://github.com/LorneWhiteway/lfi_project.git`. This will create a directory called 'lfi_project' which we will refer to as the 'project directory'. The 'git clone' command should be run in the parent directory of what will be the project directory. 
+2. Install (where necessary) the dependent modules.
+3. Build pkdgrav3.
+4. Install the python environment and nbodykit.
+Details of each step will depend on which cluster is being used - see details below.
 
+## How to use the software
 
-## Information about working with the UCL hypatia cluster
-
-1. The 'project directory' is the directory in which the project has been installed (i.e. the directory containing this readme file). This directory can be located anywhere on hypatia; it will always be called 'lfi_project'. For LW this is `/share/rcifdata/ucapwhi/lfi_project`.
-
-### One-time work to install lfi_project on hypatia
-1. Go to what you want to be the parent directory of the project directory.
-2. `git clone https://github.com/LorneWhiteway/lfi_project.git`
-3. `cd ./lfi_project`. You are now in the project directory.
-4. Follow the instructions in 'Creating a suitable version of FFTW for hypatia' below to create a suitable version of FFTW.
-5. Follow the instructions below in 'Working with python on hypatia' to to create a virtual Python environment.
-6. Follow the instructions in 'How to build pkdgrav3 for use by the hypatia GPU' below to build pkdgrav3.
-
-### How to load environment variables
-- Go to the project directory
-- `source ./set_environment_hypatia.sh`
-
-### How to log on to one of the hypatia GPU nodes
-```
-srun -p GPU --gres=gpu:a100:1 --pty bash
-```
-
-### How to build pkdgrav3 for use by the hypatia GPU
-- Log on to a GPU (see instructions elsewhere in this README) and go to the project directory.
-- Run `./cm_hypatia.sh build_hypatia`. You will need to type `y` to confirm the build directory name.
-- Then `exit` from the GPU.
-
-
-### How to run the 'fast' test on a hypatia GPU
-- Log on to hypatia (but don't log on to a GPU)
-- Go to the project directory, and from there to `/experiments/fast`
-- `sbatch cuda_job_script_hypatia`
-
-
-### Creating a suitable version of FFTW for hypatia
-The hypatia installation needs its own copy of FFTW 3.3.10, compiled with all the necessary options. This goes in a subdirectory /fftw-3.3.10 of the project directory. To create this:
 1. Go to the project directory
-2. wget https://www.fftw.org/fftw-3.3.10.tar.gz
-3. tar -xvf fftw-3.3.10.tar.gz
-4. cd ./fftw-3.3.10
-5. ./configure --enable-float --enable-shared --enable-threads --enable-mpi --prefix=(project directory)/fftw-3.3.10
-6. make
-7. make install
+2. `source ./set_environment_XXX.sh` where 'XXX' refers to the cluster being used ('splinter', 'hypatia', 'wilkes', or 'tursa'.)
 
-
-## Information about working with the Wilkes cluster
-
-1. Two possible addresses: `login-icelake.hpc.cam.ac.uk` (but note that with this address you can't run the nbody code) or `login-gpu.hpc.cam.ac.uk` (but note that with this address you can't run slurm).
-
-2. Project directory is `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`.
-
-3. `<experiment>` denotes an 'experiment' i.e. a subdirectory of `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/experiments/` containing a control file `control.par`. Example: `gpu_256_1024_900`.
-
-### How to load environment variables
-- Log on to Wilkes
-- Go to the project directory
-- Run `source ./set_environment_wilkes.sh`
-
-### How to log on to one of the Wilkes GPU nodes
-```
-sintr -A DIRAC-DP153-GPU -p ampere -t 1:0:0 --exclusive
-```
-For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-guide/interactive.html#sintr); the program has the same interface as `sbatch` (so the example above requests an interactive session for one hour).
-
-### How to build pkdgrav3 for use by the Wilkes GPUs
-- Log on to a GPU and go to the project directory.
-- Run `./cm_wilkes.sh build_wilkes`. You will need to type `y` to confirm the build directory name.
-- Then `exit` from the GPU.
-
-### How to run one of the experiments on the Wilkes GPUs
-- Log on to Wilkes (but don't log on to a GPU)
-- Go to the project directory, and from there to `/experiments/<experiment>`
-- `sbatch ../../scripts/cuda_job_script_wilkes`
-
-
-### Information about Wilkes specifically for LW
-
-1. Recall that when pasting passwords from KeePass into PuTTY, you should use Shift+Insert (and not Ctrl+V).
-
-2. I have set up the the shortcut `s` to get to the project directory.
-
-3. Use WebDrive to connect to login-gpu.hpc.cam.ac.uk and map it in Windows as the W drive. I have set up a symbolic link `work` in my home directory to point to the project directory.
-
-## Information about working with the Tursa cluster
+## Tursa cluster
 
 1. Documentation for tursa is at https://epcced.github.io/dirac-docs/tursa-user-guide/.
-
 2. Project directory is `/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project`.
 
 ### How to log on to one of the Tursa GPU nodes
@@ -157,9 +72,9 @@ However, it probably isn't necessary to use this (as you can build pkdgrav3 usin
 - Run `./cm_tursa.sh build_tursa`. You will need to type `y` to confirm the build directory name.
 
 
-### How I installed dependent libraries on Tursa
+### How to install dependent libraries on Tursa
 
-Tursa didn't have any of the dependent libraries installed, so I installed them myself. Each library is installed in a sibling directory to the project directory. I also created module files (to be documented).
+Tursa didn't have any of the dependent libraries installed, so I installed them myself. Each library is installed in a sibling directory to the project directory.
 
 #### GSL
 
@@ -199,6 +114,50 @@ Here I put the source code 'one level down' as otherwise there were problems at 
 
 1. Add `opal_cuda_support=0` to `$HOME/.openmpi/mca-params.conf` to suppress a CUDA warning when running nbodykit. You will still get an OenFabric warning, though...
 
+
+## UCL hypatia cluster
+
+Project directory is `/share/rcifdata/ucapwhi/lfi_project`.
+
+
+### Installing dependent modules of hypatia
+The hypatia installation needs its own copy of FFTW 3.3.10, compiled with all the necessary options. This goes in a subdirectory /fftw-3.3.10 of the project directory. To create this:
+1. Go to the project directory
+2. wget https://www.fftw.org/fftw-3.3.10.tar.gz
+3. tar -xvf fftw-3.3.10.tar.gz
+4. cd ./fftw-3.3.10
+5. ./configure --enable-float --enable-shared --enable-threads --enable-mpi --prefix=(project directory)/fftw-3.3.10
+6. make
+7. make install
+
+### How to build pkdgrav3 for use by the hypatia GPU
+- Log on to a GPU via `srun -p GPU --gres=gpu:a100:1 --pty bash`.
+- Go to the project directory.
+- Run `./cm_hypatia.sh build_hypatia`. You will need to type `y` to confirm the build directory name.
+- Then `exit` from the GPU.
+
+
+## Wilkes cluster
+
+1. Two possible addresses: `login-icelake.hpc.cam.ac.uk` (but note that with this address you can't run nbodykit) or `login-gpu.hpc.cam.ac.uk` (but note that with this address you can't run slurm).
+2. Project directory is `/rds/user/dc-whit2/rds-dirac-dp153/lfi_project`.
+
+
+### How to build pkdgrav3 for use by the Wilkes GPUs
+- Log on to a GPU using `sintr -A DIRAC-DP153-GPU -p ampere -t 1:0:0 --exclusive` and go to the project directory.
+- Run `./cm_wilkes.sh build_wilkes`. You will need to type `y` to confirm the build directory name.
+- Then `exit` from the GPU.
+For more information on `sintr` see [here](https://docs.hpc.cam.ac.uk/hpc/user-guide/interactive.html#sintr); the program has the same interface as `sbatch` (so the example above requests an interactive session for one hour).
+
+
+### Information about Wilkes specifically for LW
+
+1. Recall that when pasting passwords from KeePass into PuTTY, you should use Shift+Insert (and not Ctrl+V).
+2. I have set up the the shortcut `s` to get to the project directory.
+3. Use WebDrive to connect to login-gpu.hpc.cam.ac.uk and map it in Windows as the W drive. I have set up a symbolic link `work` in my home directory to point to the project directory.
+
+
+
 ## Information about working with the UCL splinter cluster
 
 1. Project directory is `/share/splinter/ucapwhi/lfi_project`.
@@ -215,12 +174,33 @@ srun -p GPU --gres=gpu:v100:1 --pty tcsh
 - Run `./cm.csh build_splinter_v100`. You will need to type `y` to confirm the build directory name.
 - Then `exit` from the GPU.
 
-### How to run one of the experiments on a splinter GPU
-- Log on to splinter (but don't log on to a GPU)
-- Go to the project directory, and from there to `/experiments/<experiment>`
-- `sbatch --export=ALL,experiment_name='<experiment>' ../../scripts/cuda_job_script_splinter_v100`
 
+## How to install a Python environment and nbodykit
+To set up a virtual Python environment in the subdirectory `env` of the project directory:
+- Go to the project directory
+- If necessary, load a module file for Python: `module load python/3.6.4` on Hypatia, `module load python/3.8` on Wilkes; not needed on Tursa.
+- `python3 -m venv env`
+- `source env/bin/activate`
+- `cd env`
+- `pip install --upgrade pip`
+- `pip install healpy==1.15.0`
+- Then for nbodykit: (see https://nbodykit.readthedocs.io/en/latest/getting-started/install.html#installing-nbodykit-with-pip):
+-    `pip install cython==0.29.33`
+-    `pip install mpi4py==3.1.4`
+-    `pip install nbodykit==0.3.15`
+-    `pip install "dask[array]" --upgrade`
 
+It is convenient to have this environment as we can install our own software there. The software versions listed are not the latest, but they are known to be compatible.
+
+The environment can be activated using `source env/bin/activate` in the project directory; this is done automatically when `source ./set_environment_XXX.sh` is called.
+
+If nbodykit is installed properly then the following Python3 code should work:
+```
+from nbodykit.lab import *
+k = 0.00001
+t = cosmology.power.transfers.CLASS(cosmology.Planck15,0.0)(k)
+print(t) # Should be 1.0
+```
 
 ## Python scripts
 
@@ -344,32 +324,8 @@ Note that `/home/ucapwhi/.conda` is a symbolic link to `/share/splinter/ucapwhi/
 
 To use nbodykit, do:
 - Go to the project directory
-- `bash`
 - `source ./set_environment_splinter_nbodycode.sh`
 
-
-### nbodykit on Wilkes3
-
-#### Installing nbodykit on Wilkes3
-
-This is included in the instructions (elsewhere in this README) about working with Python on Wilkes3.
-
-#### Using nbodykit on Wilkes3
-
-- Go to the project directory
-- `module load python/3.8`
-- `source env/bin/activate`
-
-
-### Example code
-
-If nbodykit is installed properly then the following Python3 code should work:
-```
-from nbodykit.lab import *
-k = 0.00001
-t = cosmology.power.transfers.CLASS(cosmology.Planck15,0.0)(k)
-print(t) # Should be 1.0
-```
 
 ## Storage of output files
 Output files are stored:
