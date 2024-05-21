@@ -1,69 +1,32 @@
 #!/bin/bash
 
-#! sbatch cuda_job_script_tursa
-#! Run it from the directory in which the control file is located.
+# Based on information at https://epcced.github.io/dirac-docs/tursa-user-guide/scheduler/
 
-#SBATCH --partition=gpu
+# Slurm job options
 #SBATCH --job-name=pkdgrav3
-#SBATCH --time=35:59:00
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=32
+#SBATCH --time=36:00:00
+#SBATCH --account=DP327
 #SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
 #SBATCH --mail-type=FAIL
-#SBATCH --account=DP327
+#SBATCH --export=none
+
+
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=48
+#SBATCH --partition=gpu-a100-80
 #SBATCH --qos=standard
+#SBATCH --gres=gpu:1
+#SBATCH --mem=30000
+#SBATCH --hint=multithread
 
-## Not sure if this is still needed...
-#SBATCH --mem=36000
-
-#! Number of nodes and tasks per node allocated by SLURM (do not change):
-numnodes=$SLURM_JOB_NUM_NODES
-numtasks=$SLURM_NTASKS
-mpi_tasks_per_node=$(echo "$SLURM_TASKS_PER_NODE" | sed -e  's/^\([0-9][0-9]*\).*$/\1/')
-np=$[${numnodes}*${mpi_tasks_per_node}]
-
+export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
 
 source /mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/set_environment_tursa.sh USE
 
-#! Full path to application executable: 
-application="/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/pkdgrav3/build_tursa/pkdgrav3"
+application="/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsXXX/runXXX/pkdgrav3_and_post_process.sh"
+options=""
+CMD="$application $options"
+eval $CMD
 
-#! Work directory (i.e. where the job will run):
-workdir="$SLURM_SUBMIT_DIR"  # The directory in which sbatch is run.
-
-#! Note that here we are assuming that the job file is being submitted from the directory
-#! in which the control file is located.
-options="$workdir/control.par >> $workdir/output.txt"
-
-# Settings for MPI performance
-export OMPI_MCA_btl=^uct,openib
-export UCX_TLS=rc,rc_x,sm,cuda_copy,cuda_ipc,gdr_copy
-export UCX_RNDV_THRESH=16384
-export UCX_RNDV_SCHEME=put_zcopy
-export UCX_IB_GPU_DIRECT_RDMA=yes
-export UCX_MEMTYPE_CACHE=n
-
-export OMPI_MCA_io=romio321
-export OMPI_MCA_btl_openib_allow_ib=true
-export OMPI_MCA_btl_openib_device_type=infiniband
-export OMPI_MCA_btl_openib_if_exclude=mlx5_1,mlx5_2,mlx5_3
-
-#! Choose this for an MPI code using OpenMPI:
-#!CMD="mpirun -npernode $mpi_tasks_per_node -np $np --map-by numa -x LD_LIBRARY_PATH --bind-to none ./wrapper.sh $application $options"
-CMD="mpirun -npernode $mpi_tasks_per_node -np $np --map-by numa --bind-to none ./wrapper.sh $application $options"
-
-cd $workdir
-echo -e "Changed directory to `pwd`.\n"
-
-JOBID=$SLURM_JOB_ID
-
-echo -e "JobID: $JOBID\n======"
-echo "Time: `date`"
-echo "Running on master node: `hostname`"
-echo "Current directory: `pwd`"
-echo -e "\nnumtasks=$numtasks, numnodes=$numnodes, mpi_tasks_per_node=$mpi_tasks_per_node"
-echo -e "\nExecuting command:\n==================\n$CMD\n"
-
-eval $CMD 
