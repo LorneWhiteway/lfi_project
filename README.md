@@ -214,7 +214,7 @@ Here I put the source code 'one level down' as otherwise there were problems at 
 #### Further Tursa configuration changes
 
 1. Install nbodykit using the same instructions as for Wilkes (no need to load Python3 module).
-2. Also in the `env` directory, run `pip install "dask[assay]" --upgrade` (not sure if this is still needed).
+2. Also in the `env` directory, run `pip install "dask[array]" --upgrade` (not sure if this is still needed).
 3. Add `opal_cuda_support=0` to `$HOME/.openmpi/mca-params.conf` to suppress a CUDA warning when running nbodykit. You will still get an OenFabric warning, though...
 
 ## Information about working with the UCL splinter cluster
