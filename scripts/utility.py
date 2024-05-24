@@ -1080,7 +1080,7 @@ def create_input_files_for_multiple_runs(runs_letter):
             
             # Tursa job script
             copyfile(original_tursa_job_script_file_name, this_tursa_job_script_file_name)
-            change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --time=', '47:59:00')
+            change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --time=', '35:59:00')
             change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(batch_number, run_string))
             change_one_value_in_ini_file(this_tursa_job_script_file_name, 'application=', double_quoted_string(run_script_name_tursa))
             
