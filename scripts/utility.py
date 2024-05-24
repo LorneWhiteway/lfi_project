@@ -1053,7 +1053,7 @@ def create_input_files_for_multiple_runs(runs_letter):
         run_num_one_based = run_num_zero_based + 1
         
         # Amend the code here to restrict to just certain directories.
-        if (run_num_one_based == 24):
+        if (run_num_one_based > 35):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
@@ -1328,10 +1328,10 @@ def fof_file_format_experiment():
     print(data['position_of_centre_of_mass'])
     print(data.shape)
     
-    
-    
-
 # ======================== End of code (May 2024) for reading friends_of_friends files ========================
+
+
+
 
 if __name__ == '__main__':
     
@@ -1353,8 +1353,8 @@ if __name__ == '__main__':
     #gower_street_run_times()
     #plot_two_lightcone_files()
     
-    #create_input_files_for_multiple_runs('S')
-    fof_file_format_experiment()
+    create_input_files_for_multiple_runs('S')
+    #fof_file_format_experiment()
     
      
     pass
