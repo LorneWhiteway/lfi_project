@@ -16,8 +16,8 @@ bClass           = 1
 dOmega0          = 0.0    # This is a dummy parameter, just to have the parameter defined
 
 # Initial Condition
-dBoxSize        = 1250       # Mpc/h
-nGrid           = 1080       # Simulation has nGrid^3 particles
+dBoxSize        = 250        # Was 1250 Mpc/h
+nGrid           = 256        # Was 1080 Simulation has nGrid^3 particles
 b2LPT           = 1          # second order IC
 iSeed           = 829        # Random seed
 dRedFrom        = 49         # Starting redshift
@@ -37,7 +37,7 @@ dRedTo          = 0
 
 # Lightcone 
 bLightCone      = 1    # Output a lightcone
-nSideHealpix    = 2048 # NSide for output lightcone healpix maps.
+nSideHealpix    = 256 # Was 2048 NSide for output lightcone healpix maps.
 
 # Logging/Output
 iLogInterval    = 1
@@ -63,3 +63,9 @@ bEpsAccStep     = 1       # Choose eps/a timestep criteria
 dTheta          = 0.40    # accuracy of forces for z > 20
 dTheta20        = 0.55    # accuracy of forces for z > 2
 dTheta2         = 0.70    # accuracy of forces for z <= 2
+
+bFindGroups     = 1
+dTau = 0.2 / nGrid
+
+
+
