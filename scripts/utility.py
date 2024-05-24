@@ -1080,7 +1080,7 @@ def create_input_files_for_multiple_runs(runs_letter):
             
             # Tursa job script
             copyfile(original_tursa_job_script_file_name, this_tursa_job_script_file_name)
-            change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --time=', '47:59:00')
+            change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --time=', '35:59:00')
             change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(batch_number, run_string))
             change_one_value_in_ini_file(this_tursa_job_script_file_name, 'application=', double_quoted_string(run_script_name_tursa))
             
@@ -1298,6 +1298,41 @@ def gower_street_run_times():
 # ======================== End of code for November 2023 project to create summary of runtimes for the Gower St sims ========================
 
 
+# ======================== Start of code (May 2024) for reading friends_of_friends files ======================
+
+def fof_file_format_experiment():
+
+    fof_type = np.dtype([
+        ('position_of_deepest_potential', np.float32, (3,)),
+        ('deepest_potential', np.float32, 1),
+        ('shrinking_sphere_centre', np.float32, (3,)),
+        ('position_of_centre_of_mass', np.float32, (3,)),
+        ('velocity_of_centre_of_mass', np.float32, (3,)),
+        ('angular_momentum', np.float32, (3,)),
+        ('moment_of_inertia', np.float32, (6,)),
+        ('velocity_dispersion', np.float32, 1),
+        ('r_max', np.float32, 1),
+        ('mass', np.float32, 1),
+        ('mass_env_0', np.float32, 1),
+        ('mass_env_1', np.float32, 1),
+        ('half_mass_radius', np.float32, 1)])
+        
+        
+
+    file_name = "/share/splinter/ucapwhi/lfi_project/scripts/run.00056.fofstats.0"
+    print("About to read {}".format(file_name))
+    with open(file_name, "rb") as in_file:
+        data = np.fromfile(in_file, dtype = fof_type)
+    #print(data)
+    print(data['position_of_deepest_potential'])
+    print(data['position_of_centre_of_mass'])
+    print(data.shape)
+    
+    
+    
+
+# ======================== End of code (May 2024) for reading friends_of_friends files ========================
+
 if __name__ == '__main__':
     
     #show_one_shell_example()
@@ -1318,7 +1353,8 @@ if __name__ == '__main__':
     #gower_street_run_times()
     #plot_two_lightcone_files()
     
-    create_input_files_for_multiple_runs('S')
+    #create_input_files_for_multiple_runs('S')
+    fof_file_format_experiment()
     
      
     pass
