@@ -1004,12 +1004,20 @@ def write_run_script(location, runs_letter, run_string, run_script_file_name, li
         out_file.write("echo stop > {}/runs{}/run{}/monitor_stop.txt\n".format(project_directory(location), runs_letter, run_string))
         # Do the post-processing of pkdgrav3 output
         out_file.write("python3 {}/scripts/pkdgrav3_postprocess.py -l -d -z -f . >> ./output.txt\n".format(project_directory(location)))
+        # Create a subdirectory for the fof files
+        out_file.write("mkdir -v ./fof/")
+        # Move the fof files into the fof subdirectory
+        out_file.write("mv -v *.fofstats* ./fof/")
         # Go to the parent directory
         out_file.write("cd {}/runs{}/\n".format(format(project_directory(location)), runs_letter))
-        # Zip up all the files
-        out_file.write("tar czvf run{}.tar.gz ./run{}/\n".format(run_string, run_string))
+        # Zip up all the fof files in the fof subdirectory of the run directory
+        out_file.write("tar -czvf run{}.fof.tar.gz ./run{}/fof/\n".format(run_string, run_string))
+        # If the zip worked OK, then delete the fof subdirectory and all its contents
+        out_file.write("test -f ./run{}.fof.tar.gz && rm -rfv ./run{}/fof/\n".format(run_string, run_string))
+        # Zip up all the other files
+        out_file.write("tar -czvf run{}.tar.gz ./run{}/\n".format(run_string, run_string))
         # If the zip worked OK, then delete most of the files in the run directory
-        out_file.write("test -f ./run{}.tar.gz && rm ./run{}/run*\n".format(run_string, run_string))
+        out_file.write("test -f ./run{}.tar.gz && rm -v ./run{}/run*\n".format(run_string, run_string))
     make_file_executable(run_script_file_name)
     
     
@@ -1029,7 +1037,7 @@ def create_input_files_for_multiple_runs(runs_letter):
 
     runs_directory = os.path.join(project_directory("current"), "runs{}".format(runs_letter))
     
-    batch_number_dict = {'I' : 3, 'J' : 4, 'K' : 5, 'L' : 6, 'M' : 7, 'N' : 8, 'O' : 9, 'P' : 10, 'Q' : 11, 'R' : 12, 'S' : 13}
+    batch_number_dict = {'I' : 3, 'J' : 4, 'K' : 5, 'L' : 6, 'M' : 7, 'N' : 8, 'O' : 9, 'P' : 10, 'Q' : 11, 'R' : 12, 'S' : 13, 'T' : 14}
     batch_number = batch_number_dict[runs_letter]
 
     cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, "params_run_{}.txt".format(batch_number))
@@ -1044,7 +1052,7 @@ def create_input_files_for_multiple_runs(runs_letter):
     control_file_name_no_path = 'control.par'
     original_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
     
-    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192, 'J' : 320, 'K' : 384, 'L' : 401, 'M' : 530, 'N' : 658, 'O' : 690, 'P' : 722, 'Q' : 754, 'R' : 786, 'S' : 818}
+    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192, 'J' : 320, 'K' : 384, 'L' : 401, 'M' : 530, 'N' : 658, 'O' : 690, 'P' : 722, 'Q' : 754, 'R' : 786, 'S' : 818, 'T' : 882}
     random_seed_offset = random_seed_offset_dict[runs_letter]
     
     
@@ -1053,7 +1061,7 @@ def create_input_files_for_multiple_runs(runs_letter):
         run_num_one_based = run_num_zero_based + 1
         
         # Amend the code here to restrict to just certain directories.
-        if (run_num_one_based > 35):
+        if (run_num_one_based > 0):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
@@ -1080,7 +1088,7 @@ def create_input_files_for_multiple_runs(runs_letter):
             
             # Tursa job script
             copyfile(original_tursa_job_script_file_name, this_tursa_job_script_file_name)
-            change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --time=', '35:59:00')
+            change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --time=', '47:59:00')
             change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(batch_number, run_string))
             change_one_value_in_ini_file(this_tursa_job_script_file_name, 'application=', double_quoted_string(run_script_name_tursa))
             
@@ -1122,8 +1130,9 @@ def create_input_files_for_multiple_runs(runs_letter):
             change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "        # Random seed")
             
             change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "1250       # Mpc/h")
-            change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1080       # Simulation has nGrid^3 particles")
-            change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "2048 # NSide for output lightcone healpix maps.")
+            change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1350       # Simulation has nGrid^3 particles")
+            change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "4096 # NSide for output lightcone healpix maps.")
+            change_one_value_in_ini_file(this_control_file_name, 'nMinMembers     = ', "10")
             
             
             # Wilkes run script
@@ -1353,7 +1362,7 @@ if __name__ == '__main__':
     #gower_street_run_times()
     #plot_two_lightcone_files()
     
-    create_input_files_for_multiple_runs('S')
+    create_input_files_for_multiple_runs('T')
     #fof_file_format_experiment()
     
      
