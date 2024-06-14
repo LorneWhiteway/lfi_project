@@ -1133,6 +1133,7 @@ def create_input_files_for_multiple_runs(runs_letter):
             change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1350       # Simulation has nGrid^3 particles")
             change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "4096 # NSide for output lightcone healpix maps.")
             change_one_value_in_ini_file(this_control_file_name, 'nMinMembers     = ', "10")
+            change_one_value_in_ini_file(this_control_file_name, 'nGridLin        = ', "337")
             
             
             # Wilkes run script
