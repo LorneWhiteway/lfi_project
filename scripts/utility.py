@@ -1061,7 +1061,7 @@ def create_input_files_for_multiple_runs(runs_letter):
         run_num_one_based = run_num_zero_based + 1
         
         # Amend the code here to restrict to just certain directories.
-        if (run_num_one_based > 0):
+        if (run_num_one_based > 32 and run_num_one_based < 59):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
@@ -1133,7 +1133,7 @@ def create_input_files_for_multiple_runs(runs_letter):
             change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1350       # Simulation has nGrid^3 particles")
             change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "4096 # NSide for output lightcone healpix maps.")
             change_one_value_in_ini_file(this_control_file_name, 'nMinMembers     = ', "10")
-            change_one_value_in_ini_file(this_control_file_name, 'nGridLin        = ', "337")
+            change_one_value_in_ini_file(this_control_file_name, 'nGridLin         = ', "337")
             
             
             # Wilkes run script
