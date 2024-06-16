@@ -1005,9 +1005,9 @@ def write_run_script(location, runs_letter, run_string, run_script_file_name, li
         # Do the post-processing of pkdgrav3 output
         out_file.write("python3 {}/scripts/pkdgrav3_postprocess.py -l -d -z -f . >> ./output.txt\n".format(project_directory(location)))
         # Create a subdirectory for the fof files
-        out_file.write("mkdir -v ./fof/")
+        out_file.write("mkdir -v ./fof/\n")
         # Move the fof files into the fof subdirectory
-        out_file.write("mv -v *.fofstats* ./fof/")
+        out_file.write("mv -v *.fofstats* ./fof/\n")
         # Go to the parent directory
         out_file.write("cd {}/runs{}/\n".format(format(project_directory(location)), runs_letter))
         # Zip up all the fof files in the fof subdirectory of the run directory
