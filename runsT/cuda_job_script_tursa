@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Based on information at https://epcced.github.io/dirac-docs/tursa-user-guide/scheduler/
+
+# Slurm job options
+#SBATCH --job-name=p14_001
+#SBATCH --time=47:59:00
+#SBATCH --account=DP327
+#SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
+#SBATCH --mail-type=FAIL
+#SBATCH --export=none
+
+
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=48
+#SBATCH --partition=gpu-a100-80
+#SBATCH --qos=standard
+#SBATCH --gres=gpu:1
+#SBATCH --mem=30000
+#SBATCH --hint=multithread
+
+export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
+
+source /mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/set_environment_tursa.sh USE
+
+application="/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/runsT/run001/pkdgrav3_and_post_process_tursa.sh"
+options=""
+CMD="$application $options"
+eval $CMD
+
