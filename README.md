@@ -251,6 +251,7 @@ The script operates on 'directory' as well as recursively on all subdirectories 
 ### expand_shell_script.py
 
 This script creates shell scripts. Specify the name of a 'template' shell script; this script may contain the special string "{}" in various places, in which case a new shell script will be created containing repeats of the template with "{}" replaced by specified integers (zero padded to length three). 
+
 Syntax: 
 ```
 expand_shell_script.py original_shell_script_file_name new_shell_script_file_name list_of_jobs...
@@ -284,6 +285,7 @@ Note that 'x' stands for 'exclude'. More complicated strings are possible, such 
 ### create_input_files.py
 
 This script creates directories and input files for multiple pkdgrav3 runs.
+
 Syntax:
 ```
 create_input_files.py runs_letter list_of_jobs_string
