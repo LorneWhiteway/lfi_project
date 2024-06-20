@@ -1153,10 +1153,20 @@ def create_input_files_for_multiple_runs(runs_letter):
             hypatia_set_environment_commands = ["module load python/3.6.4\n", "source {}/env/bin/activate\n".format(project_directory("hypatia"))]
             write_run_script("hypatia", runs_letter, run_string, run_script_name_hypatia, hypatia_set_environment_commands)
 
+            
             # Make all files in directory be writable by group
             for file_name in glob.glob(os.path.join(this_run_directory, "*")):
                 make_writable_by_group(file_name)
             
+            # Copy Concept file. Do this after the 'make files writable' step in case we don't have rights to change permission for this file.
+            # TODO - ask Niall to standardise the format of his hdf5 file names.
+            niall_hdf5_file_name_format = "class_processed_gs2_batch1_{}.hdf5"
+            original_hdf5_file_name = os.path.join(runs_directory, "/hdf5/", niall_hdf5_file_name_format.format(run_string))
+            if os.path.isfile(original_hdf5_file_name):
+                copyfile(original_hdf5_file_name, hdf5_file_name)
+                print("Successfully copied {} to {}".format(original_hdf5_file_name, hdf5_file_name))
+            else:
+                print("HDF5 file {} does not exist and hence will need to be copied manually later.".format(original_hdf5_file_name))
             
 
 
