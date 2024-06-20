@@ -280,15 +280,29 @@ Note that 'x' stands for 'exclude'. More complicated strings are possible, such 
 1-32 64-128 140 141,142 x23-30 x75,76 26
 ```
 
+
+### create_input_files.py
+
+This script creates directories and input files for multiple pkdgrav3 runs.
+Syntax:
+```
+create_input_files.py runs_letter list_of_jobs_string
+```
+
+Example:
+```
+create_input_files.py T 201-220 x213
+```
+This will create directories run201 through run220 (excluding run213) as subdirectories of runsT (in turn a subdirectory of the project directory).
+
+See expand_shell_script.py for the format of list_of_jobs_string.
+
+The subdirectories created will be populated with a pkdgrav3 control file, a hdf5 Concept cosmology file, script files to call pkdgrav3 and to compress the output, and Slurm job scripts.
+
+
 ### utility.py
 
-This script contains various functions that may be called 'by hand' particularly to set up and run large numbers of pkdgrav3 jobs (with postprocessing).
-
-| Function | Purpose |
-| --- | --- |
-| create_input_files_for_multiple_runs | Creates a set of input files for a number of runs. For each run the input files include a pkdgrav3 control file (control.par), a transfer function file (transfer_function.txt), a text file listing the cosmological parameters used in the transfer function file (transfer_function_cosmology.txt), a bash script to run pkdgrav3 and then do postprocessing (pkdgrav3_and_post_process.sh), and a SLURM job script (cuda_job_script_wilkes). |
-
-
+This script contains various functions that may be called 'manually'.
 
 ## Transfer functions
 
