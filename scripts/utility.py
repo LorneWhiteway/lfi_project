@@ -1034,7 +1034,7 @@ def write_run_script_test_harness():
 def make_writable_by_group(file_or_directory_name):
     os.chmod(file_or_directory_name, stat.S_IMODE(os.lstat(file_or_directory_name).st_mode) | stat.S_IWGRP)
 
-def create_input_files_for_multiple_runs(runs_letter):
+def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
 
     runs_directory = os.path.join(project_directory("current"), "runs{}".format(runs_letter))
     
@@ -1062,7 +1062,7 @@ def create_input_files_for_multiple_runs(runs_letter):
         run_num_one_based = run_num_zero_based + 1
         
         # Amend the code here to restrict to just certain directories.
-        if (run_num_one_based == 201):
+        if run_num_one_based in decode_list_of_jobs_string(list_of_jobs_string):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
@@ -1126,8 +1126,8 @@ def create_input_files_for_multiple_runs(runs_letter):
             change_one_value_in_ini_file(this_control_file_name, 'dSpectral        = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
             change_one_value_in_ini_file(this_control_file_name, 'dNormalization   = ', "{} # calculated from sigma_8 = {}".format(cosmology_object.A_s, cosmology_object.sigma8))
             
-            hdf5_file_name = '"./class_processed_batch{}_{}.hdf5"'.format(str(batch_number), run_string)
-            change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', hdf5_file_name)
+            hdf5_file_name = "class_processed_batch{}_{}.hdf5".format(str(batch_number), run_string)
+            change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', '"./' + hdf5_file_name + '"')
             
             change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "        # Random seed")
             
@@ -1152,22 +1152,24 @@ def create_input_files_for_multiple_runs(runs_letter):
             ## TODO - test this.
             hypatia_set_environment_commands = ["module load python/3.6.4\n", "source {}/env/bin/activate\n".format(project_directory("hypatia"))]
             write_run_script("hypatia", runs_letter, run_string, run_script_name_hypatia, hypatia_set_environment_commands)
-
+         
             
-            # Make all files in directory be writable by group
-            for file_name in glob.glob(os.path.join(this_run_directory, "*")):
-                make_writable_by_group(file_name)
-            
-            # Copy Concept file. Do this after the 'make files writable' step in case we don't have rights to change permission for this file.
+            # Copy Concept file.
             # TODO - ask Niall to standardise the format of his hdf5 file names.
             niall_hdf5_file_name_format = "class_processed_gs2_batch1_{}.hdf5"
-            original_hdf5_file_name = os.path.join(runs_directory, "/hdf5/", niall_hdf5_file_name_format.format(run_string))
-            if os.path.isfile(original_hdf5_file_name):
-                copyfile(original_hdf5_file_name, hdf5_file_name)
-                print("Successfully copied {} to {}".format(original_hdf5_file_name, hdf5_file_name))
+            source_hdf5_file_name = os.path.join(runs_directory, "hdf5/", niall_hdf5_file_name_format.format(run_string))
+            target_hdf5_file_name = os.path.join(this_run_directory, hdf5_file_name)
+            if os.path.isfile(source_hdf5_file_name):
+                copyfile(source_hdf5_file_name, target_hdf5_file_name)
             else:
-                print("HDF5 file {} does not exist and hence will need to be copied manually later.".format(original_hdf5_file_name))
+                print("HDF5 file {} does not exist and hence will need to be manually copied to {} later.".format(source_hdf5_file_name, target_hdf5_file_name))
             
+
+            # Make all the files in directory be writable by the group
+            for file_name in glob.glob(os.path.join(this_run_directory, "*")):
+                make_writable_by_group(file_name)
+
+
 
 
 def start_time_end_time(directory):
@@ -1380,7 +1382,7 @@ if __name__ == '__main__':
     #gower_street_run_times()
     #plot_two_lightcone_files()
     
-    create_input_files_for_multiple_runs('T')
+    create_input_files_for_multiple_runs('T', '201-210')
     #fof_file_format_experiment()
     
      
