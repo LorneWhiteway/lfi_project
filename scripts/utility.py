@@ -1056,18 +1056,13 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
     random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192, 'J' : 320, 'K' : 384, 'L' : 401, 'M' : 530, 'N' : 658, 'O' : 690, 'P' : 722, 'Q' : 754, 'R' : 786, 'S' : 818, 'T' : 882}
     random_seed_offset = random_seed_offset_dict[runs_letter]
     
-    
-    
-    for run_num_zero_based in range(num_runs):
-        run_num_one_based = run_num_zero_based + 1
-        
-        # Amend the code here to restrict to just certain directories.
-        if run_num_one_based in decode_list_of_jobs_string(list_of_jobs_string):
-        
-            print("{} of {}".format(run_num_one_based, num_runs))
-            
+    for run_num_one_based in decode_list_of_jobs_string(list_of_jobs_string):
+                
+        if run_num_one_based > num_runs:
+            print("Ignoring {} as it is too large for {}".format(run_num_one_based, cosmo_params_for_all_runs_file_name))
+        else:
+            run_num_zero_based = run_num_one_based - 1
             run_string = zfilled_run_num(run_num_one_based)
-            
             this_run_directory = os.path.join(runs_directory, "run" + run_string)
             this_wilkes_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path("wilkes"))
             this_tursa_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path("tursa"))
@@ -1079,6 +1074,7 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
             
         
             # Make directory and set permissions to include 'writable by group'
+            print("Creating {}".format(this_run_directory))
             os.makedirs(this_run_directory, exist_ok = True)
             make_writable_by_group(this_run_directory)
             
@@ -1381,9 +1377,8 @@ if __name__ == '__main__':
     #get_parameter_from_log_file_test_harness()
     #gower_street_run_times()
     #plot_two_lightcone_files()
-    
-    create_input_files_for_multiple_runs('T', '201-210')
-    #fof_file_format_experiment()
+    #create_input_files_for_multiple_runs('T', '201-210')
+    fof_file_format_experiment()
     
      
     pass
