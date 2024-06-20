@@ -1097,73 +1097,80 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
             change_one_value_in_ini_file(this_hypatia_job_script_file_name, 'application=', double_quoted_string(run_script_name_hypatia))
 
             # Cosmology object
-            cosmology_object = make_specific_cosmology(this_run_directory,
-                Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
-                sigma8 = cosmo_params_for_all_runs[run_num_zero_based, 1],
-                w = cosmo_params_for_all_runs[run_num_zero_based, 2],
-                Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 3],
-                h = cosmo_params_for_all_runs[run_num_zero_based, 4],
-                n_s = cosmo_params_for_all_runs[run_num_zero_based, 5],
-                ncdm = cosmo_params_for_all_runs[run_num_zero_based, 6],
-                P_k_max=100.0)
+            cosmology_object_created_OK = False
+            try:
+                cosmology_object = make_specific_cosmology(this_run_directory,
+                    Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
+                    sigma8 = cosmo_params_for_all_runs[run_num_zero_based, 1],
+                    w = cosmo_params_for_all_runs[run_num_zero_based, 2],
+                    Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 3],
+                    h = cosmo_params_for_all_runs[run_num_zero_based, 4],
+                    n_s = cosmo_params_for_all_runs[run_num_zero_based, 5],
+                    ncdm = cosmo_params_for_all_runs[run_num_zero_based, 6],
+                    P_k_max=100.0)
+                cosmology_object_created_OK = True
+            except Exception as err:
+                print("Failed to create cosmology object for {}".format(this_run_directory))
                 
-            ###OmegaDE = cosmology_object.Ode0
+            if cosmology_object_created_OK:
+                
+                ###OmegaDE = cosmology_object.Ode0
 
-            # Control file
-            copyfile(original_control_file_name, this_control_file_name)
-            ###change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./transfer_function.txt"')
-            ###change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(1.0-OmegaDE) + "    # 1-dOmegaDE")
-            ###change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(OmegaDE) + "    # Equal to Omega_fld in transfer function")
-            ###change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 1]))
-            #### Work around pkdgrav3 ini file parsing bug - doesn't like negative numbers.
-            ###acos_w_string = "2.0*math.cos({})  # {}".format(math.acos(cosmo_params_for_all_runs[run_num_zero_based, 2] / 2.0), cosmo_params_for_all_runs[run_num_zero_based, 2])
-            ###change_one_value_in_ini_file(this_control_file_name, 'w0              = ', acos_w_string)
-            ###change_one_value_in_ini_file(this_control_file_name, 'h               = ', str(cosmo_params_for_all_runs[run_num_zero_based, 4]))
-            change_one_value_in_ini_file(this_control_file_name, 'dSpectral        = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
-            change_one_value_in_ini_file(this_control_file_name, 'dNormalization   = ', "{} # calculated from sigma_8 = {}".format(cosmology_object.A_s, cosmology_object.sigma8))
-            
-            hdf5_file_name = "class_processed_batch{}_{}.hdf5".format(str(batch_number), run_string)
-            change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', '"./' + hdf5_file_name + '"')
-            
-            change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "        # Random seed")
-            
-            change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "1250       # Mpc/h")
-            change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1350       # Simulation has nGrid^3 particles")
-            change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "4096 # NSide for output lightcone healpix maps.")
-            change_one_value_in_ini_file(this_control_file_name, 'nMinMembers     = ', "10")
-            change_one_value_in_ini_file(this_control_file_name, 'nGridLin         = ', "337")
-            
-            
-            # Wilkes run script
-            wilkes_set_environment_commands = ["module load python/3.8\n", "source {}/env/bin/activate\n".format(project_directory("wilkes"))]
-            write_run_script("wilkes", runs_letter, run_string, run_script_name_wilkes, wilkes_set_environment_commands)
-            
-            
-            # Tursa run script
-            tursa_set_environment_commands = ["source {}/set_environment_tursa.sh\n".format(project_directory("tursa"))]
-            write_run_script("tursa", runs_letter, run_string, run_script_name_tursa, tursa_set_environment_commands)
-            
-            
-            # Hypatia run script
-            ## TODO - test this.
-            hypatia_set_environment_commands = ["module load python/3.6.4\n", "source {}/env/bin/activate\n".format(project_directory("hypatia"))]
-            write_run_script("hypatia", runs_letter, run_string, run_script_name_hypatia, hypatia_set_environment_commands)
-         
-            
-            # Copy Concept file.
-            # TODO - ask Niall to standardise the format of his hdf5 file names.
-            niall_hdf5_file_name_format = "class_processed_gs2_batch1_{}.hdf5"
-            source_hdf5_file_name = os.path.join(runs_directory, "hdf5/", niall_hdf5_file_name_format.format(run_string))
-            target_hdf5_file_name = os.path.join(this_run_directory, hdf5_file_name)
-            if os.path.isfile(source_hdf5_file_name):
-                copyfile(source_hdf5_file_name, target_hdf5_file_name)
-            else:
-                print("HDF5 file {} does not exist and hence will need to be manually copied to {} later.".format(source_hdf5_file_name, target_hdf5_file_name))
-            
+                # Control file
+                copyfile(original_control_file_name, this_control_file_name)
+                ###change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./transfer_function.txt"')
+                ###change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(1.0-OmegaDE) + "    # 1-dOmegaDE")
+                ###change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(OmegaDE) + "    # Equal to Omega_fld in transfer function")
+                ###change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 1]))
+                #### Work around pkdgrav3 ini file parsing bug - doesn't like negative numbers.
+                ###acos_w_string = "2.0*math.cos({})  # {}".format(math.acos(cosmo_params_for_all_runs[run_num_zero_based, 2] / 2.0), cosmo_params_for_all_runs[run_num_zero_based, 2])
+                ###change_one_value_in_ini_file(this_control_file_name, 'w0              = ', acos_w_string)
+                ###change_one_value_in_ini_file(this_control_file_name, 'h               = ', str(cosmo_params_for_all_runs[run_num_zero_based, 4]))
+                change_one_value_in_ini_file(this_control_file_name, 'dSpectral        = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
+                change_one_value_in_ini_file(this_control_file_name, 'dNormalization   = ', "{} # calculated from sigma_8 = {}".format(cosmology_object.A_s, cosmology_object.sigma8))
+                
+                hdf5_file_name = "class_processed_batch{}_{}.hdf5".format(str(batch_number), run_string)
+                change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', '"./' + hdf5_file_name + '"')
+                
+                change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "        # Random seed")
+                
+                change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "1250       # Mpc/h")
+                change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1350       # Simulation has nGrid^3 particles")
+                change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "4096 # NSide for output lightcone healpix maps.")
+                change_one_value_in_ini_file(this_control_file_name, 'nMinMembers     = ', "10")
+                change_one_value_in_ini_file(this_control_file_name, 'nGridLin         = ', "337")
+                
+                
+                # Wilkes run script
+                wilkes_set_environment_commands = ["module load python/3.8\n", "source {}/env/bin/activate\n".format(project_directory("wilkes"))]
+                write_run_script("wilkes", runs_letter, run_string, run_script_name_wilkes, wilkes_set_environment_commands)
+                
+                
+                # Tursa run script
+                tursa_set_environment_commands = ["source {}/set_environment_tursa.sh\n".format(project_directory("tursa"))]
+                write_run_script("tursa", runs_letter, run_string, run_script_name_tursa, tursa_set_environment_commands)
+                
+                
+                # Hypatia run script
+                ## TODO - test this.
+                hypatia_set_environment_commands = ["module load python/3.6.4\n", "source {}/env/bin/activate\n".format(project_directory("hypatia"))]
+                write_run_script("hypatia", runs_letter, run_string, run_script_name_hypatia, hypatia_set_environment_commands)
+             
+                
+                # Copy Concept file.
+                # TODO - ask Niall to standardise the format of his hdf5 file names.
+                niall_hdf5_file_name_format = "class_processed_gs2_batch1_{}.hdf5"
+                source_hdf5_file_name = os.path.join(runs_directory, "hdf5/", niall_hdf5_file_name_format.format(run_string))
+                target_hdf5_file_name = os.path.join(this_run_directory, hdf5_file_name)
+                if os.path.isfile(source_hdf5_file_name):
+                    copyfile(source_hdf5_file_name, target_hdf5_file_name)
+                else:
+                    print("HDF5 file {} does not exist and hence will need to be manually copied to {} later.".format(source_hdf5_file_name, target_hdf5_file_name))
+                
 
-            # Make all the files in directory be writable by the group
-            for file_name in glob.glob(os.path.join(this_run_directory, "*")):
-                make_writable_by_group(file_name)
+                # Make all the files in directory be writable by the group
+                for file_name in glob.glob(os.path.join(this_run_directory, "*")):
+                    make_writable_by_group(file_name)
 
 
 
