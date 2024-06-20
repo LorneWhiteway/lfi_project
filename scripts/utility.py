@@ -1031,7 +1031,8 @@ def write_run_script_test_harness():
     write_run_script(location, runs_letter, run_string, run_script_file_name, list_of_set_environment_commands)
     
     
-
+def make_writable_by_group(file_or_directory_name):
+    os.chmod(file_or_directory_name, stat.S_IMODE(os.lstat(file_or_directory_name).st_mode) | stat.S_IWGRP)
 
 def create_input_files_for_multiple_runs(runs_letter):
 
@@ -1061,7 +1062,7 @@ def create_input_files_for_multiple_runs(runs_letter):
         run_num_one_based = run_num_zero_based + 1
         
         # Amend the code here to restrict to just certain directories.
-        if (run_num_one_based > 32 and run_num_one_based < 59):
+        if (run_num_one_based == 201):
         
             print("{} of {}".format(run_num_one_based, num_runs))
             
@@ -1077,8 +1078,9 @@ def create_input_files_for_multiple_runs(runs_letter):
             run_script_name_hypatia = os.path.join(this_run_directory, "pkdgrav3_and_post_process_hypatia.sh")
             
         
-            # Make directory
+            # Make directory and set permissions to include 'writable by group'
             os.makedirs(this_run_directory, exist_ok = True)
+            make_writable_by_group(this_run_directory)
             
             # Wilkes job script
             copyfile(original_wilkes_job_script_file_name, this_wilkes_job_script_file_name)
@@ -1140,6 +1142,7 @@ def create_input_files_for_multiple_runs(runs_letter):
             wilkes_set_environment_commands = ["module load python/3.8\n", "source {}/env/bin/activate\n".format(project_directory("wilkes"))]
             write_run_script("wilkes", runs_letter, run_string, run_script_name_wilkes, wilkes_set_environment_commands)
             
+            
             # Tursa run script
             tursa_set_environment_commands = ["source {}/set_environment_tursa.sh\n".format(project_directory("tursa"))]
             write_run_script("tursa", runs_letter, run_string, run_script_name_tursa, tursa_set_environment_commands)
@@ -1149,6 +1152,10 @@ def create_input_files_for_multiple_runs(runs_letter):
             ## TODO - test this.
             hypatia_set_environment_commands = ["module load python/3.6.4\n", "source {}/env/bin/activate\n".format(project_directory("hypatia"))]
             write_run_script("hypatia", runs_letter, run_string, run_script_name_hypatia, hypatia_set_environment_commands)
+
+            # Make all files in directory be writable by group
+            for file_name in glob.glob(os.path.join(this_run_directory, "*")):
+                make_writable_by_group(file_name)
             
             
 
