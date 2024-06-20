@@ -32,12 +32,12 @@ if __name__ == '__main__':
     
         command_line_array = sys.argv
     
-        if len(command_line_array) != 3 or item_is_in_command_line(command_line_array, "-h", "--help"):
+        if len(command_line_array) < 3 or item_is_in_command_line(command_line_array, "-h", "--help"):
             show_help()
             sys.exit(0)
         
         runs_letter = command_line_array[1]
-        list_of_jobs_string = command_line_array[2]
+        list_of_jobs_string = " ".join(command_line_array[2:])
 
         utility.create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string)
         
