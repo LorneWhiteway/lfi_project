@@ -1176,15 +1176,19 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
 
 
 def start_time_end_time(directory):
-    file_list = glob.glob(os.path.join(directory, "machine.file.*"))
-    if not file_list:
-        return 0
-    start_time = os.path.getmtime(file_list[0])
-    file_list = glob.glob(os.path.join(directory, "slurm*"))
-    if not file_list:
-        return 0
-    end_time = os.path.getmtime(file_list[0])
-    return (start_time, end_time)
+    if os.path.isfile(os.path.join(directory, "monitor_stop.txt")):
+        file_list = glob.glob(os.path.join(directory, ".lockfile"))
+        if not file_list:
+            return (0, 0)
+        start_time = os.path.getmtime(file_list[0])
+        file_list = glob.glob(os.path.join(directory, "slurm*"))
+        if not file_list:
+            return (0, 0)
+        file_list.sort()
+        end_time = os.path.getmtime(file_list[0])
+        return (start_time, end_time)
+    else:
+        return (0, 0)
 
 
 
@@ -1193,19 +1197,23 @@ def calculate_each_run_time_and_show_Gantt_chart():
     y = []
     width = []
     left = []
+    color = []
     
-    for run_num_zero_based in range(128):
-        run_num_one_based = run_num_zero_based + 1
+    list_of_jobs_string = "001-500"
+    
+    for run_num_one_based in decode_list_of_jobs_string(list_of_jobs_string):
         run_string = zfilled_run_num(run_num_one_based)
-        this_directory = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runs{}/run{}/".format(runs_letter(), run_string)
+        this_directory = "/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/runs{}/run{}/".format("T", run_string)
         (start_time, end_time) = start_time_end_time(this_directory)
-        run_time_in_seconds = end_time - start_time
-        print(this_directory, "{:.3f}".format(run_time_in_seconds/3600))
-        y.append(run_num_one_based)
-        width.append(run_time_in_seconds)
-        left.append(start_time)
-    plt.barh(y=y, width=width, left=left)
-    plt.savefig("/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/scripts/gantt.png")
+        if (start_time, end_time) != (0, 0):
+            run_time_in_seconds = end_time - start_time
+            print(this_directory, start_time, end_time, "{:.3f}".format(run_time_in_seconds/3600))
+            y.append(run_num_one_based)
+            width.append(run_time_in_seconds)
+            left.append(start_time)
+            color.append("blue")
+    plt.barh(y=y, width=width, left=left, color=color)
+    plt.savefig("/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/scripts/gantt.png")
         
 
 
@@ -1378,14 +1386,14 @@ if __name__ == '__main__':
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    #calculate_each_run_time_and_show_Gantt_chart()
+    calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
     #write_run_script_test_harness()
     #get_parameter_from_log_file_test_harness()
     #gower_street_run_times()
     #plot_two_lightcone_files()
     #create_input_files_for_multiple_runs('T', '201-210')
-    fof_file_format_experiment()
+    #fof_file_format_experiment()
     
      
     pass
