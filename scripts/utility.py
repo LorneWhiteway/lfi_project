@@ -15,7 +15,7 @@ import datetime as dt
 import os
 import contextlib
 import sys
-from shutil import copyfile
+from shutil import copyfile, rmtree
 import math
 import stat
 import time
@@ -1073,9 +1073,11 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
             run_script_name_hypatia = os.path.join(this_run_directory, "pkdgrav3_and_post_process_hypatia.sh")
             
         
-            # Make directory and set permissions to include 'writable by group'
+            # Delete any existing directory (and all its contents), make a new (empty) directory and set permissions
+            # to include 'writable by group'
             print("Creating {}".format(this_run_directory))
-            os.makedirs(this_run_directory, exist_ok = True)
+            rmtree(this_run_directory, ignore_errors = True)
+            os.makedirs(this_run_directory, exist_ok = False)
             make_writable_by_group(this_run_directory)
             
             # Wilkes job script
