@@ -968,6 +968,14 @@ def project_directory(location):
         # for alternative solutions.
         script_directory = os.path.dirname(os.path.abspath(sys.modules['__main__'].__file__))
         return os.path.dirname(script_directory)
+        
+        
+# Returns one of 'wilkes', 'tursa', 'splinter', or 'hypatia'
+def project_location():
+    for location in ['wilkes', 'tursa', 'splinter', 'hypatia']:
+        if project_directory('current') == project_directory(location):
+            return location
+    raise AssertionError("Unable to determine project location")
     
     
 def zfilled_run_num(run_num):
@@ -1023,7 +1031,7 @@ def write_run_script(location, runs_letter, run_string, run_script_file_name, li
     
 def write_run_script_test_harness():
 
-    location = "wilkes"
+    location = "tursa"
     runs_letter = "Z"
     run_string = "001"
     run_script_file_name = "./foo.sh"
@@ -1036,25 +1044,53 @@ def make_writable_by_group(file_or_directory_name):
 
 def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
 
-    runs_directory = os.path.join(project_directory("current"), "runs{}".format(runs_letter))
+    # Where are we?
+    location = project_location()
+    print("Using project location {}".format(location))
     
-    batch_number_dict = {'I' : 3, 'J' : 4, 'K' : 5, 'L' : 6, 'M' : 7, 'N' : 8, 'O' : 9, 'P' : 10, 'Q' : 11, 'R' : 12, 'S' : 13, 'T' : 14}
-    batch_number = batch_number_dict[runs_letter]
+    print("Using project directory {}".format(project_directory(location)))
 
-    cosmo_params_for_all_runs_file_name = os.path.join(runs_directory, "params_run_{}.txt".format(batch_number))
+    runs_directory = os.path.join(project_directory(location), "runs{}".format(runs_letter))
+    print("Using runs directory {}".format(runs_directory))
+    
+    # Need to update this dictionary for each new runs directory
+    source_hdf5_file_name_base_dict = {
+        'P' : "class_processed_batch10_{}.hdf5",
+        'Q' : "class_processed_batch11_{}.hdf5",
+        'R' : "class_processed_batch12_{}.hdf5",
+        'S' : "class_processed_batch13_{}.hdf5",
+        'T' : "class_processed_gs2_batch1_{}.hdf5",
+        'U' : "class_processed_gs2_batch2_{}.hdf5"}
+    if runs_letter not in source_hdf5_file_name_base_dict:
+        raise AssertionError("Unable to find entry in source_hdf5_file_name_base_dict for runs letter {} - please update the code".format(runs_letter))
+    source_hdf5_file_name_base = os.path.join(runs_directory, "hdf5/", source_hdf5_file_name_base_dict[runs_letter])
+    print("Using source hdf file name base {}".format(source_hdf5_file_name_base))
+    
+    
+    # Need to update this dictionary for each new runs directory
+    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192, 'J' : 320, 'K' : 384, 'L' : 401, 'M' : 530, 'N' : 658, 'O' : 690, 'P' : 722, 'Q' : 754, 'R' : 786, 'S' : 818, 'T' : 882}
+    random_seed_offset = random_seed_offset_dict[runs_letter]
+
+    
+    
+    cosmo_params_file_list = glob.glob(os.path.join(runs_directory, "params*.txt"))
+    len_cosmo_params_file_list = len(cosmo_params_file_list)
+    if len_cosmo_params_file_list != 1:
+        raise AssertionError("Cosmo parameters file is missing" if (len_cosmo_params_file_list == 0) else "Multiple cosmo parameter files are present")
+    cosmo_params_for_all_runs_file_name = cosmo_params_file_list[0]
+    print("Using cosmo parameters file {}".format(cosmo_params_for_all_runs_file_name))
+    
     cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',').reshape([-1,7]) # The 'reshape' handles the num_runs=1 case.
     num_runs = cosmo_params_for_all_runs.shape[0]
     
-  
-    original_wilkes_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path("wilkes"))
-    original_tursa_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path("tursa"))
-    original_hypatia_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path("hypatia"))
+    prototype_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path(location))
+    if not os.path.isfile(file_name):
+        raise AssertionError("Unable to find prototype job script {}".format(prototype_job_script_file_name))
+    print("Using prototype job script {}".format(prototype_job_script_file_name))
     
     control_file_name_no_path = 'control.par'
-    original_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
+    prototype_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
     
-    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192, 'J' : 320, 'K' : 384, 'L' : 401, 'M' : 530, 'N' : 658, 'O' : 690, 'P' : 722, 'Q' : 754, 'R' : 786, 'S' : 818, 'T' : 882}
-    random_seed_offset = random_seed_offset_dict[runs_letter]
     
     for run_num_one_based in decode_list_of_jobs_string(list_of_jobs_string):
                 
@@ -1064,13 +1100,10 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
             run_num_zero_based = run_num_one_based - 1
             run_string = zfilled_run_num(run_num_one_based)
             this_run_directory = os.path.join(runs_directory, "run" + run_string)
-            this_wilkes_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path("wilkes"))
-            this_tursa_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path("tursa"))
-            this_hypatia_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path("hypatia"))
+            
+            this_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path(location))
             this_control_file_name = os.path.join(this_run_directory, control_file_name_no_path)
-            run_script_name_wilkes = os.path.join(this_run_directory, "pkdgrav3_and_post_process_wilkes.sh")
-            run_script_name_tursa = os.path.join(this_run_directory, "pkdgrav3_and_post_process_tursa.sh")
-            run_script_name_hypatia = os.path.join(this_run_directory, "pkdgrav3_and_post_process_hypatia.sh")
+            run_script_name = os.path.join(this_run_directory, "pkdgrav3_and_post_process_{}.sh".format(location))
             
         
             # Delete any existing directory (and all its contents), make a new (empty) directory and set permissions
@@ -1080,23 +1113,21 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
             os.makedirs(this_run_directory, exist_ok = False)
             make_writable_by_group(this_run_directory)
             
-            # Wilkes job script
-            copyfile(original_wilkes_job_script_file_name, this_wilkes_job_script_file_name)
-            change_one_value_in_ini_file(this_wilkes_job_script_file_name, '#SBATCH --time=', '35:59:00')
-            change_one_value_in_ini_file(this_wilkes_job_script_file_name, '#SBATCH -J ', 'p{}_{}'.format(batch_number, run_string))
-            change_one_value_in_ini_file(this_wilkes_job_script_file_name, 'application=', double_quoted_string(run_script_name_wilkes))
             
-            # Tursa job script
-            copyfile(original_tursa_job_script_file_name, this_tursa_job_script_file_name)
-            change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --time=', '47:59:00')
-            change_one_value_in_ini_file(this_tursa_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(batch_number, run_string))
-            change_one_value_in_ini_file(this_tursa_job_script_file_name, 'application=', double_quoted_string(run_script_name_tursa))
+            # Copy Concept file.
+            source_hdf5_file_name = source_hdf5_file_name_base.format(run_string)
+            target_hdf5_file_base_name = "class_processed_{}_{}.hdf5".format(runs_letter, run_string)
+            target_hdf5_file_name = os.path.join(this_run_directory, target_hdf5_file_base_name)
+            if os.path.isfile(source_hdf5_file_name):
+                copyfile(source_hdf5_file_name, target_hdf5_file_name)
+            else:
+                print("concept hdf5 file {} does not exist and hence will need to be manually copied to {} later.".format(source_hdf5_file_name, target_hdf5_file_name))
             
-            # Hypatia job script
-            copyfile(original_hypatia_job_script_file_name, this_hypatia_job_script_file_name)
-            change_one_value_in_ini_file(this_hypatia_job_script_file_name, '#SBATCH --time=', '35:59:00')
-            change_one_value_in_ini_file(this_hypatia_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(batch_number, run_string))
-            change_one_value_in_ini_file(this_hypatia_job_script_file_name, 'application=', double_quoted_string(run_script_name_hypatia))
+            
+            copyfile(prototype_job_script_file_name, this_job_script_file_name)
+            change_one_value_in_ini_file(this_job_script_file_name, 'application=', double_quoted_string(run_script_name))
+            change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(runs_letter, run_string))
+            change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', '47:59:00' if location == 'tursa' else '35:59:00')
 
             # Cosmology object
             cosmology_object_created_OK = False
@@ -1119,7 +1150,7 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
                 ###OmegaDE = cosmology_object.Ode0
 
                 # Control file
-                copyfile(original_control_file_name, this_control_file_name)
+                copyfile(prototype_control_file_name, this_control_file_name)
                 ###change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./transfer_function.txt"')
                 ###change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(1.0-OmegaDE) + "    # 1-dOmegaDE")
                 ###change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(OmegaDE) + "    # Equal to Omega_fld in transfer function")
@@ -1131,8 +1162,7 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
                 change_one_value_in_ini_file(this_control_file_name, 'dSpectral        = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
                 change_one_value_in_ini_file(this_control_file_name, 'dNormalization   = ', "{} # calculated from sigma_8 = {}".format(cosmology_object.A_s, cosmology_object.sigma8))
                 
-                hdf5_file_name = "class_processed_batch{}_{}.hdf5".format(str(batch_number), run_string)
-                change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', '"./' + hdf5_file_name + '"')
+                change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', '"./' + target_hdf5_file_base_name + '"')
                 
                 change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "        # Random seed")
                 
@@ -1143,31 +1173,15 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
                 change_one_value_in_ini_file(this_control_file_name, 'nGridLin         = ', "337")
                 
                 
-                # Wilkes run script
-                wilkes_set_environment_commands = ["module load python/3.8\n", "source {}/env/bin/activate\n".format(project_directory("wilkes"))]
-                write_run_script("wilkes", runs_letter, run_string, run_script_name_wilkes, wilkes_set_environment_commands)
-                
-                
-                # Tursa run script
-                tursa_set_environment_commands = ["source {}/set_environment_tursa.sh\n".format(project_directory("tursa"))]
-                write_run_script("tursa", runs_letter, run_string, run_script_name_tursa, tursa_set_environment_commands)
-                
-                
-                # Hypatia run script
-                ## TODO - test this.
-                hypatia_set_environment_commands = ["module load python/3.6.4\n", "source {}/env/bin/activate\n".format(project_directory("hypatia"))]
-                write_run_script("hypatia", runs_letter, run_string, run_script_name_hypatia, hypatia_set_environment_commands)
+                if location == 'wilkes':
+                    set_environment_commands = ["module load python/3.8\n", "source {}/env/bin/activate\n".format(project_directory)]
+                elif location == 'tursa':
+                    set_environment_commands = ["source {}/set_environment_tursa.sh\n".format(project_directory)]
+                elif location == 'hypatia':
+                    ## TODO - test this.
+                    set_environment_commands = ["module load python/3.6.4\n", "source {}/env/bin/activate\n".format(project_directory)]
              
-                
-                # Copy Concept file.
-                # TODO - ask Niall to standardise the format of his hdf5 file names.
-                niall_hdf5_file_name_format = "class_processed_gs2_batch1_{}.hdf5"
-                source_hdf5_file_name = os.path.join(runs_directory, "hdf5/", niall_hdf5_file_name_format.format(run_string))
-                target_hdf5_file_name = os.path.join(this_run_directory, hdf5_file_name)
-                if os.path.isfile(source_hdf5_file_name):
-                    copyfile(source_hdf5_file_name, target_hdf5_file_name)
-                else:
-                    print("HDF5 file {} does not exist and hence will need to be manually copied to {} later.".format(source_hdf5_file_name, target_hdf5_file_name))
+                write_run_script(location, runs_letter, run_string, run_script_name, set_environment_commands)
                 
 
                 # Make all the files in directory be writable by the group

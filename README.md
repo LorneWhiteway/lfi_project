@@ -352,4 +352,13 @@ Output files are stored:
 ## Google document with summary of which runs have been done
 Google document [here](https://docs.google.com/spreadsheets/d/1lfNehrNxl7ggto7P6gNRRfGNA4YKRRgE8VzDfqTWOqQ/edit#gid=0).
 
+## Adding a new runs directory
+
+Here are the steps to step up a new runs directory (using runsU as an example)
+
+1. Create `runsU` as a subdirectory of the project directory and create `hdf5` as a subdirectory of `runsU`. Give write access to these directories to group members (from the project directory, run `chmod -R g+w ./runsU/`). 
+2. There also needs to be an integer ...
+2. Ask Niall to create a) a text file with the cosmological parameters for the runs and b) concept files for each of the runs.
+The test file should be called `params_runs_XX.txt` where XX is an integer which for runsU is 15. The correspondence between letter (`U`) and number (`15`)
+
 
