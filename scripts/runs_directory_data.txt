@@ -1,0 +1,15 @@
+C,0,class_processed_batch1_{}.hdf5
+E,128,class_processed_batch2_{}.hdf5
+I,192,class_processed_batch3_{}.hdf5
+J,320,class_processed_batch4_{}.hdf5
+K,384,class_processed_batch5_{}.hdf5
+L,401,class_processed_batch6_{}.hdf5
+M,530,class_processed_batch7_{}.hdf5
+N,658,class_processed_batch8_{}.hdf5
+O,690,class_processed_batch9_{}.hdf5
+P,722,class_processed_batch10_{}.hdf5
+Q,754,class_processed_batch11_{}.hdf5
+R,786,class_processed_batch12_{}.hdf5
+S,818,class_processed_batch13_{}.hdf5
+T,882,class_processed_gs2_batch1_{}.hdf5
+U,1394,class_processed_gs2_batch2_{}.hdf5

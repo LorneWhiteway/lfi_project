@@ -1041,55 +1041,62 @@ def write_run_script_test_harness():
     
 def make_writable_by_group(file_or_directory_name):
     os.chmod(file_or_directory_name, stat.S_IMODE(os.lstat(file_or_directory_name).st_mode) | stat.S_IWGRP)
+    
+    
+def data_from_runs_directory_data_file(runs_directory_data_file, runs_letter, column):
+    with open(runs_directory_data_file, "r") as f:
+        for line in f:
+            tokenised_line = line.split(',')
+            if tokenised_line[0] == runs_letter:
+                return tokenised_line[column]
+    raise AssertionError("Runs letter {} not found in {}; this data file may require updating".format(runs_letter, runs_directory_data_file))
 
 def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
 
     # Where are we?
     location = project_location()
-    print("Using project location {}".format(location))
+    print("Project location               = {}".format(location))
     
-    print("Using project directory {}".format(project_directory(location)))
+    print("Project directory              = {}".format(project_directory(location)))
+    
+    script_directory = os.path.join(project_directory(location), "scripts")
+    print("Script directory               = {}".format(script_directory))
 
     runs_directory = os.path.join(project_directory(location), "runs{}".format(runs_letter))
-    print("Using runs directory {}".format(runs_directory))
+    print("Runs directory                 = {}".format(runs_directory))
     
-    # Need to update this dictionary for each new runs directory
-    source_hdf5_file_name_base_dict = {
-        'P' : "class_processed_batch10_{}.hdf5",
-        'Q' : "class_processed_batch11_{}.hdf5",
-        'R' : "class_processed_batch12_{}.hdf5",
-        'S' : "class_processed_batch13_{}.hdf5",
-        'T' : "class_processed_gs2_batch1_{}.hdf5",
-        'U' : "class_processed_gs2_batch2_{}.hdf5"}
-    if runs_letter not in source_hdf5_file_name_base_dict:
-        raise AssertionError("Unable to find entry in source_hdf5_file_name_base_dict for runs letter {} - please update the code".format(runs_letter))
-    source_hdf5_file_name_base = os.path.join(runs_directory, "hdf5/", source_hdf5_file_name_base_dict[runs_letter])
-    print("Using source hdf file name base {}".format(source_hdf5_file_name_base))
+    runs_directory_data_file = os.path.join(script_directory, "runs_directory_data.txt")
+    if not os.path.isfile(runs_directory_data_file):
+        raise AssertionError("Could not find data file {}".format(runs_directory_data_file))
     
+    source_hdf5_file_name_base = os.path.join(runs_directory, "hdf5/", data_from_runs_directory_data_file(runs_directory_data_file, runs_letter, 2))
+    print("Source hdf file name base      = {}".format(source_hdf5_file_name_base))
     
-    # Need to update this dictionary for each new runs directory
-    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192, 'J' : 320, 'K' : 384, 'L' : 401, 'M' : 530, 'N' : 658, 'O' : 690, 'P' : 722, 'Q' : 754, 'R' : 786, 'S' : 818, 'T' : 882}
-    random_seed_offset = random_seed_offset_dict[runs_letter]
-
-    
+    random_seed_offset = int(data_from_runs_directory_data_file(runs_directory_data_file, runs_letter, 1))
+    print("Random seed offset             = {}".format(str(random_seed_offset)))
     
     cosmo_params_file_list = glob.glob(os.path.join(runs_directory, "params*.txt"))
     len_cosmo_params_file_list = len(cosmo_params_file_list)
     if len_cosmo_params_file_list != 1:
-        raise AssertionError("Cosmo parameters file is missing" if (len_cosmo_params_file_list == 0) else "Multiple cosmo parameter files are present")
+        raise AssertionError("{} matching 'params*.txt' in runs directory {}".format(("Unable to find any cosmo parameters file" if (len_cosmo_params_file_list == 0) else "Found multiple cosmo parameter files"), runs_directory))
     cosmo_params_for_all_runs_file_name = cosmo_params_file_list[0]
-    print("Using cosmo parameters file {}".format(cosmo_params_for_all_runs_file_name))
+    print("Cosmo parameters file          = {}".format(cosmo_params_for_all_runs_file_name))
     
+    # The cosmo params file should have one header row and seven columns: Omega_m, sigma_8, w, Omega_b, little_h, n_s, m_nu
     cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',').reshape([-1,7]) # The 'reshape' handles the num_runs=1 case.
     num_runs = cosmo_params_for_all_runs.shape[0]
+    print("    Num data rows in this file = {}".format(num_runs))
     
     prototype_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path(location))
-    if not os.path.isfile(file_name):
+    if not os.path.isfile(prototype_job_script_file_name):
         raise AssertionError("Unable to find prototype job script {}".format(prototype_job_script_file_name))
-    print("Using prototype job script {}".format(prototype_job_script_file_name))
+    print("Prototype job script           = {}".format(prototype_job_script_file_name))
     
     control_file_name_no_path = 'control.par'
     prototype_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
+    if not os.path.isfile(prototype_control_file_name):
+        raise AssertionError("Unable to find prototype PKDGRAV3 control file {}".format(prototype_control_file_name))
+    print("Prototype control file         = {}".format(prototype_control_file_name))
     
     
     for run_num_one_based in decode_list_of_jobs_string(list_of_jobs_string):
@@ -1118,75 +1125,73 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
             source_hdf5_file_name = source_hdf5_file_name_base.format(run_string)
             target_hdf5_file_base_name = "class_processed_{}_{}.hdf5".format(runs_letter, run_string)
             target_hdf5_file_name = os.path.join(this_run_directory, target_hdf5_file_base_name)
-            if os.path.isfile(source_hdf5_file_name):
-                copyfile(source_hdf5_file_name, target_hdf5_file_name)
+            if not os.path.isfile(source_hdf5_file_name):
+                print("    FAILED: could not find hdf file {}".format(source_hdf5_file_name))
             else:
-                print("concept hdf5 file {} does not exist and hence will need to be manually copied to {} later.".format(source_hdf5_file_name, target_hdf5_file_name))
+                copyfile(source_hdf5_file_name, target_hdf5_file_name)
+                
             
             
-            copyfile(prototype_job_script_file_name, this_job_script_file_name)
-            change_one_value_in_ini_file(this_job_script_file_name, 'application=', double_quoted_string(run_script_name))
-            change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(runs_letter, run_string))
-            change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', '47:59:00' if location == 'tursa' else '35:59:00')
+                copyfile(prototype_job_script_file_name, this_job_script_file_name)
+                change_one_value_in_ini_file(this_job_script_file_name, 'application=', double_quoted_string(run_script_name))
+                change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(runs_letter, run_string))
+                change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', '47:59:00' if location == 'tursa' else '35:59:00')
 
-            # Cosmology object
-            cosmology_object_created_OK = False
-            try:
-                cosmology_object = make_specific_cosmology(this_run_directory,
-                    Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
-                    sigma8 = cosmo_params_for_all_runs[run_num_zero_based, 1],
-                    w = cosmo_params_for_all_runs[run_num_zero_based, 2],
-                    Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 3],
-                    h = cosmo_params_for_all_runs[run_num_zero_based, 4],
-                    n_s = cosmo_params_for_all_runs[run_num_zero_based, 5],
-                    ncdm = cosmo_params_for_all_runs[run_num_zero_based, 6],
-                    P_k_max=100.0)
-                cosmology_object_created_OK = True
-            except Exception as err:
-                print("Failed to create cosmology object for {}".format(this_run_directory))
-                
-            if cosmology_object_created_OK:
-                
-                ###OmegaDE = cosmology_object.Ode0
+                # Cosmology object
+                cosmology_object_created_OK = False
+                try:
+                    cosmology_object = make_specific_cosmology(this_run_directory,
+                        Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
+                        sigma8 = cosmo_params_for_all_runs[run_num_zero_based, 1],
+                        w = cosmo_params_for_all_runs[run_num_zero_based, 2],
+                        Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 3],
+                        h = cosmo_params_for_all_runs[run_num_zero_based, 4],
+                        n_s = cosmo_params_for_all_runs[run_num_zero_based, 5],
+                        ncdm = cosmo_params_for_all_runs[run_num_zero_based, 6],
+                        P_k_max=100.0)
+                    cosmology_object_created_OK = True
+                except Exception as err:
+                    print("    FAILED: unable to create cosmology object for {}".format(this_run_directory))
+                    
+                if cosmology_object_created_OK:
+                    
+                    ###OmegaDE = cosmology_object.Ode0
 
-                # Control file
-                copyfile(prototype_control_file_name, this_control_file_name)
-                ###change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./transfer_function.txt"')
-                ###change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(1.0-OmegaDE) + "    # 1-dOmegaDE")
-                ###change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(OmegaDE) + "    # Equal to Omega_fld in transfer function")
-                ###change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 1]))
-                #### Work around pkdgrav3 ini file parsing bug - doesn't like negative numbers.
-                ###acos_w_string = "2.0*math.cos({})  # {}".format(math.acos(cosmo_params_for_all_runs[run_num_zero_based, 2] / 2.0), cosmo_params_for_all_runs[run_num_zero_based, 2])
-                ###change_one_value_in_ini_file(this_control_file_name, 'w0              = ', acos_w_string)
-                ###change_one_value_in_ini_file(this_control_file_name, 'h               = ', str(cosmo_params_for_all_runs[run_num_zero_based, 4]))
-                change_one_value_in_ini_file(this_control_file_name, 'dSpectral        = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
-                change_one_value_in_ini_file(this_control_file_name, 'dNormalization   = ', "{} # calculated from sigma_8 = {}".format(cosmology_object.A_s, cosmology_object.sigma8))
-                
-                change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', '"./' + target_hdf5_file_base_name + '"')
-                
-                change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "        # Random seed")
-                
-                change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "1250       # Mpc/h")
-                change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1350       # Simulation has nGrid^3 particles")
-                change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "4096 # NSide for output lightcone healpix maps.")
-                change_one_value_in_ini_file(this_control_file_name, 'nMinMembers     = ', "10")
-                change_one_value_in_ini_file(this_control_file_name, 'nGridLin         = ', "337")
-                
-                
-                if location == 'wilkes':
-                    set_environment_commands = ["module load python/3.8\n", "source {}/env/bin/activate\n".format(project_directory)]
-                elif location == 'tursa':
-                    set_environment_commands = ["source {}/set_environment_tursa.sh\n".format(project_directory)]
-                elif location == 'hypatia':
-                    ## TODO - test this.
-                    set_environment_commands = ["module load python/3.6.4\n", "source {}/env/bin/activate\n".format(project_directory)]
-             
-                write_run_script(location, runs_letter, run_string, run_script_name, set_environment_commands)
-                
+                    # Control file
+                    copyfile(prototype_control_file_name, this_control_file_name)
+                    ###change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./transfer_function.txt"')
+                    ###change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(1.0-OmegaDE) + "    # 1-dOmegaDE")
+                    ###change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(OmegaDE) + "    # Equal to Omega_fld in transfer function")
+                    ###change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 1]))
+                    #### Work around pkdgrav3 ini file parsing bug - doesn't like negative numbers.
+                    ###acos_w_string = "2.0*math.cos({})  # {}".format(math.acos(cosmo_params_for_all_runs[run_num_zero_based, 2] / 2.0), cosmo_params_for_all_runs[run_num_zero_based, 2])
+                    ###change_one_value_in_ini_file(this_control_file_name, 'w0              = ', acos_w_string)
+                    ###change_one_value_in_ini_file(this_control_file_name, 'h               = ', str(cosmo_params_for_all_runs[run_num_zero_based, 4]))
+                    change_one_value_in_ini_file(this_control_file_name, 'dSpectral        = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
+                    change_one_value_in_ini_file(this_control_file_name, 'dNormalization   = ', "{} # calculated from sigma_8 = {}".format(cosmology_object.A_s, cosmology_object.sigma8))
+                    change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', '"./' + target_hdf5_file_base_name + '"')
+                    change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "        # Random seed")
+                    change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "1250       # Mpc/h")
+                    change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1350       # Simulation has nGrid^3 particles")
+                    change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "4096 # NSide for output lightcone healpix maps.")
+                    change_one_value_in_ini_file(this_control_file_name, 'nMinMembers     = ', "10")
+                    change_one_value_in_ini_file(this_control_file_name, 'nGridLin         = ', "337")
+                    
+                    
+                    if location == 'wilkes':
+                        set_environment_commands = ["module load python/3.8\n", "source {}/env/bin/activate\n".format(project_directory(location))]
+                    elif location == 'tursa':
+                        set_environment_commands = ["source {}/set_environment_tursa.sh\n".format(project_directory(location))]
+                    elif location == 'hypatia':
+                        ## TODO - test this.
+                        set_environment_commands = ["module load python/3.6.4\n", "source {}/env/bin/activate\n".format(project_directory(location))]
+                 
+                    write_run_script(location, runs_letter, run_string, run_script_name, set_environment_commands)
+                    
 
-                # Make all the files in directory be writable by the group
-                for file_name in glob.glob(os.path.join(this_run_directory, "*")):
-                    make_writable_by_group(file_name)
+                    # Make all the files in directory be writable by the group
+                    for file_name in glob.glob(os.path.join(this_run_directory, "*")):
+                        make_writable_by_group(file_name)
 
 
 

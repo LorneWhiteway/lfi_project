@@ -349,16 +349,22 @@ Output files are stored:
 - on NERSC, at /global/cfs/cdirs/des/dirac_sims/original_files.
 
 
-## Google document with summary of which runs have been done
-Google document [here](https://docs.google.com/spreadsheets/d/1lfNehrNxl7ggto7P6gNRRfGNA4YKRRgE8VzDfqTWOqQ/edit#gid=0).
+## Google documents with summaries of which runs have been done
+
+Gower St sims [here](https://docs.google.com/spreadsheets/d/1lfNehrNxl7ggto7P6gNRRfGNA4YKRRgE8VzDfqTWOqQ/edit#gid=0).
+
+Gower St 2 sims [here](https://docs.google.com/spreadsheets/d/18devCbHxK_jniigCTaHK51XTMPVmQ8h34pQGfkbowIQ/edit?gid=0#gid=0).
+
+
 
 ## Adding a new runs directory
 
-Here are the steps to step up a new runs directory (using runsU as an example)
+Here are the steps to step up a new runs directory (using the _runs_letter_`U` as an example):
 
-1. Create `runsU` as a subdirectory of the project directory and create `hdf5` as a subdirectory of `runsU`. Give write access to these directories to group members (from the project directory, run `chmod -R g+w ./runsU/`). 
-2. There also needs to be an integer ...
-2. Ask Niall to create a) a text file with the cosmological parameters for the runs and b) concept files for each of the runs.
-The test file should be called `params_runs_XX.txt` where XX is an integer which for runsU is 15. The correspondence between letter (`U`) and number (`15`)
-
-
+1. Create the _runs_directory_ as a subdirectory of the project directory, with name `runs` + runs_letter; example name: `runsU`. Then create `hdf5` as a subdirectory of the runs directory. For both these directories give write access to group members (from the project directory, run `chmod -R g+w ./runsU/`). 
+2. This step usually done by Niall: in the runs directory create a text file containing cosmological parameters for the runs. This file should have one header row, followed by one row per simulation. There should be seven columns (comma delimiter): Omega_m, sigma_8, w, Omega_b, little_h, n_s, and m_nu (the latter in eV). The file should have a name that matches the pattern `params*.txt`.
+3. This step usually done by Niall: in the `hdf5` subdirectory create one concept hdf5 class file per simulation. The naming convention for these files can be arbitrary, except that there should be a substring in the name specifying the run number; the first run is run 1 (not 0) and the number should be left-padded with zeroes to fill three spaces. Example name: `class_processed_gs2_batch2_019.hdf5`.
+4. Update the data file `runs_directory_data.txt` in the scripts directory. This is a comma-delimited text file with one row per runs directory. Each row should have the letter denoting the runs, followed by an integer to be used as an offset for the random seeds for these runs, followed by the pattern for the naming convention for the hdf5 files (see step 3), with the run number string replaced by `{}`. For the random seed offset use the number from the previous set of runs, plus the number of runs in that previous set. Example line: `U,1394,class_processed_gs2_batch2_{}.hdf5`. Note that set `T` used a random seed offset of 882, and set `T` had 512 runs.
+5. In the runs directory create a prototype PKDGRAV3 control file with name `control.par`. It is safe to copy a version from the previous set of runs. This file will be copied into each run directory, and some entries will be modified to be specific to that run. Entries which are not run-specific will not be modified and hence should be checked for correctness.
+6. In the runs directory create a prototype SLURM job file with name `cuda_job_script_[cluster]` where `[cluster]` is one of `tursa`, `wilkes` or `hypatia` as appropriate. It is safe to copy a version from the previous set of runs. This file will be copied into each run directory, and some entries will be modified to be specific to that run. Entries which are not run-specific will not be modified and hence should be checked for correctness.
+7. Run the script `create_input_files.py` (found in the `scripts` directory) with the command line parameters runs_letter and the ru directories to be created. Example: `./create_input_files.py U 1-100'.
