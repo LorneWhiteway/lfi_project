@@ -1292,10 +1292,12 @@ def expand_shell_script(original_shell_script_file_name, new_shell_script_file_n
     print(original_shell_script_file_name)
     print(new_shell_script_file_name)
     print(list_of_jobs_string)
-    print(decode_list_of_jobs_string(list_of_jobs_string))
+    decoded_list_of_jobs = decode_list_of_jobs_string(list_of_jobs_string)
+    print(decoded_list_of_jobs)
+    print("{} item{}".format(len(decoded_list_of_jobs), ("" if len(decoded_list_of_jobs) == 1 else "s")))
 
     with open(new_shell_script_file_name, 'w') as out_file:
-        for job in decode_list_of_jobs_string(list_of_jobs_string):
+        for job in decoded_list_of_jobs:
             with open(original_shell_script_file_name, 'r') as in_file:
                 for line in in_file:
                     out_file.write(line.replace("{}", str(job).zfill(3)))
