@@ -802,6 +802,192 @@ def status(directory):
 # ======================== End of code for reporting on the status of directory containing pkdgrav3 output ========================
 
 
+# ======================== Start of code for reporting on the status of a 'runs' directory containing many pkdgrav3 runs ========================
+
+def run_number_one_based_from_run_directory(run_directory):
+    return int(os.path.normpath(run_directory)[-3:])
+
+
+def squeue_output():
+    command = ["squeue",]
+    process = subprocess.run(command, stdout=subprocess.PIPE, universal_newlines = True) # From https://janakiev.com/blog/python-shell-commands/
+    return process.stdout.split('\n')
+    
+def parse_squeue_output(runs_letter):
+    
+    job_name_search_string = "p{}_".format(runs_letter)
+    len_job_name_search_string = len(job_name_search_string)
+    
+    ret = {}
+    
+    for el in squeue_output():
+        this_tokenised_line = el.split()
+        if len(this_tokenised_line) >= 8 and (this_tokenised_line[2])[:len_job_name_search_string] == job_name_search_string:
+            run_number_one_based = int(this_tokenised_line[2][len_job_name_search_string:])
+            user = this_tokenised_line[3]
+            status = this_tokenised_line[4]
+            elapsed_time = this_tokenised_line[5]
+            ret[run_number_one_based] = [user, status, elapsed_time]
+    
+    return ret
+    
+    
+def last_line_of_file(file_name):
+    with open(file_name, 'r') as f:
+        return f.read().splitlines()[-1]
+    
+
+# Returns "" if not found; returns earliest if several
+def slurm_out_file_name(run_directory):
+    slurm_file_list = sorted(glob.glob(os.path.join(run_directory, "slurm-*.out")))
+    if not slurm_file_list:
+        return ""
+    else:
+        return slurm_file_list[0]
+    
+
+def last_line_of_slurm_out_file(run_directory):
+    slurm_out_file = slurm_out_file_name(run_directory)
+    return "" if slurm_out_file == "" else last_line_of_file(slurm_out_file)
+    
+    
+def compression_has_finished(run_directory):
+    run_number_one_based = run_number_one_based_from_run_directory(run_directory)
+    return last_line_of_slurm_out_file(run_directory) == "removed './run{}/run.log'".format(zfilled_run_num(run_number_one_based))
+    
+    
+# 0 for no compressed files. 1 for compressed files, still being written to. 2 for aged compressed files
+def status_of_compressed_files(run_directory):
+    
+    runs_directory = os.path.dirname(os.path.normpath(run_directory))
+    run_number_one_based = run_number_one_based_from_run_directory(run_directory)
+    fof_compressed_file = os.path.join(runs_directory, "run{}.fof.tar.gz".format(zfilled_run_num(run_number_one_based)))
+    compressed_file = os.path.join(runs_directory, "run{}.tar.gz".format(zfilled_run_num(run_number_one_based)))
+    if not os.path.isfile(fof_compressed_file) and not os.path.isfile(compressed_file):
+        return 0
+    else:
+        if not os.path.isfile(compressed_file):
+            return 1
+        else:
+            if file_is_recent(compressed_file, 900):
+                return 1
+            else:
+                return 2
+                
+                
+def file_contains_substring(file_name, substring):
+    with open(file_name, 'r') as infile:
+        for line in infile:
+            if substring in line:
+                return True
+    return False
+            
+    
+    
+def short_status_of_run_directory(run_directory, output_from_squeue):
+    
+    run_number_one_based = run_number_one_based_from_run_directory(run_directory)
+    
+    if not os.path.isdir(run_directory):
+        return (0, "Directory does not exist")
+        
+    if os.path.isfile(os.path.join(run_directory, "error_creating_job_files.txt")):
+        # We encountered an issue when creating the directory, and recorded the problem in the status file.
+        return (1, last_line_of_file(os.path.join(run_directory, "error_creating_job_files.txt")))
+    
+    if not os.path.isfile(os.path.join(run_directory, "control.par")):
+        return (2, "Job files do not exist for some unexplained reason")
+        
+    if not os.path.isfile(os.path.join(run_directory, ".lockfile")):
+        # Hasn't started
+        if run_number_one_based in output_from_squeue:
+            return (3, "Queued by {}".format(output_from_squeue[run_number_one_based][0]))
+        elif os.path.isfile(os.path.join(run_directory, "assigned_to.txt")):
+            return (4, last_line_of_file(os.path.join(run_directory, "assigned_to.txt")))
+        else:
+            return (5, "Unassigned")
+            
+            
+    # Underway
+    slurm_out_file = slurm_out_file_name(run_directory)
+    if slurm_out_file == "":
+        return (6, "Unexpectedly unable to find slurm output file")
+
+    if file_contains_substring(slurm_out_file, "DUE TO TIME LIMIT"):
+        return (7, "FAILED - out of time")
+    
+    if file_contains_substring(slurm_out_file, "Disk quota exceeded"):    
+        return (8, "FAILED - out of disk space")
+        
+    if file_contains_substring(slurm_out_file, "Cannot allocate memory"):    
+        return (9, "FAILED - out of memory")
+
+    if run_number_one_based in output_from_squeue and output_from_squeue[run_number_one_based][1] == "R":
+        return (10, "Running by {} for {}".format(output_from_squeue[run_number_one_based][0], output_from_squeue[run_number_one_based][2]))
+    
+    if run_number_one_based in output_from_squeue and output_from_squeue[run_number_one_based][1] == "CG":
+        return (11, "In process of completing")
+            
+    if not compression_has_finished(run_directory):
+        return (12, "PROBLEM - last line of slurm output file is not as expected - perhaps abnormal termination.")
+        
+    if not os.path.isfile(os.path.join(run_directory, "z_values.txt")):
+        return (13, "PROBLEM - z_values.txt not found - perhaps abnormal termination.")
+
+    compressed_files_status_code = status_of_compressed_files(run_directory)
+    if compressed_files_status_code == 0:
+        return (14, "Archived")
+    elif compressed_files_status_code == 1:
+        return (15, "Compression finished but compressed files are still 'hot'")
+    else:
+        return (16, "Finished; awaiting archiving")
+
+
+
+def runs_directory_status(runs_letter):
+    
+    location = project_location()
+    runs_directory = os.path.join(project_directory(location), "runs{}".format(runs_letter))
+    num_runs = cosmo_params_from_runs_directory(runs_directory, False).shape[0]
+    output_from_squeue = parse_squeue_output(runs_letter)
+    
+        
+    code_count = {}
+    for i in range(17):
+        code_count[i] = 0
+    
+    for run_num_zero_based in range(num_runs):
+        run_num_one_based = run_num_zero_based + 1
+        run_string = zfilled_run_num(run_num_one_based)
+        run_directory = os.path.join(runs_directory, "run" + run_string)
+        (code, short_status) = short_status_of_run_directory(run_directory, output_from_squeue)
+        if code == 8:
+            raise AssertionError("OUT OF DISK SPACE - ACT NOW TO FIX THIS!")
+        if code != 5:
+            print(zfilled_run_num(run_num_one_based), short_status)
+        code_count[code] = code_count[code] + 1
+            
+    print("--------------------------------------------------")
+    print("{} runs have finished and have been archived".format(code_count[14]))
+    print("{} runs have finished and are awaiting archiving".format(code_count[16]))
+    print("{} runs are underway".format(code_count[10]))
+    print("{} runs are queued".format(code_count[3]))
+    print("{} runs have been assigned but haven't yet been launched".format(code_count[4]))
+    print("{} runs ran out of time".format(code_count[7]))
+        
+        
+        
+    
+    
+def runs_directory_status_test_harness():
+    runs_letter = "U"
+    runs_directory_status(runs_letter)
+    
+    
+
+# ======================== End of code for reporting on the status of a 'runs' directory containing many pkdgrav3 runs ========================
+
+
 
 # ======================== Start of code for handling transfer functions ========================
 
@@ -1041,55 +1227,72 @@ def write_run_script_test_harness():
     
 def make_writable_by_group(file_or_directory_name):
     os.chmod(file_or_directory_name, stat.S_IMODE(os.lstat(file_or_directory_name).st_mode) | stat.S_IWGRP)
+    
+    
+def data_from_runs_directory_data_file(runs_directory_data_file, runs_letter, column):
+    with open(runs_directory_data_file, "r") as f:
+        for line in f:
+            tokenised_line = line.split(',')
+            if tokenised_line[0] == runs_letter:
+                return tokenised_line[column]
+    raise AssertionError("Runs letter {} not found in {}; this data file may require updating".format(runs_letter, runs_directory_data_file))
+    
+    
+def cosmo_params_from_runs_directory(runs_directory, verbose):
+    cosmo_params_file_list = glob.glob(os.path.join(runs_directory, "params*.txt"))
+    len_cosmo_params_file_list = len(cosmo_params_file_list)
+    if len_cosmo_params_file_list != 1:
+        raise AssertionError("{} matching 'params*.txt' in runs directory {}".format(("Unable to find any cosmo parameters file" if (len_cosmo_params_file_list == 0) else "Found multiple cosmo parameter files"), runs_directory))
+    cosmo_params_for_all_runs_file_name = cosmo_params_file_list[0]
+    if verbose:
+        print("Cosmo parameters file          = {}".format(cosmo_params_for_all_runs_file_name))
+    return np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',').reshape([-1,7]) # The 'reshape' handles the num_runs=1 case.
+    
+
+def write_status_file(file_name, message):
+    with open(file_name, 'w') as out_file:
+        out_file.write(message)
+    
+    
 
 def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
 
     # Where are we?
     location = project_location()
-    print("Using project location {}".format(location))
+    print("Project location               = {}".format(location))
     
-    print("Using project directory {}".format(project_directory(location)))
+    print("Project directory              = {}".format(project_directory(location)))
+    
+    script_directory = os.path.join(project_directory(location), "scripts")
+    print("Script directory               = {}".format(script_directory))
 
     runs_directory = os.path.join(project_directory(location), "runs{}".format(runs_letter))
-    print("Using runs directory {}".format(runs_directory))
+    print("Runs directory                 = {}".format(runs_directory))
     
-    # Need to update this dictionary for each new runs directory
-    source_hdf5_file_name_base_dict = {
-        'P' : "class_processed_batch10_{}.hdf5",
-        'Q' : "class_processed_batch11_{}.hdf5",
-        'R' : "class_processed_batch12_{}.hdf5",
-        'S' : "class_processed_batch13_{}.hdf5",
-        'T' : "class_processed_gs2_batch1_{}.hdf5",
-        'U' : "class_processed_gs2_batch2_{}.hdf5"}
-    if runs_letter not in source_hdf5_file_name_base_dict:
-        raise AssertionError("Unable to find entry in source_hdf5_file_name_base_dict for runs letter {} - please update the code".format(runs_letter))
-    source_hdf5_file_name_base = os.path.join(runs_directory, "hdf5/", source_hdf5_file_name_base_dict[runs_letter])
-    print("Using source hdf file name base {}".format(source_hdf5_file_name_base))
+    runs_directory_data_file = os.path.join(script_directory, "runs_directory_data.txt")
+    if not os.path.isfile(runs_directory_data_file):
+        raise AssertionError("Could not find data file {}".format(runs_directory_data_file))
     
+    source_hdf5_file_name_base = os.path.join(runs_directory, "hdf5/", data_from_runs_directory_data_file(runs_directory_data_file, runs_letter, 2))
+    print("Source hdf file name base      = {}".format(source_hdf5_file_name_base))
     
-    # Need to update this dictionary for each new runs directory
-    random_seed_offset_dict = {'C' : 0, 'E' : 128, 'I' : 192, 'J' : 320, 'K' : 384, 'L' : 401, 'M' : 530, 'N' : 658, 'O' : 690, 'P' : 722, 'Q' : 754, 'R' : 786, 'S' : 818, 'T' : 882}
-    random_seed_offset = random_seed_offset_dict[runs_letter]
-
+    random_seed_offset = int(data_from_runs_directory_data_file(runs_directory_data_file, runs_letter, 1))
+    print("Random seed offset             = {}".format(str(random_seed_offset)))
     
-    
-    cosmo_params_file_list = glob.glob(os.path.join(runs_directory, "params*.txt"))
-    len_cosmo_params_file_list = len(cosmo_params_file_list)
-    if len_cosmo_params_file_list != 1:
-        raise AssertionError("Cosmo parameters file is missing" if (len_cosmo_params_file_list == 0) else "Multiple cosmo parameter files are present")
-    cosmo_params_for_all_runs_file_name = cosmo_params_file_list[0]
-    print("Using cosmo parameters file {}".format(cosmo_params_for_all_runs_file_name))
-    
-    cosmo_params_for_all_runs = np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',').reshape([-1,7]) # The 'reshape' handles the num_runs=1 case.
+    cosmo_params_for_all_runs = cosmo_params_from_runs_directory(runs_directory, True) #seven columns: Omega_m, sigma_8, w, Omega_b, little_h, n_s, m_nu
     num_runs = cosmo_params_for_all_runs.shape[0]
+    print("    Num data rows in this file = {}".format(num_runs))
     
     prototype_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path(location))
-    if not os.path.isfile(file_name):
+    if not os.path.isfile(prototype_job_script_file_name):
         raise AssertionError("Unable to find prototype job script {}".format(prototype_job_script_file_name))
-    print("Using prototype job script {}".format(prototype_job_script_file_name))
+    print("Prototype job script           = {}".format(prototype_job_script_file_name))
     
     control_file_name_no_path = 'control.par'
     prototype_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
+    if not os.path.isfile(prototype_control_file_name):
+        raise AssertionError("Unable to find prototype PKDGRAV3 control file {}".format(prototype_control_file_name))
+    print("Prototype control file         = {}".format(prototype_control_file_name))
     
     
     for run_num_one_based in decode_list_of_jobs_string(list_of_jobs_string):
@@ -1118,75 +1321,75 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
             source_hdf5_file_name = source_hdf5_file_name_base.format(run_string)
             target_hdf5_file_base_name = "class_processed_{}_{}.hdf5".format(runs_letter, run_string)
             target_hdf5_file_name = os.path.join(this_run_directory, target_hdf5_file_base_name)
-            if os.path.isfile(source_hdf5_file_name):
-                copyfile(source_hdf5_file_name, target_hdf5_file_name)
+            if not os.path.isfile(source_hdf5_file_name):
+                write_status_file(os.path.join(this_run_directory, "error_creating_job_files.txt"), "Could not find HDF5 file")
+                print("    FAILED: could not find hdf file {}".format(source_hdf5_file_name))
             else:
-                print("concept hdf5 file {} does not exist and hence will need to be manually copied to {} later.".format(source_hdf5_file_name, target_hdf5_file_name))
+                copyfile(source_hdf5_file_name, target_hdf5_file_name)
+                
             
             
-            copyfile(prototype_job_script_file_name, this_job_script_file_name)
-            change_one_value_in_ini_file(this_job_script_file_name, 'application=', double_quoted_string(run_script_name))
-            change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(runs_letter, run_string))
-            change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', '47:59:00' if location == 'tursa' else '35:59:00')
+                copyfile(prototype_job_script_file_name, this_job_script_file_name)
+                change_one_value_in_ini_file(this_job_script_file_name, 'application=', double_quoted_string(run_script_name))
+                change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(runs_letter, run_string))
+                change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', '47:59:00' if location == 'tursa' else '35:59:00')
 
-            # Cosmology object
-            cosmology_object_created_OK = False
-            try:
-                cosmology_object = make_specific_cosmology(this_run_directory,
-                    Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
-                    sigma8 = cosmo_params_for_all_runs[run_num_zero_based, 1],
-                    w = cosmo_params_for_all_runs[run_num_zero_based, 2],
-                    Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 3],
-                    h = cosmo_params_for_all_runs[run_num_zero_based, 4],
-                    n_s = cosmo_params_for_all_runs[run_num_zero_based, 5],
-                    ncdm = cosmo_params_for_all_runs[run_num_zero_based, 6],
-                    P_k_max=100.0)
-                cosmology_object_created_OK = True
-            except Exception as err:
-                print("Failed to create cosmology object for {}".format(this_run_directory))
-                
-            if cosmology_object_created_OK:
-                
-                ###OmegaDE = cosmology_object.Ode0
+                # Cosmology object
+                cosmology_object_created_OK = False
+                try:
+                    cosmology_object = make_specific_cosmology(this_run_directory,
+                        Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
+                        sigma8 = cosmo_params_for_all_runs[run_num_zero_based, 1],
+                        w = cosmo_params_for_all_runs[run_num_zero_based, 2],
+                        Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 3],
+                        h = cosmo_params_for_all_runs[run_num_zero_based, 4],
+                        n_s = cosmo_params_for_all_runs[run_num_zero_based, 5],
+                        ncdm = cosmo_params_for_all_runs[run_num_zero_based, 6],
+                        P_k_max=100.0)
+                    cosmology_object_created_OK = True
+                except Exception as err:
+                    write_status_file(os.path.join(this_run_directory, "error_creating_job_files.txt"), "Unable to create cosmology object")
+                    print("    FAILED: unable to create cosmology object for {}".format(this_run_directory))
+                    
+                if cosmology_object_created_OK:
+                    
+                    ###OmegaDE = cosmology_object.Ode0
 
-                # Control file
-                copyfile(prototype_control_file_name, this_control_file_name)
-                ###change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./transfer_function.txt"')
-                ###change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(1.0-OmegaDE) + "    # 1-dOmegaDE")
-                ###change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(OmegaDE) + "    # Equal to Omega_fld in transfer function")
-                ###change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 1]))
-                #### Work around pkdgrav3 ini file parsing bug - doesn't like negative numbers.
-                ###acos_w_string = "2.0*math.cos({})  # {}".format(math.acos(cosmo_params_for_all_runs[run_num_zero_based, 2] / 2.0), cosmo_params_for_all_runs[run_num_zero_based, 2])
-                ###change_one_value_in_ini_file(this_control_file_name, 'w0              = ', acos_w_string)
-                ###change_one_value_in_ini_file(this_control_file_name, 'h               = ', str(cosmo_params_for_all_runs[run_num_zero_based, 4]))
-                change_one_value_in_ini_file(this_control_file_name, 'dSpectral        = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
-                change_one_value_in_ini_file(this_control_file_name, 'dNormalization   = ', "{} # calculated from sigma_8 = {}".format(cosmology_object.A_s, cosmology_object.sigma8))
-                
-                change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', '"./' + target_hdf5_file_base_name + '"')
-                
-                change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "        # Random seed")
-                
-                change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "1250       # Mpc/h")
-                change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1350       # Simulation has nGrid^3 particles")
-                change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "4096 # NSide for output lightcone healpix maps.")
-                change_one_value_in_ini_file(this_control_file_name, 'nMinMembers     = ', "10")
-                change_one_value_in_ini_file(this_control_file_name, 'nGridLin         = ', "337")
-                
-                
-                if location == 'wilkes':
-                    set_environment_commands = ["module load python/3.8\n", "source {}/env/bin/activate\n".format(project_directory)]
-                elif location == 'tursa':
-                    set_environment_commands = ["source {}/set_environment_tursa.sh\n".format(project_directory)]
-                elif location == 'hypatia':
-                    ## TODO - test this.
-                    set_environment_commands = ["module load python/3.6.4\n", "source {}/env/bin/activate\n".format(project_directory)]
-             
-                write_run_script(location, runs_letter, run_string, run_script_name, set_environment_commands)
-                
+                    # Control file
+                    copyfile(prototype_control_file_name, this_control_file_name)
+                    ###change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./transfer_function.txt"')
+                    ###change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(1.0-OmegaDE) + "    # 1-dOmegaDE")
+                    ###change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(OmegaDE) + "    # Equal to Omega_fld in transfer function")
+                    ###change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 1]))
+                    #### Work around pkdgrav3 ini file parsing bug - doesn't like negative numbers.
+                    ###acos_w_string = "2.0*math.cos({})  # {}".format(math.acos(cosmo_params_for_all_runs[run_num_zero_based, 2] / 2.0), cosmo_params_for_all_runs[run_num_zero_based, 2])
+                    ###change_one_value_in_ini_file(this_control_file_name, 'w0              = ', acos_w_string)
+                    ###change_one_value_in_ini_file(this_control_file_name, 'h               = ', str(cosmo_params_for_all_runs[run_num_zero_based, 4]))
+                    change_one_value_in_ini_file(this_control_file_name, 'dSpectral        = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
+                    change_one_value_in_ini_file(this_control_file_name, 'dNormalization   = ', "{} # calculated from sigma_8 = {}".format(cosmology_object.A_s, cosmology_object.sigma8))
+                    change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', '"./' + target_hdf5_file_base_name + '"')
+                    change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "        # Random seed")
+                    change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "1250       # Mpc/h")
+                    change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1350       # Simulation has nGrid^3 particles")
+                    change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "4096 # NSide for output lightcone healpix maps.")
+                    change_one_value_in_ini_file(this_control_file_name, 'nMinMembers     = ', "10")
+                    change_one_value_in_ini_file(this_control_file_name, 'nGridLin         = ', "337")
+                    
+                    
+                    if location == 'wilkes':
+                        set_environment_commands = ["module load python/3.8\n", "source {}/env/bin/activate\n".format(project_directory(location))]
+                    elif location == 'tursa':
+                        set_environment_commands = ["source {}/set_environment_tursa.sh\n".format(project_directory(location))]
+                    elif location == 'hypatia':
+                        ## TODO - test this.
+                        set_environment_commands = ["module load python/3.6.4\n", "source {}/env/bin/activate\n".format(project_directory(location))]
+                 
+                    write_run_script(location, runs_letter, run_string, run_script_name, set_environment_commands)
+                    
 
-                # Make all the files in directory be writable by the group
-                for file_name in glob.glob(os.path.join(this_run_directory, "*")):
-                    make_writable_by_group(file_name)
+                    # Make all the files in directory be writable by the group
+                    for file_name in glob.glob(os.path.join(this_run_directory, "*")):
+                        make_writable_by_group(file_name)
 
 
 
@@ -1287,10 +1490,12 @@ def expand_shell_script(original_shell_script_file_name, new_shell_script_file_n
     print(original_shell_script_file_name)
     print(new_shell_script_file_name)
     print(list_of_jobs_string)
-    print(decode_list_of_jobs_string(list_of_jobs_string))
+    decoded_list_of_jobs = decode_list_of_jobs_string(list_of_jobs_string)
+    print(decoded_list_of_jobs)
+    print("{} item{}".format(len(decoded_list_of_jobs), ("" if len(decoded_list_of_jobs) == 1 else "s")))
 
     with open(new_shell_script_file_name, 'w') as out_file:
-        for job in decode_list_of_jobs_string(list_of_jobs_string):
+        for job in decoded_list_of_jobs:
             with open(original_shell_script_file_name, 'r') as in_file:
                 for line in in_file:
                     out_file.write(line.replace("{}", str(job).zfill(3)))
@@ -1402,7 +1607,7 @@ if __name__ == '__main__':
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    calculate_each_run_time_and_show_Gantt_chart()
+    #calculate_each_run_time_and_show_Gantt_chart()
     #show_last_unprocessed_file()
     #write_run_script_test_harness()
     #get_parameter_from_log_file_test_harness()
@@ -1410,6 +1615,7 @@ if __name__ == '__main__':
     #plot_two_lightcone_files()
     #create_input_files_for_multiple_runs('T', '201-210')
     #fof_file_format_experiment()
+    runs_directory_status_test_harness()
     
      
     pass
