@@ -15,7 +15,7 @@ import datetime as dt
 import os
 import contextlib
 import sys
-from shutil import copyfile, rmtree
+import shutil
 import math
 import stat
 import time
@@ -943,6 +943,21 @@ def short_status_of_run_directory(run_directory, output_from_squeue):
         return (16, "Finished; awaiting archiving")
 
 
+def move_to_archive(runs_letter, list_of_run_nums_one_based):
+    location = project_location()
+    assert(location == "tursa")
+    runs_directory = os.path.join(project_directory(location), "runs{}".format(runs_letter))
+    archive_directory = os.path.join("/mnt/lustre/tursafs1/archive/dp327/", "runs{}".format(runs_letter))
+    for run_num_one_based in list_of_run_nums_one_based:
+        run_num_str = zfilled_run_num(run_num_one_based)
+        for file_name_base in ["run{}.fof.tar.gz".format(run_num_str), "run{}.tar.gz".format(run_num_str)]:
+            source_file = os.path.join(runs_directory, file_name_base)
+            target_file = os.path.join(archive_directory, file_name_base)
+            print("Moving {} to {}".format(source_file, target_file))
+            shutil.move(source_file, target_file)
+
+
+
 
 def runs_directory_status(runs_letter):
     
@@ -951,29 +966,52 @@ def runs_directory_status(runs_letter):
     num_runs = cosmo_params_from_runs_directory(runs_directory, False).shape[0]
     output_from_squeue = parse_squeue_output(runs_letter)
     
+    while True:
+        code_count = {}
+        code_runs = {}
+        for i in range(17):
+            code_count[i] = 0
+            code_runs[i] = []
         
-    code_count = {}
-    for i in range(17):
-        code_count[i] = 0
-    
-    for run_num_zero_based in range(num_runs):
-        run_num_one_based = run_num_zero_based + 1
-        run_string = zfilled_run_num(run_num_one_based)
-        run_directory = os.path.join(runs_directory, "run" + run_string)
-        (code, short_status) = short_status_of_run_directory(run_directory, output_from_squeue)
-        if code == 8:
-            raise AssertionError("OUT OF DISK SPACE - ACT NOW TO FIX THIS!")
-        if code != 5:
-            print(zfilled_run_num(run_num_one_based), short_status)
-        code_count[code] = code_count[code] + 1
+        for run_num_zero_based in range(num_runs):
+            run_num_one_based = run_num_zero_based + 1
+            run_string = zfilled_run_num(run_num_one_based)
+            run_directory = os.path.join(runs_directory, "run" + run_string)
+            (code, short_status) = short_status_of_run_directory(run_directory, output_from_squeue)
+            if code == 8:
+                raise AssertionError("OUT OF DISK SPACE - ACT NOW TO FIX THIS!")
+            if code != 5:
+                print(zfilled_run_num(run_num_one_based), short_status)
+            code_count[code] = code_count[code] + 1
+            code_runs[code].append(run_num_one_based)
+                
+        print("--------------------------------------------------")
+        print("{} runs have finished and have been archived".format(code_count[14]))
+        print("{} runs have finished and are awaiting archiving".format(code_count[16]))
+        print("{} runs are underway".format(code_count[10]))
+        print("{} runs are queued".format(code_count[3]))
+        print("{} runs have been assigned but haven't yet been launched".format(code_count[4]))
+        print("{} runs ran out of time".format(code_count[7]))
+        
+        continue_loop = True
+        
+        while continue_loop:
+        
+            print("\n")
+            print("Things you can do:")
+            print("0. Exit")
+            print("1. Move the {} finished runs to the archive area".format(code_count[16]))
+                
+            inval = int(input("? "))
+            if inval == 0:
+                sys.exit()
+            elif inval == 1:
+                move_to_archive(runs_letter, code_runs[16])
+                input("Press any key to continue...")
+                continue_loop = False
+        
             
-    print("--------------------------------------------------")
-    print("{} runs have finished and have been archived".format(code_count[14]))
-    print("{} runs have finished and are awaiting archiving".format(code_count[16]))
-    print("{} runs are underway".format(code_count[10]))
-    print("{} runs are queued".format(code_count[3]))
-    print("{} runs have been assigned but haven't yet been launched".format(code_count[4]))
-    print("{} runs ran out of time".format(code_count[7]))
+        
         
         
         
@@ -1312,7 +1350,7 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
             # Delete any existing directory (and all its contents), make a new (empty) directory and set permissions
             # to include 'writable by group'
             print("Creating {}".format(this_run_directory))
-            rmtree(this_run_directory, ignore_errors = True)
+            shutil.rmtree(this_run_directory, ignore_errors = True)
             os.makedirs(this_run_directory, exist_ok = False)
             make_writable_by_group(this_run_directory)
             
@@ -1325,11 +1363,11 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
                 write_status_file(os.path.join(this_run_directory, "error_creating_job_files.txt"), "Could not find HDF5 file")
                 print("    FAILED: could not find hdf file {}".format(source_hdf5_file_name))
             else:
-                copyfile(source_hdf5_file_name, target_hdf5_file_name)
+                shutil.copyfile(source_hdf5_file_name, target_hdf5_file_name)
                 
             
             
-                copyfile(prototype_job_script_file_name, this_job_script_file_name)
+                shutil.copyfile(prototype_job_script_file_name, this_job_script_file_name)
                 change_one_value_in_ini_file(this_job_script_file_name, 'application=', double_quoted_string(run_script_name))
                 change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(runs_letter, run_string))
                 change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', '47:59:00' if location == 'tursa' else '35:59:00')
@@ -1356,7 +1394,7 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
                     ###OmegaDE = cosmology_object.Ode0
 
                     # Control file
-                    copyfile(prototype_control_file_name, this_control_file_name)
+                    shutil.copyfile(prototype_control_file_name, this_control_file_name)
                     ###change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./transfer_function.txt"')
                     ###change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(1.0-OmegaDE) + "    # 1-dOmegaDE")
                     ###change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(OmegaDE) + "    # Equal to Omega_fld in transfer function")
