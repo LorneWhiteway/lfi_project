@@ -987,12 +987,16 @@ def runs_directory_status(runs_letter):
             code_runs[code].append(run_num_one_based)
                 
         print("--------------------------------------------------")
+        print("{} runs are unassigned: {}".format(code_count[5], encode_list_of_jobs_strings(code_runs[5])))
         print("{} runs have finished and have been archived: {}".format(code_count[14], encode_list_of_jobs_strings(code_runs[14])))
         print("{} runs have finished and are awaiting archiving: {}".format(code_count[16], encode_list_of_jobs_strings(code_runs[16])))
+        print("{} runs are in the process of completing: {}".format(code_count[11], encode_list_of_jobs_strings(code_runs[11])))
+        print("{} runs have finished but the compressed files are still 'hot': {}".format(code_count[15], encode_list_of_jobs_strings(code_runs[15])))
         print("{} runs are underway: {}".format(code_count[10], encode_list_of_jobs_strings(code_runs[10])))
         print("{} runs are queued: {}".format(code_count[3], encode_list_of_jobs_strings(code_runs[3])))
         print("{} runs have been assigned but haven't yet been launched: {}".format(code_count[4], encode_list_of_jobs_strings(code_runs[4])))
         print("{} runs ran out of time: {}".format(code_count[7], encode_list_of_jobs_strings(code_runs[7])))
+        print("{} runs failed due to out of memory: {}".format(code_count[9], encode_list_of_jobs_strings(code_runs[9])))
         
         continue_loop = True
         
