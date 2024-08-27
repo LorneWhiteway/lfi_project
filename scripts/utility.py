@@ -21,6 +21,7 @@ import stat
 import time
 import pickle
 import subprocess
+import readline
 
 
 # ======================== Start of code for reading control file ========================
@@ -980,18 +981,18 @@ def runs_directory_status(runs_letter):
             (code, short_status) = short_status_of_run_directory(run_directory, output_from_squeue)
             if code == 8:
                 raise AssertionError("OUT OF DISK SPACE - ACT NOW TO FIX THIS!")
-            if code != 5:
+            if code != 5 and code != 14 and code != 3:
                 print(zfilled_run_num(run_num_one_based), short_status)
             code_count[code] = code_count[code] + 1
             code_runs[code].append(run_num_one_based)
                 
         print("--------------------------------------------------")
-        print("{} runs have finished and have been archived".format(code_count[14]))
-        print("{} runs have finished and are awaiting archiving".format(code_count[16]))
-        print("{} runs are underway".format(code_count[10]))
-        print("{} runs are queued".format(code_count[3]))
-        print("{} runs have been assigned but haven't yet been launched".format(code_count[4]))
-        print("{} runs ran out of time".format(code_count[7]))
+        print("{} runs have finished and have been archived: {}".format(code_count[14], encode_list_of_jobs_strings(code_runs[14])))
+        print("{} runs have finished and are awaiting archiving: {}".format(code_count[16], encode_list_of_jobs_strings(code_runs[16])))
+        print("{} runs are underway: {}".format(code_count[10], encode_list_of_jobs_strings(code_runs[10])))
+        print("{} runs are queued: {}".format(code_count[3], encode_list_of_jobs_strings(code_runs[3])))
+        print("{} runs have been assigned but haven't yet been launched: {}".format(code_count[4], encode_list_of_jobs_strings(code_runs[4])))
+        print("{} runs ran out of time: {}".format(code_count[7], encode_list_of_jobs_strings(code_runs[7])))
         
         continue_loop = True
         
@@ -1000,12 +1001,15 @@ def runs_directory_status(runs_letter):
             print("\n")
             print("Things you can do:")
             print("0. Exit")
-            print("1. Move the {} finished runs to the archive area".format(code_count[16]))
+            print("1. Refresh")
+            print("2. Move the {} finished runs to the archive area".format(code_count[16]))
                 
-            inval = int(input("? "))
+            inval = int(input("? ").strip())
             if inval == 0:
                 sys.exit()
             elif inval == 1:
+                continue_loop = False
+            elif inval == 2:
                 move_to_archive(runs_letter, code_runs[16])
                 input("Press any key to continue...")
                 continue_loop = False
@@ -1522,6 +1526,83 @@ def decode_list_of_jobs_string(s):
                 
     return sorted(list(res_set))
     
+
+# Input is a (not-necessarily sorted) list of numbers.
+# Output is a list of non-overlapping intervals [x, y) (i.e. half open) whose union is the input list.
+# Example: [1,2,3,6,7] --> [(1,4), (6,8)]
+def convert_to_list_of_intervals(this_list):
+    ret = []
+    this_sorted_list = sorted(this_list)
+    if this_sorted_list:
+        # Logic is simplified by having an extra point on the right
+        this_sorted_list.append(this_sorted_list[-1] + 2)
+        
+        begin = this_sorted_list[0]
+        end = this_sorted_list[0] + 1
+        for i in this_sorted_list[1:]:
+            if i == end:
+                end = i + 1
+            else:
+                ret.append((begin, end))
+                begin = i
+                end = i + 1
+    return ret
+
+
+# Return is a double (processed_list_of_intervals, processed_list_of_exclusions)
+# Will convert e.g. [(1,5),(6,10)] to ([(1, 10)],[5]).
+def merge_list_of_intervals(list_of_intervals):
+    list_of_merged_intervals = []
+    list_of_exclusions = []
+    num_intervals = len(list_of_intervals)
+    if list_of_intervals:
+        idx = 0
+        current_interval = list_of_intervals[idx]
+        idx += 1
+        while idx < num_intervals:
+            next_interval = list_of_intervals[idx]
+            (x1, y1) = current_interval
+            (x2, y2) = next_interval
+            if y2 - x2 >= x2 - y1:
+                # Merge
+                for i in range(y1, x2):
+                    list_of_exclusions.append(i)
+                current_interval = (x1, y2)
+            else:
+                # Don't merge
+                list_of_merged_intervals.append(current_interval)
+                current_interval = next_interval
+            idx += 1
+        list_of_merged_intervals.append(current_interval)
+            
+    return (list_of_merged_intervals, sorted(list_of_exclusions))
+
+
+
+# Converts a list such as [1,2,3,5,6,7] into a string such as "1-7 x4"
+def encode_list_of_jobs_strings(this_list):
+    list_of_intervals = convert_to_list_of_intervals(this_list)
+    (processed_list, list_of_exclusions) = merge_list_of_intervals(list_of_intervals)
+    ret = ""
+    for (x, y) in processed_list:
+        if y - x > 1:
+            ret += " {}-{}".format(x, y-1)
+        else:
+            ret += " {}".format(x)
+    if list_of_exclusions:
+        ret += " x"
+        for z in list_of_exclusions:
+            ret += "{},".format(z)
+    ret = ret.strip(" ,")
+    # Test
+    if this_list != decode_list_of_jobs_string(ret):
+        raise AssertionError("Internal error in encode_list_of_jobs_strings with input {}".format(this_list))
+    return ret
+    
+    
+def encode_list_of_job_strings_test_harness():
+    print(encode_list_of_jobs_strings([1, 2, 3, 4, 6, 7, 9, 10]))
+
     
 def expand_shell_script(original_shell_script_file_name, new_shell_script_file_name, list_of_jobs_string):
 
@@ -1654,6 +1735,7 @@ if __name__ == '__main__':
     #create_input_files_for_multiple_runs('T', '201-210')
     #fof_file_format_experiment()
     runs_directory_status_test_harness()
+    #encode_list_of_job_strings_test_harness()
     
      
     pass
