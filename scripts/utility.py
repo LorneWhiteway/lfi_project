@@ -959,6 +959,15 @@ def move_to_archive(runs_letter, list_of_run_nums_one_based):
 
 
 
+def make_string_singular(in_string):
+    return in_string.replace("have", "has").replace("runs", "run").replace("are", "is").replace("files", "file")
+
+
+def report_one_code(index, description, code_count, code_runs):
+    if code_count[index] != 0:
+        print((description if code_count[index] > 1 else make_string_singular(description)).format(code_count[index], encode_list_of_jobs_strings(code_runs[index])))
+
+
 
 def runs_directory_status(runs_letter):
     
@@ -981,22 +990,21 @@ def runs_directory_status(runs_letter):
             (code, short_status) = short_status_of_run_directory(run_directory, output_from_squeue)
             if code == 8:
                 raise AssertionError("OUT OF DISK SPACE - ACT NOW TO FIX THIS!")
-            if code != 5 and code != 14 and code != 3:
-                print(zfilled_run_num(run_num_one_based), short_status)
+            print(zfilled_run_num(run_num_one_based), short_status)
             code_count[code] = code_count[code] + 1
             code_runs[code].append(run_num_one_based)
                 
         print("--------------------------------------------------")
-        print("{} runs are unassigned: {}".format(code_count[5], encode_list_of_jobs_strings(code_runs[5])))
-        print("{} runs have finished and have been archived: {}".format(code_count[14], encode_list_of_jobs_strings(code_runs[14])))
-        print("{} runs have finished and are awaiting archiving: {}".format(code_count[16], encode_list_of_jobs_strings(code_runs[16])))
-        print("{} runs are in the process of completing: {}".format(code_count[11], encode_list_of_jobs_strings(code_runs[11])))
-        print("{} runs have finished but the compressed files are still 'hot': {}".format(code_count[15], encode_list_of_jobs_strings(code_runs[15])))
-        print("{} runs are underway: {}".format(code_count[10], encode_list_of_jobs_strings(code_runs[10])))
-        print("{} runs are queued: {}".format(code_count[3], encode_list_of_jobs_strings(code_runs[3])))
-        print("{} runs have been assigned but haven't yet been launched: {}".format(code_count[4], encode_list_of_jobs_strings(code_runs[4])))
-        print("{} runs ran out of time: {}".format(code_count[7], encode_list_of_jobs_strings(code_runs[7])))
-        print("{} runs failed due to out of memory: {}".format(code_count[9], encode_list_of_jobs_strings(code_runs[9])))
+        report_one_code(5, "{} runs are unassigned: {}", code_count, code_runs)
+        report_one_code(14, "{} runs have finished and have been archived: {}", code_count, code_runs)
+        report_one_code(16, "{} runs have finished and are awaiting archiving: {}", code_count, code_runs)
+        report_one_code(11, "{} runs are in the process of completing: {}", code_count, code_runs)
+        report_one_code(15, "{} runs have finished but the compressed files are still 'hot': {}", code_count, code_runs)
+        report_one_code(10, "{} runs are underway: {}", code_count, code_runs)
+        report_one_code(3, "{} runs are queued: {}", code_count, code_runs)
+        report_one_code(4, "{} runs have been assigned but have not yet been launched: {}", code_count, code_runs)
+        report_one_code(7, "{} runs ran out of time: {}", code_count, code_runs)
+        report_one_code(9, "{} runs failed due to out of memory: {}", code_count, code_runs)
         
         continue_loop = True
         
@@ -1567,7 +1575,7 @@ def merge_list_of_intervals(list_of_intervals):
             next_interval = list_of_intervals[idx]
             (x1, y1) = current_interval
             (x2, y2) = next_interval
-            if y2 - x2 >= x2 - y1:
+            if y2 - x2 >= x2 - y1 and x2 - y1 < 4:
                 # Merge
                 for i in range(y1, x2):
                     list_of_exclusions.append(i)
