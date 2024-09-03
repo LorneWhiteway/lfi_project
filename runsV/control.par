@@ -1,0 +1,71 @@
+import math
+
+achOutName      = "run"
+
+# Memory and performance
+bMemUnordered   = 1    # iOrder replaced by potential and group id
+bNewKDK         = 1    # No accelerations in the particle, dual tree possible
+bDualTree       = 1    # Use two trees
+
+
+# Simulation Mode
+# ---------------
+# In the bClass=1 mode the cosmology is entirely read from the
+# HDF5 file specified in 'achClassFilename' parameter below.
+bClass           = 1
+dOmega0          = 0.0    # This is a dummy parameter, just to have the parameter defined
+
+# Initial Condition
+dBoxSize        = 1250       # Mpc/h
+nGrid           = 1350       # Simulation has nGrid^3 particles
+b2LPT           = 1          # second order IC
+iSeed           = 867        # Random seed
+dRedFrom        = 49         # Starting redshift
+
+# Linear theory
+# -------------
+achClassFilename = "./class_processed_gs2_batch3_095.hdf5"
+nGridLin         = 337
+achLinSpecies    = "g+ncdm[0]+fld+metric" # these species are considered in the evolution
+achPkSpecies     = "g+ncdm[0]+fld"        # these species are considered in the power computation
+dNormalization   = 8.815624932373077e-10 # calculated from sigma_8 = 0.6836440043497537
+dSpectral        = 0.9652935075140446
+
+iStartStep      = 0
+nSteps          = 100
+dRedTo          = 0
+
+# Lightcone 
+bLightCone      = 1    # Output a lightcone
+nSideHealpix    = 4096 # NSide for output lightcone healpix maps.
+
+# Logging/Output
+iLogInterval    = 1
+iOutInterval    = 1
+#iCheckInterval = 10
+bDoDensity      = 0
+bVDetails       = 1
+dHubble0        = math.sqrt(math.pi*8/3)
+
+bOverwrite      = 1
+bParaRead       = 1    # Read in parallel
+bParaWrite      = 0    # Write in parallel (does not work on all file systems)
+#nParaRead      = 8    # Limit number of simultaneous readers to this
+#nParaWrite     = 8    # Limit number of simultaneous writers to this
+
+# Cosmological Simulation
+bComove         = 1     # Use comoving coordinates
+bPeriodic       = 1     # with a periodic box
+bEwald          = 1     # enable Ewald periodic boundaries
+
+# Accuracy Parameters
+bEpsAccStep     = 1       # Choose eps/a timestep criteria
+dTheta          = 0.40    # accuracy of forces for z > 20
+dTheta20        = 0.55    # accuracy of forces for z > 2
+dTheta2         = 0.70    # accuracy of forces for z <= 2
+
+# Halo Finding
+bFindGroups     = 1
+dTau            = 0.2 / nGrid
+nMinMembers     = 10
+

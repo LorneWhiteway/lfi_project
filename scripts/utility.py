@@ -975,7 +975,7 @@ def runs_directory_status(runs_letter):
     runs_directory = os.path.join(project_directory(location), "runs{}".format(runs_letter))
     num_runs = cosmo_params_from_runs_directory(runs_directory, False).shape[0]
     output_from_squeue = parse_squeue_output(runs_letter)
-    
+        
     while True:
         code_count = {}
         code_runs = {}
@@ -1034,7 +1034,7 @@ def runs_directory_status(runs_letter):
     
     
 def runs_directory_status_test_harness():
-    runs_letter = "U"
+    runs_letter = "V"
     runs_directory_status(runs_letter)
     
     
@@ -1288,7 +1288,7 @@ def data_from_runs_directory_data_file(runs_directory_data_file, runs_letter, co
         for line in f:
             tokenised_line = line.split(',')
             if tokenised_line[0] == runs_letter:
-                return tokenised_line[column]
+                return tokenised_line[column].strip()
     raise AssertionError("Runs letter {} not found in {}; this data file may require updating".format(runs_letter, runs_directory_data_file))
     
     
