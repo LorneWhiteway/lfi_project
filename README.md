@@ -281,6 +281,23 @@ Note that 'x' stands for 'exclude'. More complicated strings are possible, such 
 1-32 64-128 140 141,142 x23-30 x75,76 26
 ```
 
+### runs_directory_status.py
+
+This script reports on the status of multiple pkdgrav3 runs.
+
+Syntax:
+```
+runs_directory_status.py runs_letter
+```
+
+Example:
+```
+runs_directory_status.py T
+```
+This will report on the status of jobs that are running in subdirectories of runsT (in turn a subdirectory of the project directory).
+
+The summary output from this program uses the same syntax as expand_shell_script.py for describing sets of runs.
+
 
 ### create_input_files.py
 

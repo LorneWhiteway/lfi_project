@@ -930,18 +930,21 @@ def short_status_of_run_directory(run_directory, output_from_squeue):
         return (11, "In process of completing")
             
     if not compression_has_finished(run_directory):
-        return (12, "PROBLEM - last line of slurm output file is not as expected - perhaps abnormal termination.")
+        return (12, "PROBLEM - last line of slurm output file is not as expected - perhaps abnormal termination")
         
     if not os.path.isfile(os.path.join(run_directory, "z_values.txt")):
-        return (13, "PROBLEM - z_values.txt not found - perhaps abnormal termination.")
+        return (13, "PROBLEM - z_values.txt not found - perhaps abnormal termination")
+
+    if os.path.isfile(os.path.join(run_directory, "do_not_archive.txt")):
+        return (14, "Finished but marked as not to be archived")
 
     compressed_files_status_code = status_of_compressed_files(run_directory)
     if compressed_files_status_code == 0:
-        return (14, "Archived")
+        return (15, "Archived")
     elif compressed_files_status_code == 1:
-        return (15, "Compression finished but compressed files are still 'hot'")
+        return (16, "Compression finished but compressed files are still 'hot'")
     else:
-        return (16, "Finished; awaiting archiving")
+        return (17, "Finished; awaiting archiving")
 
 
 def move_to_archive(runs_letter, list_of_run_nums_one_based):
@@ -979,7 +982,7 @@ def runs_directory_status(runs_letter):
     while True:
         code_count = {}
         code_runs = {}
-        for i in range(17):
+        for i in range(18):
             code_count[i] = 0
             code_runs[i] = []
         
@@ -995,11 +998,13 @@ def runs_directory_status(runs_letter):
             code_runs[code].append(run_num_one_based)
                 
         print("--------------------------------------------------")
+        report_one_code(2, "{} runs are missing job files for some unexplained reason: {}", code_count, code_runs)
         report_one_code(5, "{} runs are unassigned: {}", code_count, code_runs)
-        report_one_code(14, "{} runs have finished and have been archived: {}", code_count, code_runs)
-        report_one_code(16, "{} runs have finished and are awaiting archiving: {}", code_count, code_runs)
+        report_one_code(15, "{} runs have finished and have been archived: {}", code_count, code_runs)
+        report_one_code(17, "{} runs have finished and are awaiting archiving: {}", code_count, code_runs)
+        report_one_code(14, "{} runs have finished but are marked as not to be archived: {}", code_count, code_runs)
         report_one_code(11, "{} runs are in the process of completing: {}", code_count, code_runs)
-        report_one_code(15, "{} runs have finished but the compressed files are still 'hot': {}", code_count, code_runs)
+        report_one_code(16, "{} runs have finished but the compressed files are still 'hot': {}", code_count, code_runs)
         report_one_code(10, "{} runs are underway: {}", code_count, code_runs)
         report_one_code(3, "{} runs are queued: {}", code_count, code_runs)
         report_one_code(4, "{} runs have been assigned but have not yet been launched: {}", code_count, code_runs)
@@ -1014,7 +1019,8 @@ def runs_directory_status(runs_letter):
             print("Things you can do:")
             print("0. Exit")
             print("1. Refresh")
-            print("2. Move the {} finished runs to the archive area".format(code_count[16]))
+            if code_count[17] > 0:
+                print("2. Move the {} finished runs to the archive area".format(code_count[17]))
                 
             inval = int(input("? ").strip())
             if inval == 0:
@@ -1022,20 +1028,9 @@ def runs_directory_status(runs_letter):
             elif inval == 1:
                 continue_loop = False
             elif inval == 2:
-                move_to_archive(runs_letter, code_runs[16])
+                move_to_archive(runs_letter, code_runs[17])
                 input("Press any key to continue...")
                 continue_loop = False
-        
-            
-        
-        
-        
-        
-    
-    
-def runs_directory_status_test_harness():
-    runs_letter = "V"
-    runs_directory_status(runs_letter)
     
     
 
@@ -1746,7 +1741,6 @@ if __name__ == '__main__':
     #plot_two_lightcone_files()
     #create_input_files_for_multiple_runs('T', '201-210')
     #fof_file_format_experiment()
-    runs_directory_status_test_harness()
     #encode_list_of_job_strings_test_harness()
     
      
