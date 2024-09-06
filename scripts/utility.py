@@ -971,6 +971,12 @@ def report_one_code(index, description, code_count, code_runs):
         print((description if code_count[index] > 1 else make_string_singular(description)).format(code_count[index], encode_list_of_jobs_strings(code_runs[index])))
 
 
+def get_int_from_input(prompt):
+    try:
+        return int(input(prompt).strip())
+    except:
+        return get_int_from_input(prompt)
+
 
 def runs_directory_status(runs_letter):
     
@@ -998,18 +1004,25 @@ def runs_directory_status(runs_letter):
             code_runs[code].append(run_num_one_based)
                 
         print("--------------------------------------------------")
+        report_one_code(1, "{} runs are missing job files for one of the standard reasons: {}", code_count, code_runs)
         report_one_code(2, "{} runs are missing job files for some unexplained reason: {}", code_count, code_runs)
-        report_one_code(5, "{} runs are unassigned: {}", code_count, code_runs)
-        report_one_code(15, "{} runs have finished and have been archived: {}", code_count, code_runs)
-        report_one_code(17, "{} runs have finished and are awaiting archiving: {}", code_count, code_runs)
-        report_one_code(14, "{} runs have finished but are marked as not to be archived: {}", code_count, code_runs)
-        report_one_code(11, "{} runs are in the process of completing: {}", code_count, code_runs)
-        report_one_code(16, "{} runs have finished but the compressed files are still 'hot': {}", code_count, code_runs)
-        report_one_code(10, "{} runs are underway: {}", code_count, code_runs)
         report_one_code(3, "{} runs are queued: {}", code_count, code_runs)
         report_one_code(4, "{} runs have been assigned but have not yet been launched: {}", code_count, code_runs)
-        report_one_code(7, "{} runs ran out of time: {}", code_count, code_runs)
+        report_one_code(5, "{} runs are unassigned: {}", code_count, code_runs)
+        report_one_code(6, "{} runs are unexpectedly missing the Slurm output file: {}", code_count, code_runs)
+        report_one_code(7, "{} runs failed due to out of time: {}", code_count, code_runs)
+        report_one_code(8, "{} runs failed due to out of disk space: {}", code_count, code_runs)
         report_one_code(9, "{} runs failed due to out of memory: {}", code_count, code_runs)
+        report_one_code(10, "{} runs are underway: {}", code_count, code_runs)
+        report_one_code(11, "{} runs are in the process of completing: {}", code_count, code_runs)
+        report_one_code(12, "{} runs had an unexpected last line in the Slurm output file (possible problem): {}", code_count, code_runs)
+        report_one_code(13, "{} runs are missing the z_values.txt file (possible problem): {}", code_count, code_runs)
+        report_one_code(14, "{} runs have finished but are marked as not to be archived: {}", code_count, code_runs)
+        report_one_code(15, "{} runs have finished and have been archived: {}", code_count, code_runs)
+        report_one_code(16, "{} runs have finished but the compressed files are still 'hot': {}", code_count, code_runs)
+        report_one_code(17, "{} runs have finished and are awaiting archiving: {}", code_count, code_runs)
+        
+        
         
         continue_loop = True
         
@@ -1022,7 +1035,7 @@ def runs_directory_status(runs_letter):
             if code_count[17] > 0:
                 print("2. Move the {} finished runs to the archive area".format(code_count[17]))
                 
-            inval = int(input("? ").strip())
+            inval = get_int_from_input("? ")
             if inval == 0:
                 sys.exit()
             elif inval == 1:
