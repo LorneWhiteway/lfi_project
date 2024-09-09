@@ -1033,7 +1033,7 @@ def runs_directory_status(runs_letter):
             print("0. Exit")
             print("1. Refresh")
             if code_count[17] > 0:
-                print("2. Move the {} finished runs to the archive area".format(code_count[17]))
+                print("2. Move the {} finished run{} to the archive area".format(code_count[17], "" if code_count[17] == 1 else "s"))
                 
             inval = get_int_from_input("? ")
             if inval == 0:
