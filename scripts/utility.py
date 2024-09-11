@@ -983,9 +983,9 @@ def runs_directory_status(runs_letter):
     location = project_location()
     runs_directory = os.path.join(project_directory(location), "runs{}".format(runs_letter))
     num_runs = cosmo_params_from_runs_directory(runs_directory, False).shape[0]
-    output_from_squeue = parse_squeue_output(runs_letter)
         
     while True:
+        output_from_squeue = parse_squeue_output(runs_letter)
         code_count = {}
         code_runs = {}
         for i in range(18):
@@ -1010,9 +1010,9 @@ def runs_directory_status(runs_letter):
         report_one_code(4, "{} runs have been assigned but have not yet been launched: {}", code_count, code_runs)
         report_one_code(5, "{} runs are unassigned: {}", code_count, code_runs)
         report_one_code(6, "{} runs are unexpectedly missing the Slurm output file: {}", code_count, code_runs)
-        report_one_code(7, "{} runs failed due to out of time: {}", code_count, code_runs)
-        report_one_code(8, "{} runs failed due to out of disk space: {}", code_count, code_runs)
-        report_one_code(9, "{} runs failed due to out of memory: {}", code_count, code_runs)
+        report_one_code(7, "{} runs failed due to being out of time: {}", code_count, code_runs)
+        report_one_code(8, "{} runs failed due to being out of disk space: {}", code_count, code_runs)
+        report_one_code(9, "{} runs failed due to being out of memory: {}", code_count, code_runs)
         report_one_code(10, "{} runs are underway: {}", code_count, code_runs)
         report_one_code(11, "{} runs are in the process of completing: {}", code_count, code_runs)
         report_one_code(12, "{} runs had an unexpected last line in the Slurm output file (possible problem): {}", code_count, code_runs)
