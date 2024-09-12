@@ -882,8 +882,22 @@ def file_contains_substring(file_name, substring):
             if substring in line:
                 return True
     return False
-            
     
+    
+def percentage_completed(run_directory):
+    ret1 = 0
+    file_list = glob.glob(os.path.join(run_directory, "run.*.hpb.0"))
+    if file_list:
+        last_file = sorted(file_list)[-1]
+        ret1 = int(last_file[-11:-6])
+    
+    ret2 = 0
+    file_list = glob.glob(os.path.join(run_directory, "run.*.lightcone.npy"))
+    if file_list:
+        last_file = sorted(file_list)[-1]
+        ret2 = int(last_file[-19:-14])
+    return max(ret1, ret2)
+
     
 def short_status_of_run_directory(run_directory, output_from_squeue):
     
@@ -915,7 +929,7 @@ def short_status_of_run_directory(run_directory, output_from_squeue):
         return (6, "Unexpectedly unable to find slurm output file")
 
     if file_contains_substring(slurm_out_file, "DUE TO TIME LIMIT"):
-        return (7, "FAILED - out of time")
+        return (7, "FAILED - out of time; pkdgrav {}% complete".format(percentage_completed(run_directory)))
     
     if file_contains_substring(slurm_out_file, "Disk quota exceeded"):    
         return (8, "FAILED - out of disk space")
@@ -924,7 +938,7 @@ def short_status_of_run_directory(run_directory, output_from_squeue):
         return (9, "FAILED - out of memory")
 
     if run_number_one_based in output_from_squeue and output_from_squeue[run_number_one_based][1] == "R":
-        return (10, "Running by {} for {}".format(output_from_squeue[run_number_one_based][0], output_from_squeue[run_number_one_based][2]))
+        return (10, "Running by {} for {}; pkdgrav {}% complete".format(output_from_squeue[run_number_one_based][0], output_from_squeue[run_number_one_based][2],percentage_completed(run_directory)))
     
     if run_number_one_based in output_from_squeue and output_from_squeue[run_number_one_based][1] == "CG":
         return (11, "In process of completing")
@@ -1473,18 +1487,18 @@ def start_time_end_time(directory):
 
 
 
-def calculate_each_run_time_and_show_Gantt_chart():
+def calculate_each_run_time_and_show_Gantt_chart(runs_directory):
 
     y = []
     width = []
     left = []
     color = []
-    
-    list_of_jobs_string = "001-500"
+
+    list_of_jobs_string = "001-512"
     
     for run_num_one_based in decode_list_of_jobs_string(list_of_jobs_string):
         run_string = zfilled_run_num(run_num_one_based)
-        this_directory = "/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/runs{}/run{}/".format("T", run_string)
+        this_directory = "/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/runs{}/run{}/".format(runs_directory, run_string)
         (start_time, end_time) = start_time_end_time(this_directory)
         if (start_time, end_time) != (0, 0):
             run_time_in_seconds = end_time - start_time
@@ -1746,7 +1760,7 @@ if __name__ == '__main__':
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
-    #calculate_each_run_time_and_show_Gantt_chart()
+    #calculate_each_run_time_and_show_Gantt_chart("V")
     #show_last_unprocessed_file()
     #write_run_script_test_harness()
     #get_parameter_from_log_file_test_harness()
