@@ -809,10 +809,12 @@ def run_number_one_based_from_run_directory(run_directory):
     return int(os.path.normpath(run_directory)[-3:])
 
 
-def squeue_output():
-    command = ["squeue",]
-    process = subprocess.run(command, stdout=subprocess.PIPE, universal_newlines = True) # From https://janakiev.com/blog/python-shell-commands/
+def run_command(command_array):
+    process = subprocess.run(command_array, stdout=subprocess.PIPE, universal_newlines = True) # From https://janakiev.com/blog/python-shell-commands/
     return process.stdout.split('\n')
+
+def squeue_output():
+    return run_command(["squeue",])
     
 def parse_squeue_output(runs_letter):
     
@@ -831,6 +833,16 @@ def parse_squeue_output(runs_letter):
             ret[run_number_one_based] = [user, status, elapsed_time]
     
     return ret
+    
+    
+
+
+def disk_space_report(runs_directory):
+    this_id = run_command(["id", "-g"])[0]
+    command = ["lfs", "quota", "-hp", this_id, runs_directory]
+    for el in run_command(command):
+        print(el)
+    
     
     
 def last_line_of_file(file_name):
@@ -990,6 +1002,17 @@ def get_int_from_input(prompt):
         return int(input(prompt).strip())
     except:
         return get_int_from_input(prompt)
+        
+def user_report(output_from_squeue):
+    user_dict = {}
+    for key in output_from_squeue:
+        this_user = output_from_squeue[key][0]
+        if not this_user in user_dict:
+            user_dict[this_user] = 0
+        user_dict[this_user] += 1
+    
+    for user in user_dict:
+        print("{} has launched {} jobs".format(user, user_dict[user]))
 
 
 def runs_directory_status(runs_letter):
@@ -1035,7 +1058,11 @@ def runs_directory_status(runs_letter):
         report_one_code(15, "{} runs have finished and have been archived: {}", code_count, code_runs)
         report_one_code(16, "{} runs have finished but the compressed files are still 'hot': {}", code_count, code_runs)
         report_one_code(17, "{} runs have finished and are awaiting archiving: {}", code_count, code_runs)
-        
+        print("--------------------------------------------------")
+        user_report(output_from_squeue)
+        print("--------------------------------------------------")
+        disk_space_report(runs_directory)
+        print("--------------------------------------------------")
         
         
         continue_loop = True
