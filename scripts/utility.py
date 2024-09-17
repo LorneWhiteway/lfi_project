@@ -837,7 +837,7 @@ def parse_squeue_output(runs_letter):
     
 
 
-def disk_space_report(runs_directory):
+def print_disk_space_report(runs_directory):
     this_id = run_command(["id", "-g"])[0]
     command = ["lfs", "quota", "-hp", this_id, runs_directory]
     for el in run_command(command):
@@ -1003,16 +1003,19 @@ def get_int_from_input(prompt):
     except:
         return get_int_from_input(prompt)
         
-def user_report(output_from_squeue):
+def print_user_report(output_from_squeue):
     user_dict = {}
     for key in output_from_squeue:
         this_user = output_from_squeue[key][0]
+        this_user_time = output_from_squeue[key][2]
         if not this_user in user_dict:
-            user_dict[this_user] = 0
-        user_dict[this_user] += 1
+            user_dict[this_user] = [0, 0]
+        user_dict[this_user][0] += 1
+        if this_user_time != "0:00":
+            user_dict[this_user][1] += 1
     
     for user in user_dict:
-        print("{} has launched {} jobs".format(user, user_dict[user]))
+        print("{} has launched {} jobs of which {} are running and {} are queued".format(user, user_dict[user][0], user_dict[user][1], user_dict[user][0]-user_dict[user][1]))
 
 
 def runs_directory_status(runs_letter):
@@ -1034,8 +1037,8 @@ def runs_directory_status(runs_letter):
             run_string = zfilled_run_num(run_num_one_based)
             run_directory = os.path.join(runs_directory, "run" + run_string)
             (code, short_status) = short_status_of_run_directory(run_directory, output_from_squeue)
-            if code == 8:
-                raise AssertionError("OUT OF DISK SPACE - ACT NOW TO FIX THIS!")
+            #if code == 8:
+            #    raise AssertionError("OUT OF DISK SPACE - ACT NOW TO FIX THIS!")
             print(zfilled_run_num(run_num_one_based), short_status)
             code_count[code] = code_count[code] + 1
             code_runs[code].append(run_num_one_based)
@@ -1059,9 +1062,9 @@ def runs_directory_status(runs_letter):
         report_one_code(16, "{} runs have finished but the compressed files are still 'hot': {}", code_count, code_runs)
         report_one_code(17, "{} runs have finished and are awaiting archiving: {}", code_count, code_runs)
         print("--------------------------------------------------")
-        user_report(output_from_squeue)
+        print_user_report(output_from_squeue)
         print("--------------------------------------------------")
-        disk_space_report(runs_directory)
+        print_disk_space_report(runs_directory)
         print("--------------------------------------------------")
         
         
