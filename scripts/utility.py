@@ -1021,7 +1021,7 @@ def print_user_report(output_from_squeue):
         print("{} has launched {} jobs of which {} are running and {} are queued".format(user, user_dict[user][0], user_dict[user][1], user_dict[user][0]-user_dict[user][1]))
         
 # Prints status and returns list of runs awaiting archiving
-def runs_directory_status_core(runs_letter, runs_directory, num_runs):
+def runs_directory_status_core(runs_letter, runs_directory, num_runs, do_print):
     output_from_squeue = parse_squeue_output(runs_letter)
     code_runs = {}
     for i in range(18):
@@ -1032,32 +1032,34 @@ def runs_directory_status_core(runs_letter, runs_directory, num_runs):
         run_string = zfilled_run_num(run_num_one_based)
         run_directory = os.path.join(runs_directory, "run" + run_string)
         (code, short_status) = short_status_of_run_directory(run_directory, output_from_squeue)
-        print(zfilled_run_num(run_num_one_based), short_status)
+        if do_print:
+            print(zfilled_run_num(run_num_one_based), short_status)
         code_runs[code].append(run_num_one_based)
             
-    print("--------------------------------------------------")
-    report_one_code(1, "{} runs are missing job files for one of the standard reasons: {}", code_runs)
-    report_one_code(2, "{} runs are missing job files for some unexplained reason: {}", code_runs)
-    report_one_code(3, "{} runs are queued: {}", code_runs)
-    report_one_code(4, "{} runs have been assigned but have not yet been launched: {}", code_runs)
-    report_one_code(5, "{} runs are unassigned: {}", code_runs)
-    report_one_code(6, "{} runs are unexpectedly missing the Slurm output file: {}", code_runs)
-    report_one_code(7, "{} runs failed due to being out of time: {}", code_runs)
-    report_one_code(8, "ALERT: {} runs failed due to being out of disk space: {}", code_runs)
-    report_one_code(9, "{} runs failed due to being out of memory: {}", code_runs)
-    report_one_code(10, "{} runs are underway: {}", code_runs)
-    report_one_code(11, "{} runs are in the process of completing: {}", code_runs)
-    report_one_code(12, "{} runs had an unexpected last line in the Slurm output file (possible problem): {}", code_runs)
-    report_one_code(13, "{} runs are missing the z_values.txt file (possible problem): {}", code_runs)
-    report_one_code(14, "{} runs have finished but are marked as not to be archived: {}", code_runs)
-    report_one_code(15, "{} runs have finished and have been archived: {}", code_runs)
-    report_one_code(16, "{} runs have finished but the compressed files are still 'hot': {}", code_runs)
-    report_one_code(17, "{} runs have finished and are awaiting archiving: {}", code_runs)
-    print("--------------------------------------------------")
-    print_user_report(output_from_squeue)
-    print("--------------------------------------------------")
-    print_disk_space_report(runs_directory)
-    print("--------------------------------------------------")
+    if do_print:
+        print("--------------------------------------------------")
+        report_one_code(1, "{} runs are missing job files for one of the standard reasons: {}", code_runs)
+        report_one_code(2, "{} runs are missing job files for some unexplained reason: {}", code_runs)
+        report_one_code(3, "{} runs are queued: {}", code_runs)
+        report_one_code(4, "{} runs have been assigned but have not yet been launched: {}", code_runs)
+        report_one_code(5, "{} runs are unassigned: {}", code_runs)
+        report_one_code(6, "{} runs are unexpectedly missing the Slurm output file: {}", code_runs)
+        report_one_code(7, "{} runs failed due to being out of time: {}", code_runs)
+        report_one_code(8, "ALERT: {} runs failed due to being out of disk space: {}", code_runs)
+        report_one_code(9, "{} runs failed due to being out of memory: {}", code_runs)
+        report_one_code(10, "{} runs are underway: {}", code_runs)
+        report_one_code(11, "{} runs are in the process of completing: {}", code_runs)
+        report_one_code(12, "{} runs had an unexpected last line in the Slurm output file (possible problem): {}", code_runs)
+        report_one_code(13, "{} runs are missing the z_values.txt file (possible problem): {}", code_runs)
+        report_one_code(14, "{} runs have finished but are marked as not to be archived: {}", code_runs)
+        report_one_code(15, "{} runs have finished and have been archived: {}", code_runs)
+        report_one_code(16, "{} runs have finished but the compressed files are still 'hot': {}", code_runs)
+        report_one_code(17, "{} runs have finished and are awaiting archiving: {}", code_runs)
+        print("--------------------------------------------------")
+        print_user_report(output_from_squeue)
+        print("--------------------------------------------------")
+        print_disk_space_report(runs_directory)
+        print("--------------------------------------------------")
     
     return code_runs[17]
  
@@ -1070,9 +1072,11 @@ def runs_directory_status(runs_letter):
     runs_directory = os.path.join(project_directory(location), "runs{}".format(runs_letter))
     num_runs = cosmo_params_from_runs_directory(runs_directory, False).shape[0]
         
-    runs_awaiting_archiving = runs_directory_status_core(runs_letter, runs_directory, num_runs)    
+    do_print = True    
     
     while True:
+        runs_awaiting_archiving = runs_directory_status_core(runs_letter, runs_directory, num_runs, do_print)
+        
         print("Things you can do:")
         print("0. Exit")
         print("1. Refresh")
@@ -1084,9 +1088,10 @@ def runs_directory_status(runs_letter):
         if inval == 0:
             sys.exit()
         elif inval == 1:
-            runs_awaiting_archiving = runs_directory_status_core(runs_letter, runs_directory, num_runs)
+            do_print = True
         elif inval == 2:
             move_to_archive(runs_letter, runs_awaiting_archiving)
+            do_print = False
  
     
     
