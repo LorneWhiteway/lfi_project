@@ -17,7 +17,8 @@ experiments/*/object_count.pkl
 
 *.tar.gz
 
-runs?/run*/
+runs*/run*/
+runs*/hdf5/
 
 # Omit nbodykit (except for a few files in the top-level directory that have been checked-in).
 nbodykit/*
