@@ -816,9 +816,9 @@ def run_command(command_array):
 def squeue_output():
     return run_command(["squeue",])
     
-def parse_squeue_output(runs_letter):
+def parse_squeue_output(runs_name):
     
-    job_name_search_string = "p{}_".format(runs_letter)
+    job_name_search_string = "p{}_".format(runs_name[0:3])
     len_job_name_search_string = len(job_name_search_string)
     
     ret = {}
@@ -973,11 +973,11 @@ def short_status_of_run_directory(run_directory, output_from_squeue):
         return (17, "Finished; awaiting archiving")
 
 
-def move_to_archive(runs_letter, list_of_run_nums_one_based):
+def move_to_archive(runs_name, list_of_run_nums_one_based):
     location = project_location()
     assert(location == "tursa")
-    runs_directory = os.path.join(project_directory(location), "runs{}".format(runs_letter))
-    archive_directory = os.path.join("/mnt/lustre/tursafs1/archive/dp327/", "runs{}".format(runs_letter))
+    runs_directory = os.path.join(project_directory(location), "runs{}".format(runs_name))
+    archive_directory = os.path.join("/mnt/lustre/tursafs1/archive/dp327/", "runs{}".format(runs_name))
     for run_num_one_based in list_of_run_nums_one_based:
         run_num_str = zfilled_run_num(run_num_one_based)
         for file_name_base in ["run{}.fof.tar.gz".format(run_num_str), "run{}.tar.gz".format(run_num_str)]:
@@ -1021,8 +1021,8 @@ def print_user_report(output_from_squeue):
         print("{} has launched {} jobs of which {} are running and {} are queued".format(user, user_dict[user][0], user_dict[user][1], user_dict[user][0]-user_dict[user][1]))
         
 # Prints status and returns list of runs awaiting archiving
-def runs_directory_status_core(runs_letter, runs_directory, num_runs, do_print):
-    output_from_squeue = parse_squeue_output(runs_letter)
+def runs_directory_status_core(runs_name, runs_directory, num_runs, do_print):
+    output_from_squeue = parse_squeue_output(runs_name)
     code_runs = {}
     for i in range(18):
         code_runs[i] = []
@@ -1066,16 +1066,16 @@ def runs_directory_status_core(runs_letter, runs_directory, num_runs, do_print):
     
 
 
-def runs_directory_status(runs_letter):
+def runs_directory_status(runs_name):
     
     location = project_location()
-    runs_directory = os.path.join(project_directory(location), "runs{}".format(runs_letter))
+    runs_directory = os.path.join(project_directory(location), "runs{}".format(runs_name))
     num_runs = cosmo_params_from_runs_directory(runs_directory, False).shape[0]
         
     do_print = True    
     
     while True:
-        runs_awaiting_archiving = runs_directory_status_core(runs_letter, runs_directory, num_runs, do_print)
+        runs_awaiting_archiving = runs_directory_status_core(runs_name, runs_directory, num_runs, do_print)
         
         print("Things you can do:")
         print("0. Exit")
@@ -1090,7 +1090,7 @@ def runs_directory_status(runs_letter):
         elif inval == 1:
             do_print = True
         elif inval == 2:
-            move_to_archive(runs_letter, runs_awaiting_archiving)
+            move_to_archive(runs_name, runs_awaiting_archiving)
             do_print = False
  
     
@@ -1290,23 +1290,23 @@ def make_file_executable(file_name):
     
     
 # Note that the lines in list_of_set_environment_commands should be '\n' terminated.
-def write_run_script(location, runs_letter, run_string, run_script_file_name, list_of_set_environment_commands):
+def write_run_script(location, runs_name, run_string, run_script_file_name, list_of_set_environment_commands):
     with open(run_script_file_name, 'w') as out_file:
         out_file.write("#!/usr/bin/env bash\n") # See https://stackoverflow.com/questions/10376206/what-is-the-preferred-bash-shebang for the full discussion...
         for e in list_of_set_environment_commands:
             out_file.write(e)
         # Go to the run directory
-        out_file.write("cd {}/runs{}/run{}/\n".format(project_directory(location), runs_letter, run_string))
+        out_file.write("cd {}/runs{}/run{}/\n".format(project_directory(location), runs_name, run_string))
         # Delete any residual 'stop' file that would prevent the monitor from running.
-        out_file.write("rm -f {}/runs{}/run{}/monitor_stop.txt\n".format(project_directory(location), runs_letter, run_string))
+        out_file.write("rm -f {}/runs{}/run{}/monitor_stop.txt\n".format(project_directory(location), runs_name, run_string))
         # Start the monitor running in the background.
-        out_file.write("{}/scripts/monitor.py {}/runs{}/run{}/ > {}/runs{}/run{}/monitor_output.txt &\n".format(project_directory(location),  project_directory(location), runs_letter, run_string, project_directory(location), runs_letter, run_string))
+        out_file.write("{}/scripts/monitor.py {}/runs{}/run{}/ > {}/runs{}/run{}/monitor_output.txt &\n".format(project_directory(location),  project_directory(location), runs_name, run_string, project_directory(location), runs_name, run_string))
         # Run pkdgrav3
         out_file.write("{}/pkdgrav3/build_{}/pkdgrav3 ./control.par > ./output.txt\n".format(project_directory(location), location))
         # Create a 'stop' file to stop the monitor program gracefully. This might take up to 5 minutes to have an effect, but that's OK
         # as the remaining steps in this batch file will probably take longer. And it's no big deal of the monitor program stops
         # ungracefully.
-        out_file.write("echo stop > {}/runs{}/run{}/monitor_stop.txt\n".format(project_directory(location), runs_letter, run_string))
+        out_file.write("echo stop > {}/runs{}/run{}/monitor_stop.txt\n".format(project_directory(location), runs_name, run_string))
         # Do the post-processing of pkdgrav3 output
         out_file.write("python3 {}/scripts/pkdgrav3_postprocess.py -l -d -z -f . >> ./output.txt\n".format(project_directory(location)))
         # Create a subdirectory for the fof files
@@ -1314,7 +1314,7 @@ def write_run_script(location, runs_letter, run_string, run_script_file_name, li
         # Move the fof files into the fof subdirectory
         out_file.write("mv -v *.fofstats* ./fof/\n")
         # Go to the parent directory
-        out_file.write("cd {}/runs{}/\n".format(format(project_directory(location)), runs_letter))
+        out_file.write("cd {}/runs{}/\n".format(format(project_directory(location)), runs_name))
         # Zip up all the fof files in the fof subdirectory of the run directory
         out_file.write("tar -czvf run{}.fof.tar.gz ./run{}/fof/\n".format(run_string, run_string))
         # If the zip worked OK, then delete the fof subdirectory and all its contents
@@ -1329,24 +1329,24 @@ def write_run_script(location, runs_letter, run_string, run_script_file_name, li
 def write_run_script_test_harness():
 
     location = "tursa"
-    runs_letter = "Z"
+    runs_name = "Z"
     run_string = "001"
     run_script_file_name = "./foo.sh"
     list_of_set_environment_commands = ["source something\n"]
-    write_run_script(location, runs_letter, run_string, run_script_file_name, list_of_set_environment_commands)
+    write_run_script(location, runs_name, run_string, run_script_file_name, list_of_set_environment_commands)
     
     
 def make_writable_by_group(file_or_directory_name):
     os.chmod(file_or_directory_name, stat.S_IMODE(os.lstat(file_or_directory_name).st_mode) | stat.S_IWGRP)
     
     
-def data_from_runs_directory_data_file(runs_directory_data_file, runs_letter, column):
+def data_from_runs_directory_data_file(runs_directory_data_file, runs_name, column):
     with open(runs_directory_data_file, "r") as f:
         for line in f:
             tokenised_line = line.split(',')
-            if tokenised_line[0] == runs_letter:
+            if tokenised_line[0] == runs_name:
                 return tokenised_line[column].strip()
-    raise AssertionError("Runs letter {} not found in {}; this data file may require updating".format(runs_letter, runs_directory_data_file))
+    raise AssertionError("Runs name {} not found in {}; this data file may require updating".format(runs_name, runs_directory_data_file))
     
     
 def cosmo_params_from_runs_directory(runs_directory, verbose):
@@ -1366,7 +1366,7 @@ def write_status_file(file_name, message):
     
     
 
-def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
+def create_input_files_for_multiple_runs(runs_name, list_of_jobs_string):
 
     # Where are we?
     location = project_location()
@@ -1377,17 +1377,17 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
     script_directory = os.path.join(project_directory(location), "scripts")
     print("Script directory               = {}".format(script_directory))
 
-    runs_directory = os.path.join(project_directory(location), "runs{}".format(runs_letter))
+    runs_directory = os.path.join(project_directory(location), "runs{}".format(runs_name))
     print("Runs directory                 = {}".format(runs_directory))
     
     runs_directory_data_file = os.path.join(script_directory, "runs_directory_data.txt")
     if not os.path.isfile(runs_directory_data_file):
         raise AssertionError("Could not find data file {}".format(runs_directory_data_file))
     
-    source_hdf5_file_name_base = os.path.join(runs_directory, "hdf5/", data_from_runs_directory_data_file(runs_directory_data_file, runs_letter, 2))
+    source_hdf5_file_name_base = os.path.join(runs_directory, "hdf5/", data_from_runs_directory_data_file(runs_directory_data_file, runs_name, 2))
     print("Source hdf file name base      = {}".format(source_hdf5_file_name_base))
     
-    random_seed_offset = int(data_from_runs_directory_data_file(runs_directory_data_file, runs_letter, 1))
+    random_seed_offset = int(data_from_runs_directory_data_file(runs_directory_data_file, runs_name, 1))
     print("Random seed offset             = {}".format(str(random_seed_offset)))
     
     cosmo_params_for_all_runs = cosmo_params_from_runs_directory(runs_directory, True) #seven columns: Omega_m, sigma_8, w, Omega_b, little_h, n_s, m_nu
@@ -1430,7 +1430,7 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
             
             # Copy Concept file.
             source_hdf5_file_name = source_hdf5_file_name_base.format(run_string)
-            target_hdf5_file_base_name = "class_processed_{}_{}.hdf5".format(runs_letter, run_string)
+            target_hdf5_file_base_name = "class_processed_{}_{}.hdf5".format(runs_name, run_string)
             target_hdf5_file_name = os.path.join(this_run_directory, target_hdf5_file_base_name)
             if not os.path.isfile(source_hdf5_file_name):
                 write_status_file(os.path.join(this_run_directory, "error_creating_job_files.txt"), "Could not find HDF5 file")
@@ -1442,7 +1442,7 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
             
                 shutil.copyfile(prototype_job_script_file_name, this_job_script_file_name)
                 change_one_value_in_ini_file(this_job_script_file_name, 'application=', double_quoted_string(run_script_name))
-                change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(runs_letter, run_string))
+                change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(runs_name[0:3], run_string))
                 change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', '47:59:00' if location == 'tursa' else '35:59:00')
 
                 # Cosmology object
@@ -1495,7 +1495,7 @@ def create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string):
                         ## TODO - test this.
                         set_environment_commands = ["module load python/3.6.4\n", "source {}/env/bin/activate\n".format(project_directory(location))]
                  
-                    write_run_script(location, runs_letter, run_string, run_script_name, set_environment_commands)
+                    write_run_script(location, runs_name, run_string, run_script_name, set_environment_commands)
                     
 
                     # Make all the files in directory be writable by the group

@@ -21,7 +21,7 @@ def item_is_in_command_line(command_line_array, short_option, long_option):
 
 
 def show_help():
-    print("Usage: {} runs_letter list_of_jobs_string".format(os.path.basename(__file__)))
+    print("Usage: {} runs_name list_of_jobs_string".format(os.path.basename(__file__)))
 
 
 
@@ -36,10 +36,10 @@ if __name__ == '__main__':
             show_help()
             sys.exit(0)
         
-        runs_letter = command_line_array[1]
+        runs_name = command_line_array[1]
         list_of_jobs_string = " ".join(command_line_array[2:])
 
-        utility.create_input_files_for_multiple_runs(runs_letter, list_of_jobs_string)
+        utility.create_input_files_for_multiple_runs(runs_name, list_of_jobs_string)
         
     except Exception as err:
         print(traceback.format_exc())

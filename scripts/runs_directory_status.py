@@ -21,7 +21,7 @@ def item_is_in_command_line(command_line_array, short_option, long_option):
 
 
 def show_help():
-    print("Usage: {} runs_letter".format(os.path.basename(__file__)))
+    print("Usage: {} runs_name".format(os.path.basename(__file__)))
 
 
 
@@ -36,9 +36,9 @@ if __name__ == '__main__':
             show_help()
             sys.exit(0)
         
-        runs_letter = command_line_array[1]
+        runs_name = command_line_array[1]
 
-        utility.runs_directory_status(runs_letter)
+        utility.runs_directory_status(runs_name)
         
     except Exception as err:
         print(traceback.format_exc())
