@@ -1632,7 +1632,7 @@ def merge_list_of_intervals(list_of_intervals):
             next_interval = list_of_intervals[idx]
             (x1, y1) = current_interval
             (x2, y2) = next_interval
-            if y2 - x2 >= x2 - y1 and x2 - y1 < 4:
+            if min(y1 - x1, y2 - x2, 3) >= x2 - y1:
                 # Merge
                 for i in range(y1, x2):
                     list_of_exclusions.append(i)
