@@ -1313,6 +1313,8 @@ def write_run_script(location, runs_name, run_string, run_script_file_name, list
         out_file.write("mkdir -v ./fof/\n")
         # Move the fof files into the fof subdirectory
         out_file.write("mv -v *.fofstats* ./fof/\n")
+        # Set file permissions to enable group members to delete fof files in their new location as this e.g. makes cleanup easier following a problem
+        out_file.write("chmod g+w -vR ./fof/\n")
         # Go to the parent directory
         out_file.write("cd {}/runs{}/\n".format(format(project_directory(location)), runs_name))
         # Zip up all the fof files in the fof subdirectory of the run directory
