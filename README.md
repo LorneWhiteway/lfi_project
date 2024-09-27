@@ -55,9 +55,9 @@ Details of each step will depend on which cluster is being used - see details be
 1. Go to the project directory
 2. `source ./set_environment_XXX.sh` where 'XXX' refers to the cluster being used ('splinter', 'hypatia', 'wilkes', or 'tursa'.)
 
-## locust cluster
+## locust machine
 
-1. The locust machine is at UCL, and is managed by [James Legg](mailto:j.legg@ucl.ac.uk). See [here](https://www.ucl.ac.uk/advanced-research-computing/here-now-new-platforms) for more information.
+1. UCL's locust machine has a Grace Hopper chip. It is managed by [James Legg](mailto:j.legg@ucl.ac.uk); see [here](https://www.ucl.ac.uk/advanced-research-computing/here-now-new-platforms) for more information.
 2. Project directory is `/data/gower_st/lfi_project`.
 
 ### How to build pkdgrav3 for use by locust
