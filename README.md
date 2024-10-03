@@ -383,7 +383,6 @@ Gower St sims [here](https://docs.google.com/spreadsheets/d/1lfNehrNxl7ggto7P6gN
 Gower St 2 sims [here](https://docs.google.com/spreadsheets/d/18devCbHxK_jniigCTaHK51XTMPVmQ8h34pQGfkbowIQ/edit?gid=0#gid=0).
 
 
-
 ## Adding a new runs directory
 
 Here are the steps to step up a new runs directory (using the _runs_name_`U` as an example):
@@ -395,3 +394,30 @@ Here are the steps to step up a new runs directory (using the _runs_name_`U` as 
 5. In the runs directory create a prototype PKDGRAV3 control file with name `control.par`. It is safe to copy a version from the previous set of runs. This file will be copied into each run directory, and some entries will be modified to be specific to that run. Entries which are not run-specific will not be modified and hence should be checked for correctness.
 6. In the runs directory create a prototype SLURM job file with name `cuda_job_script_[cluster]` where `[cluster]` is one of `tursa`, `wilkes` or `hypatia` as appropriate. It is safe to copy a version from the previous set of runs. This file will be copied into each run directory, and some entries will be modified to be specific to that run. Entries which are not run-specific will not be modified and hence should be checked for correctness.
 7. Run the script `create_input_files.py` (found in the `scripts` directory) with the command line parameters a) the runs_name and b) the run directories to be created. Example: `./create_input_files.py U 1-100`.
+
+## Description of runs
+
+| Runs name | Description |
+| A | Testing. |
+| B | Testing. |
+| C | Standard runs on wilkes as part of the original Gower Street simulations. |
+| D | Testing. |
+| E | Standard runs on wilkes as part of the original Gower Street simulations. |
+| F | Testing. |
+| G | Testing. |
+| H | Testing. |
+| I | Standard runs on wilkes as part of the original Gower Street simulations. |
+| J | Standard runs on wilkes as part of the original Gower Street simulations. |
+| K | Standard runs on wilkes as part of the original Gower Street simulations. |
+| L | Standard runs on wilkes as part of the original Gower Street simulations. |
+| M | Standard runs on wilkes as part of the original Gower Street simulations. |
+| N | Standard runs on wilkes as part of the original Gower Street simulations. |
+| O | Standard runs on wilkes as part of the original Gower Street simulations. |
+| P | Standard runs on wilkes as part of the original Gower Street simulations. |
+| Q | Standard runs on wilkes as part of the original Gower Street simulations. |
+| R | Standard runs on wilkes as part of the original Gower Street simulations. |
+| S | Standard runs on wilkes as part of the original Gower Street simulations. |
+| T | Standard runs on Tursa as part of the Gower Street extended runs. |
+| U | Standard runs on Tursa as part of the Gower Street extended runs. |
+| V | Standard runs on Tursa as part of the Gower Street extended runs. |
+| V14 | Testing. |
