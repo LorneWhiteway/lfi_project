@@ -983,8 +983,12 @@ def move_to_archive(runs_name, list_of_run_nums_one_based):
         for file_name_base in ["run{}.fof.tar.gz".format(run_num_str), "run{}.tar.gz".format(run_num_str)]:
             source_file = os.path.join(runs_directory, file_name_base)
             target_file = os.path.join(archive_directory, file_name_base)
-            print("Moving {} to {}".format(source_file, target_file))
-            shutil.move(source_file, target_file)
+            if os.path.isfile(source_file):
+                print("Moving {} to {}".format(source_file, target_file))
+                shutil.move(source_file, target_file)
+            else:
+                print("NOT moving {} to {} as source file does not exist".format(source_file, target_file))
+                
     print("\n")
 
 
