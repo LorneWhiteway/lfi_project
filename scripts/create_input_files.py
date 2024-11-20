@@ -32,13 +32,13 @@ if __name__ == '__main__':
     
         command_line_array = sys.argv
     
-        if len(command_line_array) < 3 or item_is_in_command_line(command_line_array, "-h", "--help"):
+        if len(command_line_array) < 4 or item_is_in_command_line(command_line_array, "-h", "--help"):
             show_help()
             sys.exit(0)
         
         runs_name = command_line_array[1]
         
-        use_concept_string = command_line_array[1]
+        use_concept_string = command_line_array[2]
         if use_concept_string == "concept":
             use_concept = True
         elif use_concept_string == "noconcept":
