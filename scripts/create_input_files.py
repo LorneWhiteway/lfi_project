@@ -43,7 +43,7 @@ if __name__ == '__main__':
             use_concept = True
         elif use_concept_string == "noconcept":
             use_concept = False
-        else
+        else:
             raise AssertionError("use_concept_string should be 'concept' or 'noconcept'")
         
         list_of_jobs_string = " ".join(command_line_array[3:])
