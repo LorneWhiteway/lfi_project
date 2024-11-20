@@ -1372,9 +1372,11 @@ def write_status_file(file_name, message):
     
     
 
-def create_input_files_for_multiple_runs(runs_name, list_of_jobs_string):
+def create_input_files_for_multiple_runs(runs_name, use_concept, list_of_jobs_string):
+    
+    if not use_concept:
+        raise AssertionError("'noconcept' not yet supported.")
 
-    # Where are we?
     location = project_location()
     print("Project location               = {}".format(location))
     
@@ -1807,7 +1809,7 @@ if __name__ == '__main__':
     #get_parameter_from_log_file_test_harness()
     #gower_street_run_times()
     #plot_two_lightcone_files()
-    #create_input_files_for_multiple_runs('T', '201-210')
+    #create_input_files_for_multiple_runs('T', True, '201-210')
     #fof_file_format_experiment()
     #encode_list_of_job_strings_test_harness()
     

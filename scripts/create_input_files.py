@@ -21,7 +21,7 @@ def item_is_in_command_line(command_line_array, short_option, long_option):
 
 
 def show_help():
-    print("Usage: {} runs_name list_of_jobs_string".format(os.path.basename(__file__)))
+    print("Usage: {} runs_name use_concept_string list_of_jobs_string".format(os.path.basename(__file__)))
 
 
 
@@ -37,9 +37,19 @@ if __name__ == '__main__':
             sys.exit(0)
         
         runs_name = command_line_array[1]
-        list_of_jobs_string = " ".join(command_line_array[2:])
+        
+        use_concept_string = command_line_array[1]
+        if use_concept_string == "concept":
+            use_concept = True
+        elif use_concept_string == "noconcept":
+            use_concept = False
+        else
+            raise AssertionError("use_concept_string should be 'concept' or 'noconcept'")
+        
+        list_of_jobs_string = " ".join(command_line_array[3:])
+        
 
-        utility.create_input_files_for_multiple_runs(runs_name, list_of_jobs_string)
+        utility.create_input_files_for_multiple_runs(runs_name, use_concept, list_of_jobs_string)
         
     except Exception as err:
         print(traceback.format_exc())
