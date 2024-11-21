@@ -22,5 +22,5 @@ if [[ $ans == "y" ]]; then
 	mkdir $BUILD_DIR
 	cd ./$BUILD_DIR
 	cmake ..
-	make
+	make -j 32
 fi
