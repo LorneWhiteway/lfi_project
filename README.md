@@ -395,7 +395,7 @@ Here are the steps to step up a new runs directory (using the _runs_name_`U` as 
 4. Update the data file `runs_directory_data.txt` in the scripts directory. This is a comma-delimited text file with one row per runs directory. Each row should have a) the name of the runs (e.g. "U"), followed by b) an integer to be used as an offset for the random seeds for these runs, followed by c) the pattern for the naming convention for the hdf5 files (see step 3), but the run number string replaced by `{}`. For the random seed offset use the number from the previous set of runs, plus the number of runs in that previous set. Example line: `U,1394,class_processed_gs2_batch2_{}.hdf5`; note that set `T` used a random seed offset of 882, and set `T` had 512 runs.
 5. In the runs directory create a prototype PKDGRAV3 control file with name `control.par`. It is safe to copy a version from the previous set of runs. This file will be copied into each run directory, and some entries will be modified to be specific to that run. Entries which are not run-specific will not be modified and hence should be checked for correctness.
 6. In the runs directory create a prototype SLURM job file with name `cuda_job_script_[cluster]` where `[cluster]` is one of `tursa`, `wilkes` or `hypatia` as appropriate. It is safe to copy a version from the previous set of runs. This file will be copied into each run directory, and some entries will be modified to be specific to that run. Entries which are not run-specific will not be modified and hence should be checked for correctness.
-7. Run the script `create_input_files.py` (found in the `scripts` directory) with the command line parameters a) the runs_name and b) the run directories to be created. Example: `./create_input_files.py U True 1-100`.
+7. Run the script `create_input_files.py` (found in the `scripts` directory) with the command line parameters a) the runs_name, b) 'concept' ot 'noconcept', and c) the run directories to be created. Example: `./create_input_files.py U concept 1-100`.
 
 ## Description of runs
 
@@ -423,4 +423,5 @@ Here are the steps to step up a new runs directory (using the _runs_name_`U` as 
 | T | Standard runs on Tursa as part of the Gower Street extended runs. |
 | U | Standard runs on Tursa as part of the Gower Street extended runs. |
 | V | Standard runs on Tursa as part of the Gower Street extended runs. |
-| V14 | Testing. |
+| V14 | Testing. See the readme in that directory for more information. |
+| W | Non-CONCEPT runs on Tursa as part of the Gower Street extended runs. |
