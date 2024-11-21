@@ -1177,37 +1177,28 @@ def set_of_wavenumbers():
     5.34147E+02,7.45462E+02,1.04038E+03,1.45196E+03,2.02638E+03,2.82804E+03,3.94684E+03,5.50826E+03,
     7.68740E+03,1.07286E+04])
     
-   
-# ncdm is the total neutrino mass in eV.
-def make_specific_cosmology_transfer_function(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, ncdm, P_k_max):
-
-    from nbodykit.lab import cosmology
-
-    transfer_function_file_name = os.path.join(directory, "transfer_function.txt")
     
+    
+def make_specific_cosmology_transfer_function_from_cosmology_object(transfer_function_file_name, linear_power_file_name, cosmology_object):
+    from nbodykit.lab import cosmology
     k = set_of_wavenumbers()
-    cosmology_object = make_specific_cosmology(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, ncdm, P_k_max)
+    
     transfer_function = np.column_stack([k, cosmology.power.transfers.CLASS(cosmology_object, 0.0)(k)])
     transfer_function = trim_rows_containing_nan(transfer_function)
+    
     np.savetxt(transfer_function_file_name, transfer_function, delimiter = " ", fmt = "%10.5E")
-        
-    linear_power_file_name = os.path.join(directory, "linear_power.txt")
+
     linear_power = np.column_stack([k, cosmology.power.linear.LinearPower(cosmology_object, 0.0, transfer='CLASS')(k)])
     linear_power = trim_rows_containing_nan(linear_power)
     np.savetxt(linear_power_file_name, linear_power, delimiter = " ", fmt = "%10.5E")
     
     
-    if False:
-        print("Saved transfer function in {}".format(transfer_function_file_name))
-        print("Parameters:")
-        for line in cosmology_summary(cosmology_object):
-            print(line)
-            
-    return cosmology_object
 
 
-def make_specific_cosmology_transfer_function_caller():
-    make_specific_cosmology_transfer_function("/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/foo",
+def make_specific_cosmology_transfer_function_from_cosmology_object_caller():
+    directory = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/foo"
+    
+    cosmology_object = make_specific_cosmology(directory,
         Omega0_m = 0.249628758416763685,
         sigma8 = 0.950496160083634467,
         w = -0.792417404234305733,
@@ -1216,6 +1207,9 @@ def make_specific_cosmology_transfer_function_caller():
         n_s = 0.951311068780816615,
         ncdm = 0.06,
         P_k_max = 100.0)
+    
+    make_specific_cosmology_transfer_function_from_cosmology_object(os.path.join(directory, 'transfer_function.txt'), os.path.join(directory, 'linear_power.txt'), cosmology_object)
+    
     
     
 
@@ -1228,6 +1222,7 @@ def make_specific_cosmology_transfer_function_caller():
 def double_quoted_string(s):
     return '"' + s + '"'
     
+# new_value can be 'DELETE' to mean 'remove this key from the file'.
 def change_one_value_in_ini_file(file_name, key, new_value):
     list_of_lines = []
     
@@ -1235,8 +1230,9 @@ def change_one_value_in_ini_file(file_name, key, new_value):
     with open(file_name, 'r') as infile:
         for line in infile:
             if line.find(key) == 0:
-                new_line = key + new_value + "\n"
-                list_of_lines.append(new_line)
+                if new_value != "DELETE":
+                    new_line = key + new_value + "\n"
+                    list_of_lines.append(new_line)
                 key_was_found = True
             else:
                 list_of_lines.append(line)
@@ -1374,9 +1370,6 @@ def write_status_file(file_name, message):
 
 def create_input_files_for_multiple_runs(runs_name, use_concept, list_of_jobs_string):
     
-    if not use_concept:
-        raise AssertionError("'noconcept' not yet supported.")
-
     location = project_location()
     print("Project location               = {}".format(location))
     
@@ -1392,8 +1385,9 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, list_of_jobs_st
     if not os.path.isfile(runs_directory_data_file):
         raise AssertionError("Could not find data file {}".format(runs_directory_data_file))
     
-    source_hdf5_file_name_base = os.path.join(runs_directory, "hdf5/", data_from_runs_directory_data_file(runs_directory_data_file, runs_name, 2))
-    print("Source hdf file name base      = {}".format(source_hdf5_file_name_base))
+    if use_concept:
+        source_hdf5_file_name_base = os.path.join(runs_directory, "hdf5/", data_from_runs_directory_data_file(runs_directory_data_file, runs_name, 2))
+        print("Source hdf file name base      = {}".format(source_hdf5_file_name_base))
     
     random_seed_offset = int(data_from_runs_directory_data_file(runs_directory_data_file, runs_name, 1))
     print("Random seed offset             = {}".format(str(random_seed_offset)))
@@ -1418,24 +1412,27 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, list_of_jobs_st
                 
         if run_num_one_based > num_runs:
             print("Ignoring {} as it is too large for {}".format(run_num_one_based, cosmo_params_for_all_runs_file_name))
-        else:
-            run_num_zero_based = run_num_one_based - 1
-            run_string = zfilled_run_num(run_num_one_based)
-            this_run_directory = os.path.join(runs_directory, "run" + run_string)
-            
-            this_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path(location))
-            this_control_file_name = os.path.join(this_run_directory, control_file_name_no_path)
-            run_script_name = os.path.join(this_run_directory, "pkdgrav3_and_post_process_{}.sh".format(location))
-            
+            continue
+
+        run_num_zero_based = run_num_one_based - 1
+        run_string = zfilled_run_num(run_num_one_based)
+        this_run_directory = os.path.join(runs_directory, "run" + run_string)
         
-            # Delete any existing directory (and all its contents), make a new (empty) directory and set permissions
-            # to include 'writable by group'
-            print("Creating {}".format(this_run_directory))
-            shutil.rmtree(this_run_directory, ignore_errors = True)
-            os.makedirs(this_run_directory, exist_ok = False)
-            make_writable_by_group(this_run_directory)
-            
-            
+        this_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path(location))
+        this_control_file_name = os.path.join(this_run_directory, control_file_name_no_path)
+        run_script_name = os.path.join(this_run_directory, "pkdgrav3_and_post_process_{}.sh".format(location))
+        
+    
+        # Delete any existing directory (and all its contents), make a new (empty) directory and set permissions
+        # to include 'writable by group'
+        print("Creating {}".format(this_run_directory))
+        shutil.rmtree(this_run_directory, ignore_errors = True)
+        os.makedirs(this_run_directory, exist_ok = False)
+        make_writable_by_group(this_run_directory)
+        
+        
+        
+        if use_concept:
             # Copy Concept file.
             source_hdf5_file_name = source_hdf5_file_name_base.format(run_string)
             target_hdf5_file_base_name = "class_processed_{}_{}.hdf5".format(runs_name, run_string)
@@ -1443,72 +1440,92 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, list_of_jobs_st
             if not os.path.isfile(source_hdf5_file_name):
                 write_status_file(os.path.join(this_run_directory, "error_creating_job_files.txt"), "Could not find HDF5 file")
                 print("    FAILED: could not find hdf file {}".format(source_hdf5_file_name))
-            else:
-                shutil.copyfile(source_hdf5_file_name, target_hdf5_file_name)
+                continue
+            shutil.copyfile(source_hdf5_file_name, target_hdf5_file_name)
+      
+        
+        shutil.copyfile(prototype_job_script_file_name, this_job_script_file_name)
+        change_one_value_in_ini_file(this_job_script_file_name, 'application=', double_quoted_string(run_script_name))
+        change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(runs_name[0:3], run_string))
+        change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', '47:59:00' if location == 'tursa' else '35:59:00')
+
+        # Cosmology object
+        try:
+            cosmology_object = make_specific_cosmology(this_run_directory,
+                Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
+                sigma8 = cosmo_params_for_all_runs[run_num_zero_based, 1],
+                w = cosmo_params_for_all_runs[run_num_zero_based, 2],
+                Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 3],
+                h = cosmo_params_for_all_runs[run_num_zero_based, 4],
+                n_s = cosmo_params_for_all_runs[run_num_zero_based, 5],
+                ncdm = cosmo_params_for_all_runs[run_num_zero_based, 6],
+                P_k_max=100.0)
                 
+        except Exception as err:
+            write_status_file(os.path.join(this_run_directory, "error_creating_job_files.txt"), "Unable to create cosmology object")
+            print("    FAILED: unable to create cosmology object for {}".format(this_run_directory))
+            continue
+            
+        # Control file
+        shutil.copyfile(prototype_control_file_name, this_control_file_name)
+        if use_concept:
+            change_one_value_in_ini_file(this_control_file_name, 'dNormalization   = ', "{} # calculated from sigma_8 = {}".format(cosmology_object.A_s, cosmology_object.sigma8))
+            change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', '"./' + target_hdf5_file_base_name + '"')
+            change_one_value_in_ini_file(this_control_file_name, 'achLinSpecies    = ', '"g+ncdm[0]+fld+metric" # these species are considered in the evolution')
+            change_one_value_in_ini_file(this_control_file_name, 'achPkSpecies     = ', '"g+ncdm[0]+fld"        # these species are considered in the power computation')
+            change_one_value_in_ini_file(this_control_file_name, 'bClass           = ', '1 # In the bClass=1 mode the cosmology is entirely read from the HDF5 file specified in achClassFilename.')
+            change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', 'DELETE')
+            change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', '0.0    # This is a dummy parameter, just to have the parameter defined')
+            change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', 'DELETE')
+            change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', 'DELETE')
+            change_one_value_in_ini_file(this_control_file_name, 'w0              = ', 'DELETE')
+            change_one_value_in_ini_file(this_control_file_name, 'h               = ', 'DELETE')
+        else:
+            OmegaDE = cosmology_object.Ode0
+            transfer_function_base_file_name = "transfer_function_{}_{}.txt".format(runs_name, run_string)
+            transfer_function_file_name = os.path.join(this_run_directory, transfer_function_base_file_name)
+            linear_power_file_name = transfer_function_file_name.replace("transfer_function", "linear_power")
+
+            change_one_value_in_ini_file(this_control_file_name, 'dNormalization   = ', 'DELETE')
+            change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', 'DELETE')
+            change_one_value_in_ini_file(this_control_file_name, 'achLinSpecies    = ', 'DELETE')
+            change_one_value_in_ini_file(this_control_file_name, 'achPkSpecies     = ', 'DELETE')
+            change_one_value_in_ini_file(this_control_file_name, 'bClass           = ', 'DELETE')
+            change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./{}"'.format(transfer_function_base_file_name))
+            change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(1.0-OmegaDE) + "    # 1-dOmegaDE")
+            change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(OmegaDE) + "    # Equal to Omega_fld in transfer function")
+            change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 1]))
+            # Work around pkdgrav3 ini file parsing bug - doesn't like negative numbers.
+            acos_w_string = "2.0*math.cos({})  # {}".format(math.acos(cosmo_params_for_all_runs[run_num_zero_based, 2] / 2.0), cosmo_params_for_all_runs[run_num_zero_based, 2])
+            change_one_value_in_ini_file(this_control_file_name, 'w0              = ', acos_w_string)
+            change_one_value_in_ini_file(this_control_file_name, 'h               = ', str(cosmo_params_for_all_runs[run_num_zero_based, 4]))
+            
+            make_specific_cosmology_transfer_function_from_cosmology_object(transfer_function_file_name, linear_power_file_name, cosmology_object)
             
             
-                shutil.copyfile(prototype_job_script_file_name, this_job_script_file_name)
-                change_one_value_in_ini_file(this_job_script_file_name, 'application=', double_quoted_string(run_script_name))
-                change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(runs_name[0:3], run_string))
-                change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', '47:59:00' if location == 'tursa' else '35:59:00')
+        change_one_value_in_ini_file(this_control_file_name, 'dSpectral        = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
+        change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "        # Random seed")
+        change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "1250       # Mpc/h")
+        change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1350       # Simulation has nGrid^3 particles")
+        change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "4096 # NSide for output lightcone healpix maps.")
+        change_one_value_in_ini_file(this_control_file_name, 'nMinMembers     = ', "10")
+        change_one_value_in_ini_file(this_control_file_name, 'nGridLin         = ', "337")
+        
+        
+        if location == 'wilkes':
+            set_environment_commands = ["module load python/3.8\n", "source {}/env/bin/activate\n".format(project_directory(location))]
+        elif location == 'tursa':
+            set_environment_commands = ["source {}/set_environment_tursa.sh\n".format(project_directory(location))]
+        elif location == 'hypatia':
+            ## TODO - test this.
+            set_environment_commands = ["module load python/3.6.4\n", "source {}/env/bin/activate\n".format(project_directory(location))]
+     
+        write_run_script(location, runs_name, run_string, run_script_name, set_environment_commands)
+        
 
-                # Cosmology object
-                cosmology_object_created_OK = False
-                try:
-                    cosmology_object = make_specific_cosmology(this_run_directory,
-                        Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
-                        sigma8 = cosmo_params_for_all_runs[run_num_zero_based, 1],
-                        w = cosmo_params_for_all_runs[run_num_zero_based, 2],
-                        Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 3],
-                        h = cosmo_params_for_all_runs[run_num_zero_based, 4],
-                        n_s = cosmo_params_for_all_runs[run_num_zero_based, 5],
-                        ncdm = cosmo_params_for_all_runs[run_num_zero_based, 6],
-                        P_k_max=100.0)
-                    cosmology_object_created_OK = True
-                except Exception as err:
-                    write_status_file(os.path.join(this_run_directory, "error_creating_job_files.txt"), "Unable to create cosmology object")
-                    print("    FAILED: unable to create cosmology object for {}".format(this_run_directory))
-                    
-                if cosmology_object_created_OK:
-                    
-                    ###OmegaDE = cosmology_object.Ode0
-
-                    # Control file
-                    shutil.copyfile(prototype_control_file_name, this_control_file_name)
-                    ###change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./transfer_function.txt"')
-                    ###change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(1.0-OmegaDE) + "    # 1-dOmegaDE")
-                    ###change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(OmegaDE) + "    # Equal to Omega_fld in transfer function")
-                    ###change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 1]))
-                    #### Work around pkdgrav3 ini file parsing bug - doesn't like negative numbers.
-                    ###acos_w_string = "2.0*math.cos({})  # {}".format(math.acos(cosmo_params_for_all_runs[run_num_zero_based, 2] / 2.0), cosmo_params_for_all_runs[run_num_zero_based, 2])
-                    ###change_one_value_in_ini_file(this_control_file_name, 'w0              = ', acos_w_string)
-                    ###change_one_value_in_ini_file(this_control_file_name, 'h               = ', str(cosmo_params_for_all_runs[run_num_zero_based, 4]))
-                    change_one_value_in_ini_file(this_control_file_name, 'dSpectral        = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
-                    change_one_value_in_ini_file(this_control_file_name, 'dNormalization   = ', "{} # calculated from sigma_8 = {}".format(cosmology_object.A_s, cosmology_object.sigma8))
-                    change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', '"./' + target_hdf5_file_base_name + '"')
-                    change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "        # Random seed")
-                    change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "1250       # Mpc/h")
-                    change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1350       # Simulation has nGrid^3 particles")
-                    change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "4096 # NSide for output lightcone healpix maps.")
-                    change_one_value_in_ini_file(this_control_file_name, 'nMinMembers     = ', "10")
-                    change_one_value_in_ini_file(this_control_file_name, 'nGridLin         = ', "337")
-                    
-                    
-                    if location == 'wilkes':
-                        set_environment_commands = ["module load python/3.8\n", "source {}/env/bin/activate\n".format(project_directory(location))]
-                    elif location == 'tursa':
-                        set_environment_commands = ["source {}/set_environment_tursa.sh\n".format(project_directory(location))]
-                    elif location == 'hypatia':
-                        ## TODO - test this.
-                        set_environment_commands = ["module load python/3.6.4\n", "source {}/env/bin/activate\n".format(project_directory(location))]
-                 
-                    write_run_script(location, runs_name, run_string, run_script_name, set_environment_commands)
-                    
-
-                    # Make all the files in directory be writable by the group
-                    for file_name in glob.glob(os.path.join(this_run_directory, "*")):
-                        make_writable_by_group(file_name)
+        # Make all the files in directory be writable by the group
+        for file_name in glob.glob(os.path.join(this_run_directory, "*")):
+            make_writable_by_group(file_name)
 
 
 
@@ -1799,7 +1816,7 @@ if __name__ == '__main__':
     #compare_two_lightcones_by_power_spectra()
     #get_float_from_control_file_test_harness()
     #compare_two_time_spacings()
-    #make_specific_cosmology_transfer_function_caller()
+    #make_specific_cosmology_transfer_function_from_cosmology_object_caller()
     #monitor()
     #tomographic_slice_number_from_lightcone_file_name_test_harness()
     #object_count_file_test_harness()
