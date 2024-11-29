@@ -25,6 +25,6 @@ Here is a description of the various runs:
 | 005 | As runsV/run014, but with high-resolution inpout CONCEPT file. Output simulation box at steps 63 and 100. |
 | 006 | As runsV/run014, with input files from _before_ changes to the 'Python code that creates input files' to optionally run without CONCEPT. Never actually run; used simply to allow comparison of input files. |
 | 007 | As runsV/run014, with input files from _after_ changes to the 'Python code that creates input files' to optionally run without CONCEPT. |
-| 008 | As runsV/run014, with input files that do not require CONCEPT. |
+| 008 | As runsV/run014, with input files that do not require CONCEPT. Output simulation box at steps 63 and 100.|
 
 
