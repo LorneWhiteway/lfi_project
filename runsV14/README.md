@@ -26,5 +26,6 @@ Here is a description of the various runs:
 | 006 | As runsV/run014, with input files from _before_ changes to the 'Python code that creates input files' to optionally run without CONCEPT. Never actually run; used simply to allow comparison of input files. |
 | 007 | As runsV/run014, with input files from _after_ changes to the 'Python code that creates input files' to optionally run without CONCEPT. |
 | 008 | As runsV/run014, with input files that do not require CONCEPT. Output simulation box at steps 63 and 100.|
+| 009 | As run008, but with changes to the jobfile: partition changed from 'gpu-a100-80' to 'gpu' and 'cpus-per-task' changed from 48 to 32. These changes will allow running on a wider range of hardware. |
 
 
