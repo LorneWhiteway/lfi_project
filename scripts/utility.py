@@ -1411,7 +1411,7 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, list_of_jobs_st
     for run_num_one_based in decode_list_of_jobs_string(list_of_jobs_string):
                 
         if run_num_one_based > num_runs:
-            print("Ignoring {} as it is too large for {}".format(run_num_one_based, cosmo_params_for_all_runs_file_name))
+            print("Ignoring run {} as the parameters file has information only up to run {}".format(run_num_one_based, num_runs))
             continue
 
         run_num_zero_based = run_num_one_based - 1
