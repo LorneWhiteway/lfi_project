@@ -838,10 +838,12 @@ def parse_squeue_output(runs_name):
 
 
 def print_disk_space_report(runs_directory):
-    this_id = run_command(["id", "-g"])[0]
-    command = ["lfs", "quota", "-hp", this_id, runs_directory]
-    for el in run_command(command):
-        print(el)
+    location = project_location()
+    if location == "tursa":
+        this_id = run_command(["id", "-g"])[0]
+        command = ["lfs", "quota", "-hp", this_id, runs_directory]
+        for el in run_command(command):
+            print(el)
     
     
     
