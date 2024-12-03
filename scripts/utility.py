@@ -844,6 +844,7 @@ def print_disk_space_report(runs_directory):
         command = ["lfs", "quota", "-hp", this_id, runs_directory]
         for el in run_command(command):
             print(el)
+        print("--------------------------------------------------")
     
     
     
@@ -1026,6 +1027,9 @@ def print_user_report(output_from_squeue):
     for user in user_dict:
         print("{} has launched {} jobs of which {} are running and {} are queued".format(user, user_dict[user][0], user_dict[user][1], user_dict[user][0]-user_dict[user][1]))
         
+    if user_dict:
+        print("--------------------------------------------------")
+        
 # Prints status and returns list of runs awaiting archiving
 def runs_directory_status_core(runs_name, runs_directory, num_runs, do_print):
     output_from_squeue = parse_squeue_output(runs_name)
@@ -1063,9 +1067,8 @@ def runs_directory_status_core(runs_name, runs_directory, num_runs, do_print):
         report_one_code(17, "{} runs have finished and are awaiting archiving: {}", code_runs)
         print("--------------------------------------------------")
         print_user_report(output_from_squeue)
-        print("--------------------------------------------------")
         print_disk_space_report(runs_directory)
-        print("--------------------------------------------------")
+        
     
     return code_runs[17]
  
