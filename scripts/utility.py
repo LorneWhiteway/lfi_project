@@ -57,11 +57,11 @@ def get_array_of_z_values_from_log_file(log_file_name):
     
     
 # Typical input file name will be 'run.log'.
-def get_parameter_from_log_file(log_file_name, parameter_name):
+def get_parameter_from_text_file(log_file_name, parameter_name, token_separator):
     with open(log_file_name, "r") as f:
         for line in f:
             if parameter_name in line:
-                tokenised_string = line.split(" ")
+                tokenised_string = line.split(token_separator)
                 for (token, i) in zip(tokenised_string, range(len(tokenised_string))):
                     if token == parameter_name or token == (parameter_name + ":"):
                         if i < len(tokenised_string) - 1:
@@ -69,10 +69,10 @@ def get_parameter_from_log_file(log_file_name, parameter_name):
     raise SystemError("Could not find parameter {} in log file {}".format(parameter_name, log_file_name))
     
     
-def get_parameter_from_log_file_test_harness():
+def get_parameter_from_text_file_test_harness():
     log_file_name = "/rds/user/dc-whit2/rds-dirac-dp153/lfi_project/runsI/run001/run.log"
     parameter_name = "dOmega0"
-    print(get_parameter_from_log_file(log_file_name, parameter_name))
+    print(get_parameter_from_text_file(log_file_name, parameter_name, " "))
     
 
 
@@ -512,7 +512,7 @@ def build_z_values_file(directory, out_name):
     z_arr = get_array_of_z_values_from_log_file(log_file_name)
     s_arr = range(z_arr.shape[0])
     
-    Om0 = get_parameter_from_log_file(log_file_name, "dOmega0")
+    Om0 = get_parameter_from_text_file(log_file_name, "dOmega0", " ")
     cosmo = FlatLambdaCDM(H0=100.0, Om0=Om0) # Will only be approximately correct.
     
     box_size = float(get_from_control_file(control_file_name, "dBoxSize"))
@@ -1126,15 +1126,15 @@ def cosmology_summary(cosmo):
     
     
 # Omega0_m is the sum of the energy densities for b, cdm and nu.
-# ncdm is the total neutrino mass in eV.
-def make_specific_cosmology(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, ncdm, P_k_max):
+# m_ncdm is the total neutrino mass in eV.
+def make_specific_cosmology(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, m_ncdm, P_k_max):
     from nbodykit.lab import cosmology
     
     # Inferred neutrino energy density
-    Omega0_nu = ncdm / (93.14 * h * h)
+    Omega0_nu = m_ncdm / (93.14 * h * h)
     # Implied cdm energy density
     Omega0_cdm = Omega0_m - Omega0_b - Omega0_nu
-    cosmology_object = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=Omega0_cdm, w0_fld=w, n_s=n_s, m_ncdm=ncdm, P_k_max=P_k_max).match(sigma8=sigma8)
+    cosmology_object = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=Omega0_cdm, w0_fld=w, n_s=n_s, m_ncdm=m_ncdm, P_k_max=P_k_max).match(sigma8=sigma8)
     
     # Check that all this yields the expected Omega0_m:
     assert abs(cosmology_object.Omega0_m/Omega0_m - 1.0) < 2e-6, "Failed to match input Omega0_m when creating cosmology object: target = {}, actual = {}".format(Omega0_m, cosmology_object.Omega0_m)
@@ -1210,7 +1210,7 @@ def make_specific_cosmology_transfer_function_from_cosmology_object_caller():
         Omega0_b = 0.043508831007317443,
         h = 0.716547375449984592,
         n_s = 0.951311068780816615,
-        ncdm = 0.06,
+        m_ncdm = 0.06,
         P_k_max = 100.0)
     
     make_specific_cosmology_transfer_function_from_cosmology_object(os.path.join(directory, 'transfer_function.txt'), os.path.join(directory, 'linear_power.txt'), cosmology_object)
@@ -1264,6 +1264,8 @@ def project_directory(location):
         return "/share/splinter/ucapwhi/lfi_project"
     elif location == 'hypatia':
         return "/share/rcifdata/ucapwhi/lfi_project"
+    elif location == 'locust':
+        return "/data/gower_st/lfi_project"
     elif location == 'current':
         # Return parent directory of directory containing script.
         # See also https://stackoverflow.com/questions/2860153/how-do-i-get-the-parent-directory-in-python
@@ -1272,9 +1274,9 @@ def project_directory(location):
         return os.path.dirname(script_directory)
         
         
-# Returns one of 'wilkes', 'tursa', 'splinter', or 'hypatia'
+# Returns one of 'wilkes', 'tursa', 'splinter', 'hypatia', or 'locust'
 def project_location():
-    for location in ['wilkes', 'tursa', 'splinter', 'hypatia']:
+    for location in ['wilkes', 'tursa', 'splinter', 'hypatia', 'locust']:
         if project_directory('current') == project_directory(location):
             return location
     raise AssertionError("Unable to determine project location")
@@ -1463,7 +1465,7 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, list_of_jobs_st
                 Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 3],
                 h = cosmo_params_for_all_runs[run_num_zero_based, 4],
                 n_s = cosmo_params_for_all_runs[run_num_zero_based, 5],
-                ncdm = cosmo_params_for_all_runs[run_num_zero_based, 6],
+                m_ncdm = cosmo_params_for_all_runs[run_num_zero_based, 6],
                 P_k_max=100.0)
                 
         except Exception as err:
@@ -1812,6 +1814,203 @@ def fof_file_format_experiment():
 
 
 
+
+
+#### ==================== Start of code (October 2024) for calling class directly rather than via nbodykit ====================
+#### Omega0_m is the sum of the energy densities for b, cdm and nu.
+#### m_ncdm is the total neutrino mass in eV.
+
+###from classy import Class
+
+
+###def classy_params_from_A_s(Omega0_m, A_s, w, Omega0_b, h, n_s, m_ncdm, P_k_max):
+###
+###    T_cmb = 2.7255
+###    Omega_radiation = 4.4817e-7 * T_cmb**4 * h**-2 # The constant is (8/45) pi^3 k_Boltz^4 G hbar^-3 c^-5 (100km/s/Mpc)^-2 (Stefan-Boltzmann law)
+###
+###    # Inferred neutrino energy density
+###    Omega0_nu = m_ncdm / (93.14 * h * h)
+###    # Implied cdm energy density
+###    Omega0_cdm = Omega0_m - Omega0_b - Omega0_nu - Omega_radiation
+###
+###    # Fixed values in this list of parameters are from Planck15 (at least, according to nbodykit).
+###    #T_cmb = 2.7255
+###    _mv = [m_ncdm/3.0, m_ncdm/3.0, m_ncdm/3.0]
+###    _precision = 8
+###    params = {
+###        'output': 'vTk dTk mPk',
+###        'extra metric transfer functions': 'y',
+###        'n_s': n_s,
+###        'gauge': 'synchronous',
+###        #'N_ur': 2.0328,
+###        #'k_pivot': 0.05,
+###        #'tau_reio': 0.066,
+###        #'T_cmb': T_cmb,
+###        'Omega_k': 0.0,
+###        #'N_ncdm': 1,
+###        'z_max_pk': P_k_max,
+###        'h': h,
+###        'w0_fld': w,
+###        'Omega_cdm': Omega0_cdm,
+###        'Omega_b': Omega0_b,
+###        'Omega_Lambda': 0.0,
+###        'P_k_max_h/Mpc': 100.0,
+###        'A_s': A_s,
+###        'N_ur': 0,
+###        'deg_ncdm': 3,
+###        #'N_eff': 3.046,
+###        'T_ncdm': (4/11)**(1/3) * (3.046/3)**(1/4),
+###        'N_ncdm': 1,
+###        'm_ncdm': m_ncdm/3.,
+###        # New from NJ
+###        'radiation_streaming_approximation': 3,
+###        'ur_fluid_approximation'           : 3,
+###        #'l_max_g'                          : 1001,
+###        #'l_max_pol_g'                      : 1001,
+###        #'l_max_ur'                         : 1001,
+###        # Neutrino precision parameters
+###        #'ncdm_fluid_approximation': 3,
+###        #'Quadrature strategy'     : 3,
+###        #'l_max_ncdm'              : 2*_precision+1,
+###        #'Number of momentum bins' : min([50, _precision]),
+###        ##'Maximum q'               : 18,
+###        # General precision parameters
+###        #'evolver'                     : 0,
+###        ##'recfast_Nz0'                 : 1e+5,
+###        #'tol_thermo_integration'      : 1e-6,
+###        ##'perturb_integration_stepsize': 0.25,
+###        ##'perturb_sampling_stepsize'   : 0.01
+###        }
+###
+###    cosmo = Class()
+###
+###    cosmo.set(params)
+###    cosmo.compute()
+###
+###    # Infer the relative energy density today for 'fld' (= fluid dark energy).
+###    # When using nbodykit we were able to get Omega_fld (relative energy density today for 'fld' (= fluid dark energy))
+###    # directly, by calling cosmo.Ode0(), which in turn gave cosmo.Omega_lambda() + cosmo.Omega0_fld() -
+###    # see https://nbodykit.readthedocs.io/en/latest/getting-started/cosmology.html.
+###    # But I can't see a way to get Omega0_fld via classy. So instead I will infer it from the assumption that the sum
+###    # of the relative energy densities is unity. This yields a small difference, on the order of one part in 30000, from the nbodykit calculation.
+###    # NJ is prepared to live with this (Slack conversation, 15 Oct 2024).
+###    Omega_radiation = 4.4817e-7 * T_cmb**4 * h**-2 # The constant is (8/45) pi^3 k_Boltz^4 G hbar^-3 c^-5 (100km/s/Mpc)^-2 (Stefan-Boltzmann law)
+###    Omega_fld = 1.0 - (cosmo.Omega0_k() + cosmo.Omega_b() + cosmo.Om_cdm(z=0) + cosmo.Om_ncdm(z=0) + Omega_radiation)
+###
+###    params['sigma8'] = cosmo.sigma8()
+###    params['Omega0_k'] = cosmo.Omega0_k()
+###    params['Omega_fld'] = Omega_fld
+###    params['Omega0_cb'] = cosmo.Omega0_cdm() + cosmo.Omega_b()
+###    params['Omega0_m'] = cosmo.Omega0_m()
+###
+###    cosmo.struct_cleanup()
+###    cosmo.empty()
+###
+###    return params
+###
+###
+###
+###
+###
+###def classy_params_from_sigma_8(Omega0_m, sigma8, w, Omega0_b, h, n_s, m_ncdm, P_k_max, A_s_guess):
+###    A_s = A_s_guess
+###    delta = A_s * 0.001
+###
+###    params = classy_params_from_A_s(Omega0_m, A_s, w, Omega0_b, h, n_s, m_ncdm, P_k_max)
+###    calculated_sigma8 = params['sigma8']
+###    print(A_s, calculated_sigma8)
+###    while abs(calculated_sigma8 - sigma8) > 1e-9:
+###
+###        A_s_prime = A_s + delta
+###        params_prime = classy_params_from_A_s(Omega0_m, A_s_prime, w, Omega0_b, h, n_s, m_ncdm, P_k_max)
+###        calculated_sigma8_prime = params_prime['sigma8']
+###        #print(A_s_prime, calculated_sigma8_prime)
+###
+###        A_s += delta * ((sigma8 - calculated_sigma8) / (calculated_sigma8_prime - calculated_sigma8))
+###        if A_s < 0.0:
+###            A_s = 1e-10
+###        params = classy_params_from_A_s(Omega0_m, A_s, w, Omega0_b, h, n_s, m_ncdm, P_k_max)
+###        calculated_sigma8 = params['sigma8']
+###        print(A_s, calculated_sigma8)
+###
+###    return params
+###
+###
+###
+#### output_filename may be NULL to mean 'don't save to file.
+###def make_specific_cosmology_new(output_filename, Omega0_m, sigma8, w, Omega0_b, h, n_s, m_ncdm, P_k_max, A_s_guess = 5e-08):
+###
+###    params = classy_params_from_sigma_8(Omega0_m, sigma8, w, Omega0_b, h, n_s, m_ncdm, P_k_max, A_s_guess)
+###
+###    # TODO: Check that all this yields the expected Omega0_m:
+###    # assert abs(cosmology_object.Omega0_m/Omega0_m - 1.0) < 2e-6, "Failed to match input Omega0_m when creating cosmology object: target = {}, actual = {}".format(Omega0_m, cosmology_object.Omega0_m)
+###
+###    if output_filename:
+###        params_to_print = []
+###        for key in params:
+###            params_to_print.append("{} = {}".format(key, params[key]))
+###        np.savetxt(output_filename, params_to_print, fmt = '%s')
+###
+###    return params
+###
+###
+###def make_specific_cosmology_new_test_harness():
+###
+###    runs_name = "V"
+###    runs_directory = os.path.join(project_directory("locust"), "runs{}".format(runs_name))
+###    params = cosmo_params_from_runs_directory(runs_directory, True)
+###    num_runs = params.shape[0]
+###    P_k_max = 100.0
+###    for run_num_zero_based in range(num_runs):
+###        run_number_one_based = run_num_zero_based + 1
+###        (Omega0_m, sigma8, w, Omega0_b, h, n_s, m_ncdm) = params[run_num_zero_based,:]
+###        run_directory = os.path.join(runs_directory, "run{}".format(zfilled_run_num(run_number_one_based)))
+###        old_nbodykit_cosmology_filename = os.path.join(run_directory, "nbodykit_cosmology.txt")
+###        new_nbodykit_cosmology_filename = os.path.join(run_directory, "nbodykit_cosmology.new.txt")
+###        if False:
+###            if os.path.isfile(old_nbodykit_cosmology_filename):
+###                A_s_guess = get_parameter_from_text_file(old_nbodykit_cosmology_filename, "A_s", " =")
+###            else:
+###                os.makedirs(run_directory)
+###                A_s_guess = 5e-08
+###            make_specific_cosmology_new(new_nbodykit_cosmology_filename, Omega0_m, sigma8, w, Omega0_b, h, n_s, m_ncdm, P_k_max, A_s_guess)
+###        else:
+###            if os.path.isfile(old_nbodykit_cosmology_filename):
+###
+###                A_s_old = get_parameter_from_text_file(old_nbodykit_cosmology_filename, "A_s", " =")
+###                sigma8_old = get_parameter_from_text_file(old_nbodykit_cosmology_filename, "sigma8", " =")
+###                Omega_fld_old = get_parameter_from_text_file(old_nbodykit_cosmology_filename, "Omega_fld", " =")
+###                A_s_new = get_parameter_from_text_file(new_nbodykit_cosmology_filename, "A_s", " =")
+###                sigma8_new = get_parameter_from_text_file(new_nbodykit_cosmology_filename, "sigma8", " =")
+###                Omega_fld_new = get_parameter_from_text_file(new_nbodykit_cosmology_filename, "Omega_fld", " =")
+###
+###                print(run_number_one_based, A_s_old, sigma8_old, Omega_fld_old, A_s_new, sigma8_new, Omega_fld_new)
+###
+###
+###
+###
+###
+###def foo():
+###    output_filename = "./foo.txt"
+###    Omega0_m = 0.259392303187264528
+###    sigma8 = 0.869670449008197455 # 0.8696704491485232
+###    w = -0.798665362080696828
+###    Omega0_b = 0.039503462891505275
+###    h = 0.752877535687452970
+###    n_s = 0.925923061266028968
+###    m_ncdm = 0.121055631370947922
+###    z_max_pk = 100.0
+###    A_s_guess = 2.75e-9
+###    make_specific_cosmology_new(output_filename, Omega0_m, sigma8, w, Omega0_b, h, n_s, m_ncdm, z_max_pk, A_s_guess)
+###
+###
+#### ===================== End of code (October 2024) for calling class directly rather than via nbodykit =====================
+###
+
+
+
+
+
 if __name__ == '__main__':
     
     #show_one_shell_example()
@@ -1828,7 +2027,7 @@ if __name__ == '__main__':
     #calculate_each_run_time_and_show_Gantt_chart("V")
     #show_last_unprocessed_file()
     #write_run_script_test_harness()
-    #get_parameter_from_log_file_test_harness()
+    #get_parameter_from_text_file_test_harness()
     #gower_street_run_times()
     #plot_two_lightcone_files()
     #create_input_files_for_multiple_runs('T', True, '201-210')
