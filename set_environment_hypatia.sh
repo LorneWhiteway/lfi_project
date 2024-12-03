@@ -23,5 +23,5 @@ module load cmake/3.17.3
 
 
 # See README file entry 'Working with python on hypatia'
-source env/bin/activate
+source ${SCRIPT_DIR}/env/bin/activate
 
