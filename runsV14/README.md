@@ -22,10 +22,11 @@ Here is a description of the various runs:
 | 002 | As runsV/run014, but with num_particles = 1500^3 instead of 1350^3, and 125 time steps instead of 100. Output simulation box at steps 78 and 125. |
 | 003 | As runsV/run014, but with 150 time steps instead of 100. Output simulation box at steps 94 and 150. |
 | 004 | As runsV/run014. Output simulation box at steps 63 and 100. |
-| 005 | As runsV/run014, but with high-resolution inpout CONCEPT file. Output simulation box at steps 63 and 100. |
+| 005 | As runsV/run014, but with high-resolution input CONCEPT file. Output simulation box at steps 63 and 100. |
 | 006 | As runsV/run014, with input files from _before_ changes to the 'Python code that creates input files' to optionally run without CONCEPT. Never actually run; used simply to allow comparison of input files. |
 | 007 | As runsV/run014, with input files from _after_ changes to the 'Python code that creates input files' to optionally run without CONCEPT. |
-| 008 | As runsV/run014, with input files that do not require CONCEPT. Output simulation box at steps 63 and 100.|
-| 009 | As run008, but with changes to the jobfile: partition changed from 'gpu-a100-80' to 'gpu' and 'cpus-per-task' changed from 48 to 32. These changes will allow running on a wider range of hardware. |
-
+| 008 | As runsV/run014, with input files that do not require CONCEPT. Output simulation box at steps 63 and 100. Random seed changed from 1920 to 2426. |
+| 009 | As run008, but with changes to the jobfile: partition changed from 'gpu-a100-80' to 'gpu' and 'cpus-per-task' changed from 48 to 32. These changes will allow running on a wider range of hardware. Run was not successful (out of time). |
+| 010 | As run004, but with changes to the control file: 'achLinSpecies    = "g+ncdm[0]+fld+metric"' changed to 'achLinSpecies    = "g+ncdm[0]+fld". |
+| 011 | As run008, but with the random seed changed back to 1920 (same as for runsV/run014). |
 
