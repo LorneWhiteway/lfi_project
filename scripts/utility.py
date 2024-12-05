@@ -1025,9 +1025,9 @@ def make_string_singular(in_string):
 
 
 def report_one_status_code(status_code, description, code_runs):
-    code_count = len(code_runs[status_code.value])
+    code_count = len(code_runs[status_code])
     if code_count != 0:
-        print((description if code_count > 1 else make_string_singular(description)).format(code_count, encode_list_of_jobs_strings(code_runs[status_code.value])))
+        print((description if code_count > 1 else make_string_singular(description)).format(code_count, encode_list_of_jobs_strings(code_runs[status_code])))
 
 
 def get_int_from_input(prompt):
@@ -1058,7 +1058,7 @@ def print_user_report(output_from_squeue):
 def runs_directory_status_core(runs_name, runs_directory, num_runs, do_print):
     output_from_squeue = parse_squeue_output(runs_name)
     code_runs = {}
-    for i in range(StatusCode.NUMBEROFSTATUSCODES.value):
+    for i in StatusCode:
         code_runs[i] = []
     
     for run_num_zero_based in range(num_runs):
@@ -1068,7 +1068,7 @@ def runs_directory_status_core(runs_name, runs_directory, num_runs, do_print):
         (status_code, short_status) = short_status_of_run_directory(run_directory, output_from_squeue)
         if do_print:
             print(zfilled_run_num(run_num_one_based), short_status)
-        code_runs[status_code.value].append(run_num_one_based)
+        code_runs[status_code].append(run_num_one_based)
             
     if do_print:
         print("--------------------------------------------------")
@@ -1095,7 +1095,7 @@ def runs_directory_status_core(runs_name, runs_directory, num_runs, do_print):
         print_disk_space_report(runs_directory)
         
     
-    return code_runs[StatusCode.AWAITINGARCHIVING.value]
+    return code_runs[StatusCode.AWAITINGARCHIVING]
  
     
 
