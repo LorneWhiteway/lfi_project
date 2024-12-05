@@ -925,14 +925,15 @@ class StatusCode(Enum):
     OUT_OF_TIME = 7
     OUT_OF_DISK_SPACE = 8
     OUT_OF_MEMORY = 9
-    RUNNING = 10
-    COMPLETING = 11
-    BAD_LAST_LINE_IN_SLURM_OUTPUT_FILE = 12
-    MISSING_Z_VALUES_OUTPUT_FILE = 13
-    FINISHED_BUT_MARKED_AS_NOT_TO_BE_ARCHIVED = 14
-    ARCHIVED = 15
-    COMPRESSED_FILES_STILL_HOT = 16
-    AWAITING_ARCHIVING = 17
+    UNKNOWN_PKDGRAV3_RUNTIME_ERROR = 10
+    RUNNING = 11
+    COMPLETING = 12
+    BAD_LAST_LINE_IN_SLURM_OUTPUT_FILE = 13
+    MISSING_Z_VALUES_OUTPUT_FILE = 14
+    FINISHED_BUT_MARKED_AS_NOT_TO_BE_ARCHIVED = 15
+    ARCHIVED = 16
+    COMPRESSED_FILES_STILL_HOT = 17
+    AWAITING_ARCHIVING = 18
     
 
 
@@ -969,11 +970,14 @@ def short_status_of_run_directory(run_directory, output_from_squeue):
     if file_contains_substring(slurm_out_file, "DUE TO TIME LIMIT"):
         return (StatusCode.OUT_OF_TIME, "FAILED - out of time; pkdgrav {}% complete".format(percentage_completed(run_directory)))
     
-    if file_contains_substring(slurm_out_file, "Disk quota exceeded"):    
+    if file_contains_substring(slurm_out_file, "Disk quota exceeded"):
         return (StatusCode.OUT_OF_DISK_SPACE, "FAILED - out of disk space")
         
-    if file_contains_substring(slurm_out_file, "Cannot allocate memory"):    
+    if file_contains_substring(slurm_out_file, "Cannot allocate memory"):
         return (StatusCode.OUT_OF_MEMORY, "FAILED - out of memory")
+
+    if file_contains_substring(slurm_out_file, "Frame"):
+        return (StatusCode.UNKNOWN_PKDGRAV3_RUNTIME_ERROR, "FAILED - unknown pkdgrav3 runtime error (see slurm output file for details)")
 
     if run_number_one_based in output_from_squeue and output_from_squeue[run_number_one_based][1] == "R":
         return (StatusCode.RUNNING, "Running by {} for {}; pkdgrav {}% complete".format(output_from_squeue[run_number_one_based][0], output_from_squeue[run_number_one_based][2],percentage_completed(run_directory)))
@@ -1020,7 +1024,7 @@ def move_to_archive(runs_name, list_of_run_nums_one_based):
 
 
 def make_string_singular(in_string):
-    return in_string.replace("have", "has").replace("runs", "run").replace("are", "is").replace("files", "file")
+    return in_string.replace("have", "has").replace("runs", "run").replace("are", "is").replace("files", "file").replace("errors", "error")
 
 
 def report_one_status_code(status_code, description, code_runs):
@@ -1081,6 +1085,7 @@ def runs_directory_status_core(runs_name, runs_directory, num_runs, do_print):
         report_one_status_code(StatusCode.OUT_OF_TIME, "{} runs failed due to being out of time: {}", code_runs)
         report_one_status_code(StatusCode.OUT_OF_DISK_SPACE, "ALERT: {} runs failed due to being out of disk space: {}", code_runs)
         report_one_status_code(StatusCode.OUT_OF_MEMORY, "{} runs failed due to being out of memory: {}", code_runs)
+        report_one_status_code(StatusCode.UNKNOWN_PKDGRAV3_RUNTIME_ERROR, "{} runs failed due to unknown PKDGRAV3 runtime errors: {}", code_runs)
         report_one_status_code(StatusCode.RUNNING, "{} runs are underway: {}", code_runs)
         report_one_status_code(StatusCode.COMPLETING, "{} runs are in the process of completing: {}", code_runs)
         report_one_status_code(StatusCode.BAD_LAST_LINE_IN_SLURM_OUTPUT_FILE, "{} runs had an unexpected last line in the Slurm output file (possible problem): {}", code_runs)
