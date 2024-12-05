@@ -22,6 +22,7 @@ import time
 import pickle
 import subprocess
 import readline
+from enum import Enum
 
 
 # ======================== Start of code for reading control file ========================
@@ -913,67 +914,90 @@ def percentage_completed(run_directory):
         ret2 = int(last_file[-19:-14])
     return max(ret1, ret2)
 
+class StatusCode(Enum):
+    DIRECTORYDOESNOTEXIST = 0
+    ERRORCREATINGJOBFILES = 1
+    JOBFILESDONOTEXISTFORUNEXPLAINEDREASON = 2
+    QUEUED = 3
+    ASSIGNED = 4
+    UNASSIGNED = 5
+    UNEXPECTEDLYUNABLETOFINDSLURMOUTPUT = 6
+    OUTOFTIME = 7
+    OUTOFDISKSPACE = 8
+    OUTOFMEMORY = 9
+    RUNNING = 10
+    COMPLETING = 11
+    BADLASTLINEINSLURMOUTPUT = 12
+    MISSINGZVALUESOUTPUTFILE = 13
+    FINISHEDBUTNOTTOBEARCHIVED = 14
+    ARCHIVED = 15
+    COMPRESSEDFILESHOT = 16
+    AWAITINGARCHIVING = 17
+    NUMBEROFSTATUSCODES = 18 # Must be last one
+    
+
+
     
 def short_status_of_run_directory(run_directory, output_from_squeue):
     
     run_number_one_based = run_number_one_based_from_run_directory(run_directory)
     
     if not os.path.isdir(run_directory):
-        return (0, "Directory does not exist")
+        return (StatusCode.DIRECTORYDOESNOTEXIST, "Directory does not exist")
         
     if os.path.isfile(os.path.join(run_directory, "error_creating_job_files.txt")):
         # We encountered an issue when creating the directory, and recorded the problem in the status file.
-        return (1, last_line_of_file(os.path.join(run_directory, "error_creating_job_files.txt")))
+        return (StatusCode.ERRORCREATINGJOBFILES, last_line_of_file(os.path.join(run_directory, "error_creating_job_files.txt")))
     
     if not os.path.isfile(os.path.join(run_directory, "control.par")):
-        return (2, "Job files do not exist for some unexplained reason")
+        return (StatusCode.JOBFILESDONOTEXISTFORUNEXPLAINEDREASON, "Job files do not exist for some unexplained reason")
         
     if not os.path.isfile(os.path.join(run_directory, ".lockfile")):
         # Hasn't started
         if run_number_one_based in output_from_squeue:
-            return (3, "Queued by {}".format(output_from_squeue[run_number_one_based][0]))
+            return (StatusCode.QUEUED, "Queued by {}".format(output_from_squeue[run_number_one_based][0]))
         elif os.path.isfile(os.path.join(run_directory, "assigned_to.txt")):
-            return (4, last_line_of_file(os.path.join(run_directory, "assigned_to.txt")))
+            return (StatusCode.ASSIGNED, last_line_of_file(os.path.join(run_directory, "assigned_to.txt")))
         else:
-            return (5, "Unassigned")
+            return (StatusCode.UNASSIGNED, "Unassigned")
             
             
     # Underway
     slurm_out_file = slurm_out_file_name(run_directory)
     if slurm_out_file == "":
-        return (6, "Unexpectedly unable to find slurm output file")
+        return (StatusCode.UNEXPECTEDLYUNABLETOFINDSLURMOUTPUT, "Unexpectedly unable to find slurm output file")
 
     if file_contains_substring(slurm_out_file, "DUE TO TIME LIMIT"):
-        return (7, "FAILED - out of time; pkdgrav {}% complete".format(percentage_completed(run_directory)))
+        return (StatusCode.OUTOFTIME, "FAILED - out of time; pkdgrav {}% complete".format(percentage_completed(run_directory)))
     
     if file_contains_substring(slurm_out_file, "Disk quota exceeded"):    
-        return (8, "FAILED - out of disk space")
+        return (StatusCode.OUTOFDISKSPACE, "FAILED - out of disk space")
         
     if file_contains_substring(slurm_out_file, "Cannot allocate memory"):    
-        return (9, "FAILED - out of memory")
+        return (StatusCode.OUTOFMEMORY, "FAILED - out of memory")
 
     if run_number_one_based in output_from_squeue and output_from_squeue[run_number_one_based][1] == "R":
-        return (10, "Running by {} for {}; pkdgrav {}% complete".format(output_from_squeue[run_number_one_based][0], output_from_squeue[run_number_one_based][2],percentage_completed(run_directory)))
+        return (StatusCode.RUNNING, "Running by {} for {}; pkdgrav {}% complete".format(output_from_squeue[run_number_one_based][0], output_from_squeue[run_number_one_based][2],percentage_completed(run_directory)))
     
     if run_number_one_based in output_from_squeue and output_from_squeue[run_number_one_based][1] == "CG":
-        return (11, "In process of completing")
+        return (StatusCode.COMPLETING, "In process of completing")
             
     if not compression_has_finished(run_directory):
-        return (12, "PROBLEM - last line of slurm output file is not as expected - perhaps abnormal termination")
+        return (StatusCode.BADLASTLINEINSLURMOUTPUT, "PROBLEM - last line of slurm output file is not as expected - perhaps abnormal termination")
         
     if not os.path.isfile(os.path.join(run_directory, "z_values.txt")):
-        return (13, "PROBLEM - z_values.txt not found - perhaps abnormal termination")
+        return (StatusCode.MISSINGZVALUESOUTPUTFILE, "PROBLEM - z_values.txt not found - perhaps abnormal termination")
 
     if os.path.isfile(os.path.join(run_directory, "do_not_archive.txt")):
-        return (14, "Finished but marked as not to be archived")
+        return (StatusCode.FINISHEDBUTNOTTOBEARCHIVED, "Finished but marked as not to be archived")
 
     compressed_files_status_code = status_of_compressed_files(run_directory)
     if compressed_files_status_code == 0:
-        return (15, "Archived")
+        return (StatusCode.ARCHIVED, "Archived")
     elif compressed_files_status_code == 1:
-        return (16, "Compression finished but compressed files are still 'hot'")
+        return (StatusCode.COMPRESSEDFILESHOT, "Compression finished but compressed files are still 'hot'")
     else:
-        return (17, "Finished; awaiting archiving")
+        return (StatusCode.AWAITINGARCHIVING, "Finished; awaiting archiving")
 
 
 def move_to_archive(runs_name, list_of_run_nums_one_based):
@@ -1000,10 +1024,10 @@ def make_string_singular(in_string):
     return in_string.replace("have", "has").replace("runs", "run").replace("are", "is").replace("files", "file")
 
 
-def report_one_code(index, description, code_runs):
-    code_count = len(code_runs[index])
+def report_one_status_code(status_code, description, code_runs):
+    code_count = len(code_runs[status_code.value])
     if code_count != 0:
-        print((description if code_count > 1 else make_string_singular(description)).format(code_count, encode_list_of_jobs_strings(code_runs[index])))
+        print((description if code_count > 1 else make_string_singular(description)).format(code_count, encode_list_of_jobs_strings(code_runs[status_code.value])))
 
 
 def get_int_from_input(prompt):
@@ -1034,43 +1058,44 @@ def print_user_report(output_from_squeue):
 def runs_directory_status_core(runs_name, runs_directory, num_runs, do_print):
     output_from_squeue = parse_squeue_output(runs_name)
     code_runs = {}
-    for i in range(18):
+    for i in range(StatusCode.NUMBEROFSTATUSCODES.value):
         code_runs[i] = []
     
     for run_num_zero_based in range(num_runs):
         run_num_one_based = run_num_zero_based + 1
         run_string = zfilled_run_num(run_num_one_based)
         run_directory = os.path.join(runs_directory, "run" + run_string)
-        (code, short_status) = short_status_of_run_directory(run_directory, output_from_squeue)
+        (status_code, short_status) = short_status_of_run_directory(run_directory, output_from_squeue)
         if do_print:
             print(zfilled_run_num(run_num_one_based), short_status)
-        code_runs[code].append(run_num_one_based)
+        code_runs[status_code.value].append(run_num_one_based)
             
     if do_print:
         print("--------------------------------------------------")
-        report_one_code(1, "{} runs are missing job files for one of the standard reasons: {}", code_runs)
-        report_one_code(2, "{} runs are missing job files for some unexplained reason: {}", code_runs)
-        report_one_code(3, "{} runs are queued: {}", code_runs)
-        report_one_code(4, "{} runs have been assigned but have not yet been launched: {}", code_runs)
-        report_one_code(5, "{} runs are unassigned: {}", code_runs)
-        report_one_code(6, "{} runs are unexpectedly missing the Slurm output file: {}", code_runs)
-        report_one_code(7, "{} runs failed due to being out of time: {}", code_runs)
-        report_one_code(8, "ALERT: {} runs failed due to being out of disk space: {}", code_runs)
-        report_one_code(9, "{} runs failed due to being out of memory: {}", code_runs)
-        report_one_code(10, "{} runs are underway: {}", code_runs)
-        report_one_code(11, "{} runs are in the process of completing: {}", code_runs)
-        report_one_code(12, "{} runs had an unexpected last line in the Slurm output file (possible problem): {}", code_runs)
-        report_one_code(13, "{} runs are missing the z_values.txt file (possible problem): {}", code_runs)
-        report_one_code(14, "{} runs have finished but are marked as not to be archived: {}", code_runs)
-        report_one_code(15, "{} runs have finished and have been archived: {}", code_runs)
-        report_one_code(16, "{} runs have finished but the compressed files are still 'hot': {}", code_runs)
-        report_one_code(17, "{} runs have finished and are awaiting archiving: {}", code_runs)
+        report_one_status_code(StatusCode.DIRECTORYDOESNOTEXIST, "{} runs do not have a run directory: {}", code_runs)
+        report_one_status_code(StatusCode.ERRORCREATINGJOBFILES, "{} runs are missing job files for one of the standard reasons: {}", code_runs)
+        report_one_status_code(StatusCode.JOBFILESDONOTEXISTFORUNEXPLAINEDREASON, "{} runs are missing job files for some unexplained reason: {}", code_runs)
+        report_one_status_code(StatusCode.QUEUED, "{} runs are queued: {}", code_runs)
+        report_one_status_code(StatusCode.ASSIGNED, "{} runs have been assigned but have not yet been launched: {}", code_runs)
+        report_one_status_code(StatusCode.UNASSIGNED, "{} runs are unassigned: {}", code_runs)
+        report_one_status_code(StatusCode.UNEXPECTEDLYUNABLETOFINDSLURMOUTPUT, "{} runs are unexpectedly missing the Slurm output file: {}", code_runs)
+        report_one_status_code(StatusCode.OUTOFTIME, "{} runs failed due to being out of time: {}", code_runs)
+        report_one_status_code(StatusCode.OUTOFDISKSPACE, "ALERT: {} runs failed due to being out of disk space: {}", code_runs)
+        report_one_status_code(StatusCode.OUTOFMEMORY, "{} runs failed due to being out of memory: {}", code_runs)
+        report_one_status_code(StatusCode.RUNNING, "{} runs are underway: {}", code_runs)
+        report_one_status_code(StatusCode.COMPLETING, "{} runs are in the process of completing: {}", code_runs)
+        report_one_status_code(StatusCode.BADLASTLINEINSLURMOUTPUT, "{} runs had an unexpected last line in the Slurm output file (possible problem): {}", code_runs)
+        report_one_status_code(StatusCode.MISSINGZVALUESOUTPUTFILE, "{} runs are missing the z_values.txt file (possible problem): {}", code_runs)
+        report_one_status_code(StatusCode.FINISHEDBUTNOTTOBEARCHIVED, "{} runs have finished but are marked as not to be archived: {}", code_runs)
+        report_one_status_code(StatusCode.ARCHIVED, "{} runs have finished and have been archived: {}", code_runs)
+        report_one_status_code(StatusCode.COMPRESSEDFILESHOT, "{} runs have finished but the compressed files are still 'hot': {}", code_runs)
+        report_one_status_code(StatusCode.AWAITINGARCHIVING, "{} runs have finished and are awaiting archiving: {}", code_runs)
         print("--------------------------------------------------")
         print_user_report(output_from_squeue)
         print_disk_space_report(runs_directory)
         
     
-    return code_runs[17]
+    return code_runs[StatusCode.AWAITINGARCHIVING.value]
  
     
 
