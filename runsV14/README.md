@@ -29,4 +29,5 @@ Here is a description of the various runs:
 | 009 | As run008, but with changes to the jobfile: partition changed from 'gpu-a100-80' to 'gpu' and 'cpus-per-task' changed from 48 to 32. These changes will allow running on a wider range of hardware. Run was not successful (out of time). |
 | 010 | As run004, but with changes to the control file: 'achLinSpecies    = "g+ncdm[0]+fld+metric"' changed to 'achLinSpecies    = "g+ncdm[0]+fld". |
 | 011 | As run008, but with the random seed changed back to 1920 (same as for runsV/run014). |
+| 012 | As run010, but with the HDF5 file amended so that delta_metric has been scaled by 1e-4. |
 
