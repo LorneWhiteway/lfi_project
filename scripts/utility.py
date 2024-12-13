@@ -1483,7 +1483,7 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, list_of_jobs_st
         shutil.copyfile(prototype_job_script_file_name, this_job_script_file_name)
         change_one_value_in_ini_file(this_job_script_file_name, 'application=', double_quoted_string(run_script_name))
         change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(runs_name[0:3], run_string))
-        change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', '47:59:00' if location == 'tursa' else '35:59:00')
+        change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', ('28:00:00' if runs_name == "Vsm" else '47:59:00') if location == 'tursa' else '35:59:00')
 
         # Cosmology object
         try:
@@ -1541,8 +1541,8 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, list_of_jobs_st
             
         change_one_value_in_ini_file(this_control_file_name, 'dSpectral        = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
         change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "        # Random seed")
-        change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "1250       # Mpc/h")
-        change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "1350       # Simulation has nGrid^3 particles")
+        change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "{}       # Mpc/h".format(500 if runs_name == "Vsm" else 1250))
+        change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "{}       # Simulation has nGrid^3 particles".format(1000 if runs_name == "Vsm" else 1350))
         change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "4096 # NSide for output lightcone healpix maps.")
         change_one_value_in_ini_file(this_control_file_name, 'nMinMembers     = ', "10")
         change_one_value_in_ini_file(this_control_file_name, 'nGridLin         = ', "337")

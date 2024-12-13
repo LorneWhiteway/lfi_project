@@ -425,3 +425,4 @@ Here are the steps to step up a new runs directory (using the _runs_name_`U` as 
 | V | Standard runs on Tursa as part of the Gower Street extended runs. |
 | V14 | Testing. See the readme in that directory for more information. |
 | W | Non-CONCEPT runs on Tursa as part of the Gower Street extended runs. |
+| Vsm | CONCEPT runs on Tursa as part of the Gower Street extended runs, but with a smaller box and fewer particles. Same cosmological parameters and random seeds as runsV. |
