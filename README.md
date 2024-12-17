@@ -396,7 +396,7 @@ Here are the steps to step up a new runs directory (using the _runs_name_`U` as 
 5. In the runs directory create a prototype PKDGRAV3 control file with name `control.par`. It is safe to copy a version from the previous set of runs. This file will be copied into each run directory, and some entries will be modified to be specific to that run. Entries which are not run-specific will not be modified and hence should be checked for correctness.
 6. In the runs directory create a prototype SLURM job file with name `cuda_job_script_[cluster]` where `[cluster]` is one of `tursa`, `wilkes` or `hypatia` as appropriate. It is safe to copy a version from the previous set of runs. This file will be copied into each run directory, and some entries will be modified to be specific to that run. Entries which are not run-specific will not be modified and hence should be checked for correctness.
 7. Run the script `create_input_files.py` (found in the `scripts` directory) with the command line parameters a) the runs_name, b) 'concept' ot 'noconcept', and c) the run directories to be created. Example: `./create_input_files.py U concept 1-100`.
-8. For tursa only: go to the tape archive staging area `/mnt/lustre/tursafs1/archive/dp327` and create a subdirectory with name `runs` + runs_name. Give write access to this new directory to group members (see step 1).
+8. For tursa only: go to the tape archive staging area `/mnt/lustre/tursafs1/archive/dp327` and create a subdirectory with name `runs` + runs_name. Give group members write access to this new directory (see step 1).
 
 ## Description of runs
 
