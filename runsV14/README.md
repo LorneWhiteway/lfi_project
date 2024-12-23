@@ -30,4 +30,6 @@ Here is a description of the various runs:
 | 010 | As run004, but with changes to the control file: 'achLinSpecies    = "g+ncdm[0]+fld+metric"' changed to 'achLinSpecies    = "g+ncdm[0]+fld". |
 | 011 | As run008, but with the random seed changed back to 1920 (same as for runsV/run014). |
 | 012 | As run010, but with the HDF5 file amended so that delta_metric has been scaled by 1e-4. |
-
+| 013 | As run004, but with special HDF5 file (dakin_test2), A_s=2.1e-9 (so sigma_8 in params file is incorrect) and n_s = 0.96. |
+| 014 | As run004, but with special HDF5 file (flagship_test2), A_s=2.1e-9 (so sigma_8 in params file is incorrect) and n_s = 0.96. |
+| 015 | As run004, but with special HDF5 file (dakin_test3), A_s=2.1e-9 (so sigma_8 in params file is incorrect) and n_s = 0.96. |
