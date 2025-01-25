@@ -15,5 +15,6 @@ T,882,class_processed_gs2_batch1_{}.hdf5
 U,1394,class_processed_gs2_batch2_{}.hdf5
 V,1906,class_processed_gs2_batch3_{}.hdf5
 V14,2418,class_processed_gs2_batch3_V14_{}.hdf5
-W,3000,class_processed_gs2_lcdm_1_{}.hdf5
+W,3000,unneeded_{}.hdf5
 Vsm,1906,class_processed_gs2_batch3_{}.hdf5
+Wsm,3000,unneeded_{}.hdf5
