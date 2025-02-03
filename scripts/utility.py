@@ -1179,9 +1179,7 @@ def sigma8_from_A_s(Omega0_m, A_s, w, Omega0_b, h, n_s, m_ncdm, P_k_max):
     delta = 0.0001
     
     while True:
-    
         A_s_test = make_specific_cosmology(None, Omega0_m, sigma8, w, Omega0_b, h, n_s, m_ncdm, P_k_max).A_s
-        print(sigma8, A_s_test, A_s)
         if abs(A_s_test/A_s - 1.0) < 1e-8:
             return sigma8
         A_s_test_prime = make_specific_cosmology(None, Omega0_m, sigma8 + delta, w, Omega0_b, h, n_s, m_ncdm, P_k_max).A_s
