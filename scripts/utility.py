@@ -1155,12 +1155,12 @@ def cosmology_summary(cosmo):
     
     
 # Omega0_m is the sum of the energy densities for b, cdm and nu.
-# m_ncdm is the total neutrino mass in eV.
+# m_ncdm is the total neutrino mass in eV - could be a singleton or a list.
 def make_specific_cosmology(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, m_ncdm, P_k_max):
     from nbodykit.lab import cosmology
     
     # Inferred neutrino energy density
-    Omega0_nu = m_ncdm / (93.14 * h * h)
+    Omega0_nu = np.sum(m_ncdm) / (93.14 * h * h)
     # Implied cdm energy density
     Omega0_cdm = Omega0_m - Omega0_b - Omega0_nu
     cosmology_object = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=Omega0_cdm, w0_fld=w, n_s=n_s, m_ncdm=m_ncdm, P_k_max=P_k_max).match(sigma8=sigma8)
@@ -1168,9 +1168,31 @@ def make_specific_cosmology(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, m_
     # Check that all this yields the expected Omega0_m:
     assert abs(cosmology_object.Omega0_m/Omega0_m - 1.0) < 2e-6, "Failed to match input Omega0_m when creating cosmology object: target = {}, actual = {}".format(Omega0_m, cosmology_object.Omega0_m)
     
-    cosmology_parameters_file_name = os.path.join(directory, "nbodykit_cosmology.txt")
-    np.savetxt(cosmology_parameters_file_name, cosmology_summary(cosmology_object), fmt = '%s')
+    if directory:
+        cosmology_parameters_file_name = os.path.join(directory, "nbodykit_cosmology.txt")
+        np.savetxt(cosmology_parameters_file_name, cosmology_summary(cosmology_object), fmt = '%s')
     return cosmology_object
+    
+def sigma8_from_A_s(Omega0_m, A_s, w, Omega0_b, h, n_s, m_ncdm, P_k_max):
+    
+    sigma8 = 0.8
+    delta = 0.0001
+    
+    while True:
+    
+        A_s_test = make_specific_cosmology(None, Omega0_m, sigma8, w, Omega0_b, h, n_s, m_ncdm, P_k_max).A_s
+        print(sigma8, A_s_test, A_s)
+        if abs(A_s_test/A_s - 1.0) < 1e-8:
+            return sigma8
+        A_s_test_prime = make_specific_cosmology(None, Omega0_m, sigma8 + delta, w, Omega0_b, h, n_s, m_ncdm, P_k_max).A_s
+        sigma8 += (A_s - A_s_test) * delta / (A_s_test_prime - A_s_test)
+    
+    
+def sigma8_from_A_s_test_harness():
+    print("Answer = {}".format(sigma8_from_A_s(0.319, 2.1e-9, -1, 0.049, 0.67, 0.96, 0.0595968, 100.0)))
+    
+    
+    
     
 
 
@@ -2065,7 +2087,7 @@ if __name__ == '__main__':
     #create_input_files_for_multiple_runs('T', True, '201-210')
     #fof_file_format_experiment()
     #encode_list_of_job_strings_test_harness()
-   
+    #sigma8_from_A_s_test_harness()
      
     pass
     
