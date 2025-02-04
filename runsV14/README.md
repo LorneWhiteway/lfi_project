@@ -36,3 +36,4 @@ Here is a description of the various runs:
 | 016 | As run004, but with special HDF5 file (flagship_test3), A_s=2.1e-9 (so sigma_8 in params file is incorrect) and n_s = 0.96. Output simulation boxes at steps 31, 63 and 100 (corresponding approximately to z = 1.5, 0.5 and 0. |
 | 017 | As run016, but non-CONCEPT. Used m_nu=0.0595968, h=0.67, Omega_m=0.319 , omega_b=0.049, A_s=2.1e-9 (obtained using sigma8=0.8134341419869286), n_s = 0.96, and w=-1. |
 | 018 | As run004, but with the simulation box output only for step 1. |
+| 019 | As run014, but with additional control file settings to ask pkdgrav3 to calculate the power spectrum. |
