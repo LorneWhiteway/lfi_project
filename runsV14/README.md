@@ -34,7 +34,7 @@ Here is a description of the various runs:
 | 014 | As run004, but with special HDF5 file (flagship_test2), A_s=2.1e-9 (so sigma_8 in params file is incorrect) and n_s = 0.96. | Flagship Simulation cosmology with normal ordered neutrinos |
 | 015 | As run004, but with special HDF5 file (dakin_test3), A_s=2.1e-9 (so sigma_8 in params file is incorrect) and n_s = 0.96. |  --- |
 | 016 | As run004, but with special HDF5 file (flagship_test3), A_s=2.1e-9 (so sigma_8 in params file is incorrect) and n_s = 0.96. Output simulation boxes at steps 31, 63 and 100 (corresponding approximately to z = 1.5, 0.5 and 0. | Flagship Simulation cosmology with three equal neutrinos |
-| 017 | As run016, but non-CONCEPT. Used m_nu=0.0595968, h=0.67, Omega_m=0.319 , omega_b=0.049, A_s=2.1e-9 (obtained using sigma8=0.8134341419869286), n_s = 0.96, and w=-1. | Flagship Simulation cosmology using original concept-free pipeline  |
+| 017 | As run016, but non-CONCEPT. Used m_nu=0.0595968, h=0.67, Omega_m=0.319 , omega_b=0.049, A_s=2.1e-9 (obtained using sigma8=0.8134341419869286), n_s = 0.96, and w=-1. Uses non-standard random seed 2435. | Flagship Simulation cosmology using original concept-free pipeline  |
 | 018 | As run014, but with the simulation box output only for step 1. | To test P(k) sigma8 at high redshift |
 | 019 | As run014, but with additional control file settings to ask pkdgrav3 to measure the power spectrum. | Measure P(k) at all redshifts automatically |
-| 020 | As run017, but with additional control file settings to ask pkdgrav3 to measure the power spectrum. | |
+| 020 | As run017, but with additional control file settings to ask pkdgrav3 to measure the power spectrum. Uses standard random seed (1920). | |
