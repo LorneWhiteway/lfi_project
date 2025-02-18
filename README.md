@@ -14,7 +14,7 @@ pkdgrav3 is able to output lightcone files; as these are our only interest we ha
 
 pkdgrav3 creates lightcone snapshots by extracting objects from a thin shell of the appropriate radius within a 'superbox' consisting of 218 repeats of the simulation box in a 6x6x6 array (and we as observers are at the centre of the superbox). At early times the lightcone shell lies completely outside this box and hence is empty; in this case the post-processing script does not create a full healpix map (instead of creating an empty map).
 
-The paper [Jeffery et al. 2024](https://arxiv.org/abs/2403.02314) has further information. Lightcone snapshots created by this project have been made publically available as the [Gower Street Sims]( http://www.star.ucl.ac.uk/GowerStreetSims/). 
+The paper [Jeffrey et al. 2024](https://arxiv.org/abs/2403.02314) has further information. Lightcone snapshots created by this project have been made publically available as the [Gower Street Sims]( http://www.star.ucl.ac.uk/GowerStreetSims/). 
 
 
 ## Changes made to pkdgrav3:
