@@ -18,3 +18,4 @@ V14,2418,class_processed_gs2_batch3_V14_{}.hdf5
 W,3000,unneeded_{}.hdf5
 Vsm,1906,class_processed_gs2_batch3_{}.hdf5
 Wsm,3000,unneeded_{}.hdf5
+X,4000,unneeded_{}.hdf5
