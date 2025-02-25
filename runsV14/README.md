@@ -38,3 +38,4 @@ Here is a description of the various runs:
 | 018 | As run014, but with the simulation box output only for step 1. | To test P(k) sigma8 at high redshift |
 | 019 | As run014, but with additional control file settings to ask pkdgrav3 to measure the power spectrum. | Measure P(k) at all redshifts automatically |
 | 020 | As run017, but with additional control file settings to ask pkdgrav3 to measure the power spectrum. Uses standard random seed (1920). | |
+| 021 | As run020, but with transfer function inferred from hdf5 file class_processed_flagship_test2.hdf5 (using the method transfer_function_from_hdf5 from scripts/hdf5_editor.py). | |
