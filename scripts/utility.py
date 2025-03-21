@@ -931,9 +931,10 @@ class StatusCode(Enum):
     BAD_LAST_LINE_IN_SLURM_OUTPUT_FILE = 13
     MISSING_Z_VALUES_OUTPUT_FILE = 14
     FINISHED_BUT_MARKED_AS_NOT_TO_BE_ARCHIVED = 15
-    ARCHIVED = 16
-    COMPRESSED_FILES_STILL_HOT = 17
-    AWAITING_ARCHIVING = 18
+    MOVED_TO_UCL = 16
+    ARCHIVED = 17
+    COMPRESSED_FILES_STILL_HOT = 18
+    AWAITING_ARCHIVING = 19
     
 
 
@@ -993,6 +994,12 @@ def short_status_of_run_directory(run_directory, output_from_squeue):
 
     if os.path.isfile(os.path.join(run_directory, "do_not_archive.txt")):
         return (StatusCode.FINISHED_BUT_MARKED_AS_NOT_TO_BE_ARCHIVED, "Finished but marked as not to be archived")
+
+    if os.path.isfile(os.path.join(run_directory, "do_not_archive.txt")):
+        return (StatusCode.FINISHED_BUT_MARKED_AS_NOT_TO_BE_ARCHIVED, "Finished but marked as not to be archived")
+
+    if os.path.isfile(os.path.join(run_directory, "moved_to_ucl.txt")):
+        return (StatusCode.MOVED_TO_UCL, "Moved to UCL")
 
     compressed_files_status_code = status_of_compressed_files(run_directory)
     if compressed_files_status_code == 0:
@@ -1070,7 +1077,7 @@ def runs_directory_status_core(runs_name, runs_directory, num_runs, do_print):
         run_directory = os.path.join(runs_directory, "run" + run_string)
         (status_code, short_status) = short_status_of_run_directory(run_directory, output_from_squeue)
         if do_print:
-            print(zfilled_run_num(run_num_one_based), short_status)
+            print(runs_name, zfilled_run_num(run_num_one_based), short_status)
         code_runs[status_code].append(run_num_one_based)
             
     if do_print:
@@ -1091,6 +1098,7 @@ def runs_directory_status_core(runs_name, runs_directory, num_runs, do_print):
         report_one_status_code(StatusCode.BAD_LAST_LINE_IN_SLURM_OUTPUT_FILE, "{} runs had an unexpected last line in the Slurm output file (possible problem): {}", code_runs)
         report_one_status_code(StatusCode.MISSING_Z_VALUES_OUTPUT_FILE, "{} runs are missing the z_values.txt file (possible problem): {}", code_runs)
         report_one_status_code(StatusCode.FINISHED_BUT_MARKED_AS_NOT_TO_BE_ARCHIVED, "{} runs have finished but are marked as not to be archived: {}", code_runs)
+        report_one_status_code(StatusCode.MOVED_TO_UCL, "{} runs have finished and have been moved to UCL: {}", code_runs)
         report_one_status_code(StatusCode.ARCHIVED, "{} runs have finished and have been archived: {}", code_runs)
         report_one_status_code(StatusCode.COMPRESSED_FILES_STILL_HOT, "{} runs have finished but the compressed files are still 'hot': {}", code_runs)
         report_one_status_code(StatusCode.AWAITING_ARCHIVING, "{} runs have finished and are awaiting archiving: {}", code_runs)
