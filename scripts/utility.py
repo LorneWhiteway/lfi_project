@@ -1035,7 +1035,7 @@ def move_to_archive(runs_name, list_of_run_nums_one_based):
 
 
 def make_string_singular(in_string):
-    return in_string.replace("have", "has").replace("runs", "run").replace("are", "is").replace("files", "file").replace("errors", "error")
+    return in_string.replace("have", "has").replace("runs", "run").replace("are", "is").replace("files", "file").replace("errors", "error").replace("they", "it")
 
 
 def report_one_status_code(status_code, description, code_runs):
