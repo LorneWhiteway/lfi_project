@@ -918,23 +918,24 @@ class StatusCode(Enum):
     DIRECTORY_DOES_NOT_EXIST = 0
     ERROR_CREATING_JOB_FILES = 1
     JOB_FILES_DO_NOT_EXIST_FOR_UNEXPLAINED_REASON = 2
-    QUEUED = 3
-    ASSIGNED = 4
-    UNASSIGNED = 5
-    UNEXPECTEDLY_UNABLE_TO_FIND_SLURM_OUTPUT_FILE = 6
-    OUT_OF_TIME = 7
-    OUT_OF_DISK_SPACE = 8
-    OUT_OF_MEMORY = 9
-    UNKNOWN_PKDGRAV3_RUNTIME_ERROR = 10
-    RUNNING = 11
-    COMPLETING = 12
-    BAD_LAST_LINE_IN_SLURM_OUTPUT_FILE = 13
-    MISSING_Z_VALUES_OUTPUT_FILE = 14
-    FINISHED_BUT_MARKED_AS_NOT_TO_BE_ARCHIVED = 15
-    MOVED_TO_UCL = 16
-    ARCHIVED = 17
-    COMPRESSED_FILES_STILL_HOT = 18
-    AWAITING_ARCHIVING = 19
+    DO_NOT_RUN_AS_OUT_OF_TIME_TOO_OFTEN = 3
+    QUEUED = 4
+    ASSIGNED = 5
+    UNASSIGNED = 6
+    UNEXPECTEDLY_UNABLE_TO_FIND_SLURM_OUTPUT_FILE = 7
+    OUT_OF_TIME = 8
+    OUT_OF_DISK_SPACE = 9
+    OUT_OF_MEMORY = 10
+    UNKNOWN_PKDGRAV3_RUNTIME_ERROR = 11
+    RUNNING = 12
+    COMPLETING = 13
+    BAD_LAST_LINE_IN_SLURM_OUTPUT_FILE = 14
+    MISSING_Z_VALUES_OUTPUT_FILE = 15
+    FINISHED_BUT_MARKED_AS_NOT_TO_BE_ARCHIVED = 16
+    MOVED_TO_UCL = 17
+    ARCHIVED = 18
+    COMPRESSED_FILES_STILL_HOT = 19
+    AWAITING_ARCHIVING = 20
     
 
 
@@ -952,6 +953,9 @@ def short_status_of_run_directory(run_directory, output_from_squeue):
     
     if not os.path.isfile(os.path.join(run_directory, "control.par")):
         return (StatusCode.JOB_FILES_DO_NOT_EXIST_FOR_UNEXPLAINED_REASON, "Job files do not exist for some unexplained reason")
+        
+    if os.path.isfile(os.path.join(run_directory, "out_of_time_too_often.txt")):
+        return (StatusCode.DO_NOT_RUN_AS_OUT_OF_TIME_TOO_OFTEN, "Job disabled as it has previously run out of time too often")
         
     if not os.path.isfile(os.path.join(run_directory, ".lockfile")):
         # Hasn't started
@@ -1085,6 +1089,7 @@ def runs_directory_status_core(runs_name, runs_directory, num_runs, do_print):
         report_one_status_code(StatusCode.DIRECTORY_DOES_NOT_EXIST, "{} runs do not have a run directory: {}", code_runs)
         report_one_status_code(StatusCode.ERROR_CREATING_JOB_FILES, "{} runs are missing job files for one of the standard reasons: {}", code_runs)
         report_one_status_code(StatusCode.JOB_FILES_DO_NOT_EXIST_FOR_UNEXPLAINED_REASON, "{} runs are missing job files for some unexplained reason: {}", code_runs)
+        report_one_status_code(StatusCode.DO_NOT_RUN_AS_OUT_OF_TIME_TOO_OFTEN, "{} runs have been disabled as they have previously run out of time too often: {}", code_runs)
         report_one_status_code(StatusCode.QUEUED, "{} runs are queued: {}", code_runs)
         report_one_status_code(StatusCode.ASSIGNED, "{} runs have been assigned but have not yet been launched: {}", code_runs)
         report_one_status_code(StatusCode.UNASSIGNED, "{} runs are unassigned: {}", code_runs)
