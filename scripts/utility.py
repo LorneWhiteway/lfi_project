@@ -1427,12 +1427,17 @@ def data_from_runs_directory_data_file(runs_directory_data_file, runs_name, colu
     raise AssertionError("Runs name {} not found in {}; this data file may require updating".format(runs_name, runs_directory_data_file))
     
     
-def cosmo_params_from_runs_directory(runs_directory, verbose):
+def cosmo_params_filename_from_runs_directory(runs_directory):
     cosmo_params_file_list = glob.glob(os.path.join(runs_directory, "params*.txt"))
     len_cosmo_params_file_list = len(cosmo_params_file_list)
     if len_cosmo_params_file_list != 1:
         raise AssertionError("{} matching 'params*.txt' in runs directory {}".format(("Unable to find any cosmo parameters file" if (len_cosmo_params_file_list == 0) else "Found multiple cosmo parameter files"), runs_directory))
-    cosmo_params_for_all_runs_file_name = cosmo_params_file_list[0]
+    return cosmo_params_file_list[0]
+    
+
+
+def cosmo_params_from_runs_directory(runs_directory, verbose):
+    cosmo_params_for_all_runs_file_name = cosmo_params_filename_from_runs_directory(runs_directory)
     if verbose:
         print("Cosmo parameters file          = {}".format(cosmo_params_for_all_runs_file_name))
     return np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',').reshape([-1,8]) # The 'reshape' handles the num_runs=1 case.
@@ -2101,6 +2106,44 @@ def fof_file_format_experiment():
 
 
 
+# ======================== Start of one-time code to add a 'wa' column to all the params files. Used once, presumably no longer needed. 26 June 2025 ========================
+
+
+def add_wa_column_to_parameters_file_caller():
+    for runs_name in ["C", "E", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "Wsm", "V", "X", "3A"]:
+        add_wa_column_to_parameters_file(runs_name)
+
+
+def add_wa_column_to_parameters_file(runs_name):
+    
+    print("Runs name = {}".format(runs_name))
+    location = project_location()
+    print("Location = {}".format(location))
+    runs_directory = os.path.join(project_directory(location), "runs{}".format(runs_name))
+    print("Runs directory = {}".format(runs_directory))
+    filename = cosmo_params_filename_from_runs_directory(runs_directory)
+    print("Parameters file name = {}".format(filename))
+    params = np.loadtxt(cosmo_params_filename_from_runs_directory(runs_directory), delimiter=',')
+    num_cols = params.shape[1]
+    print("Num cols = {}".format(num_cols))
+    if num_cols == 8:
+        print("Nothing to do as file has correct number of columns")
+    elif num_cols != 7:
+        print("Quitting as file has unexpected number of columns")
+    else:
+        backup_filename = filename + ".bak"
+        print("Written backup to {}".format(backup_filename))
+        np.savetxt(backup_filename, params, delimiter=', ', fmt='%.18f')
+        
+        # 7 columns; add a column of zeroes for wa
+        params = np.column_stack([params[:,0], params[:,1], params[:,2], np.abs(0.0 * params[:,2]), params[:,3], params[:,4], params[:,5], params[:,6]])
+        np.savetxt(filename, params, delimiter=', ', fmt='%.18f')
+        
+        print("Written new data to {}".format(filename))
+    
+    print("\n")
+    
+# ======================== End of one-time code to add a 'wa' column to all the params files. Used once, presumably no longer needed. 26 June 2025 ========================
 
 if __name__ == '__main__':
     
@@ -2124,6 +2167,7 @@ if __name__ == '__main__':
     #fof_file_format_experiment()
     #encode_list_of_job_strings_test_harness()
     #sigma8_from_A_s_test_harness()
+    #add_wa_column_to_parameters_file_caller()
     
     pass
     
