@@ -2110,9 +2110,9 @@ def fof_file_format_experiment():
 
 
 def add_wa_column_to_parameters_file_caller():
-    for runs_name in ["C", "E", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "Wsm", "V", "X", "3A"]:
+    for runs_name in ["C", "E", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "Vsm" "W", "Wsm", "X", "3A"]:
         add_wa_column_to_parameters_file(runs_name)
-
+    
 
 def add_wa_column_to_parameters_file(runs_name):
     
