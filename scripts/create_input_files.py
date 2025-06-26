@@ -21,7 +21,7 @@ def item_is_in_command_line(command_line_array, short_option, long_option):
 
 
 def show_help():
-    print("Usage: {} runs_name use_concept_string list_of_jobs_string".format(os.path.basename(__file__)))
+    print("Usage: {} runs_name use_concept_string priority_string list_of_jobs_string".format(os.path.basename(__file__)))
 
 
 
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     
         command_line_array = sys.argv
     
-        if len(command_line_array) < 4 or item_is_in_command_line(command_line_array, "-h", "--help"):
+        if len(command_line_array) < 5 or item_is_in_command_line(command_line_array, "-h", "--help"):
             show_help()
             sys.exit(0)
         
@@ -45,11 +45,18 @@ if __name__ == '__main__':
             use_concept = False
         else:
             raise AssertionError("use_concept_string should be 'concept' or 'noconcept'")
+            
+        priority_string = command_line_array[3]
+        if priority_string == "normal_priority":
+            high_priority = False
+        elif priority_string == "high_priority":
+            high_priority = True
+        else:
+            raise AssertionError("priority_string should be 'normal_priority' or 'high_priority'")
         
-        list_of_jobs_string = " ".join(command_line_array[3:])
-        
+        list_of_jobs_string = " ".join(command_line_array[4:])
 
-        utility.create_input_files_for_multiple_runs(runs_name, use_concept, list_of_jobs_string)
+        utility.create_input_files_for_multiple_runs(runs_name, use_concept, high_priority, list_of_jobs_string)
         
     except Exception as err:
         print(traceback.format_exc())

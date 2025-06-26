@@ -1174,14 +1174,14 @@ def cosmology_summary(cosmo):
     
 # Omega0_m is the sum of the energy densities for b, cdm and nu.
 # m_ncdm is the total neutrino mass in eV - could be a singleton or a list.
-def make_specific_cosmology(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, m_ncdm, P_k_max):
+def make_specific_cosmology(directory, Omega0_m, sigma8, w0, wa, Omega0_b, h, n_s, m_ncdm, P_k_max):
     from nbodykit.lab import cosmology
     
     # Inferred neutrino energy density
     Omega0_nu = np.sum(m_ncdm) / (93.14 * h * h)
     # Implied cdm energy density
     Omega0_cdm = Omega0_m - Omega0_b - Omega0_nu
-    cosmology_object = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=Omega0_cdm, w0_fld=w, n_s=n_s, m_ncdm=m_ncdm, P_k_max=P_k_max).match(sigma8=sigma8)
+    cosmology_object = (cosmology.Planck15).clone(h=h, Omega0_b=Omega0_b, Omega0_cdm=Omega0_cdm, w0_fld=w0, wa_fld = wa, n_s=n_s, m_ncdm=m_ncdm, P_k_max=P_k_max).match(sigma8=sigma8)
     
     # Check that all this yields the expected Omega0_m:
     assert abs(cosmology_object.Omega0_m/Omega0_m - 1.0) < 2e-6, "Failed to match input Omega0_m when creating cosmology object: target = {}, actual = {}".format(Omega0_m, cosmology_object.Omega0_m)
@@ -1191,21 +1191,21 @@ def make_specific_cosmology(directory, Omega0_m, sigma8, w, Omega0_b, h, n_s, m_
         np.savetxt(cosmology_parameters_file_name, cosmology_summary(cosmology_object), fmt = '%s')
     return cosmology_object
     
-def sigma8_from_A_s(Omega0_m, A_s, w, Omega0_b, h, n_s, m_ncdm, P_k_max):
+def sigma8_from_A_s(Omega0_m, A_s, w0, wa, Omega0_b, h, n_s, m_ncdm, P_k_max):
     
     sigma8 = 0.8
     delta = 0.0001
     
     while True:
-        A_s_test = make_specific_cosmology(None, Omega0_m, sigma8, w, Omega0_b, h, n_s, m_ncdm, P_k_max).A_s
+        A_s_test = make_specific_cosmology(None, Omega0_m, sigma8, w0, wa, Omega0_b, h, n_s, m_ncdm, P_k_max).A_s
         if abs(A_s_test/A_s - 1.0) < 1e-8:
             return sigma8
-        A_s_test_prime = make_specific_cosmology(None, Omega0_m, sigma8 + delta, w, Omega0_b, h, n_s, m_ncdm, P_k_max).A_s
+        A_s_test_prime = make_specific_cosmology(None, Omega0_m, sigma8 + delta, w0, wa, Omega0_b, h, n_s, m_ncdm, P_k_max).A_s
         sigma8 += (A_s - A_s_test) * delta / (A_s_test_prime - A_s_test)
     
     
 def sigma8_from_A_s_test_harness():
-    print("Answer = {}".format(sigma8_from_A_s(0.319, 2.1e-9, -1, 0.049, 0.67, 0.96, 0.0595968, 100.0)))
+    print("Answer = {}".format(sigma8_from_A_s(0.319, 2.1e-9, -1.0, 0.0, 0.049, 0.67, 0.96, 0.0595968, 100.0)))
     
     
     
@@ -1274,7 +1274,8 @@ def make_specific_cosmology_transfer_function_from_cosmology_object_caller():
     cosmology_object = make_specific_cosmology(directory,
         Omega0_m = 0.249628758416763685,
         sigma8 = 0.950496160083634467,
-        w = -0.792417404234305733,
+        w0 = -0.792417404234305733,
+        wa = 0.0,
         Omega0_b = 0.043508831007317443,
         h = 0.716547375449984592,
         n_s = 0.951311068780816615,
@@ -1434,16 +1435,25 @@ def cosmo_params_from_runs_directory(runs_directory, verbose):
     cosmo_params_for_all_runs_file_name = cosmo_params_file_list[0]
     if verbose:
         print("Cosmo parameters file          = {}".format(cosmo_params_for_all_runs_file_name))
-    return np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',').reshape([-1,7]) # The 'reshape' handles the num_runs=1 case.
+    return np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',').reshape([-1,8]) # The 'reshape' handles the num_runs=1 case.
     
 
 def write_status_file(file_name, message):
     with open(file_name, 'w') as out_file:
         out_file.write(message)
     
+
+# The python interpreter in use in the version of pkdgrav that we use can't handle negative numbers - hence this fudge.
+def encode_number_if_necessary(v):
+    if v >= 0:
+        return str(v)
+    else:
+        return "math.cos(math.pi) * {}  # {}".format(abs(v), v)
+    
+    
     
 
-def create_input_files_for_multiple_runs(runs_name, use_concept, list_of_jobs_string):
+def create_input_files_for_multiple_runs(runs_name, use_concept, high_priority, list_of_jobs_string):
     
     location = project_location()
     print("Project location               = {}".format(location))
@@ -1467,8 +1477,14 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, list_of_jobs_st
     random_seed_offset = int(data_from_runs_directory_data_file(runs_directory_data_file, runs_name, 1))
     print("Random seed offset             = {}".format(str(random_seed_offset)))
     
-    cosmo_params_for_all_runs = cosmo_params_from_runs_directory(runs_directory, True) #seven columns: Omega_m, sigma_8, w, Omega_b, little_h, n_s, m_nu
+    cosmo_params_for_all_runs = cosmo_params_from_runs_directory(runs_directory, True) #eight columns: Omega_m, sigma_8, w0, wa, Omega_b, little_h, n_s, m_nu
     num_runs = cosmo_params_for_all_runs.shape[0]
+    num_cols = cosmo_params_for_all_runs.shape[1]
+    if num_cols == 7:
+        raise AssertionError("Parameters file in {} has only seven columns (but eight were expected. Solution is probably to add a new fourth column for wa (with zeroes))".format(runs_directory))
+    elif num_cols != 8:
+        raise AssertionError("Parameters file in {} has unexpected number of columns".format(runs_directory))
+        
     print("    Num data rows in this file = {}".format(num_runs))
     
     prototype_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path(location))
@@ -1525,17 +1541,21 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, list_of_jobs_st
         change_one_value_in_ini_file(this_job_script_file_name, 'application=', double_quoted_string(run_script_name))
         change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --job-name=', 'p{}_{}'.format(runs_name[0:3], run_string))
         change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --time=', ('28:00:00' if small_run else '47:59:00') if location == 'tursa' else '35:59:00')
+        if location == 'tursa' and high_priority:
+            change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --account=', 'DP327-high')
+            change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --qos=', 'high')
 
         # Cosmology object
         try:
             cosmology_object = make_specific_cosmology(this_run_directory,
                 Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
                 sigma8 = cosmo_params_for_all_runs[run_num_zero_based, 1],
-                w = cosmo_params_for_all_runs[run_num_zero_based, 2],
-                Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 3],
-                h = cosmo_params_for_all_runs[run_num_zero_based, 4],
-                n_s = cosmo_params_for_all_runs[run_num_zero_based, 5],
-                m_ncdm = cosmo_params_for_all_runs[run_num_zero_based, 6],
+                w0 = cosmo_params_for_all_runs[run_num_zero_based, 2],
+                wa = cosmo_params_for_all_runs[run_num_zero_based, 3],
+                Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 4],
+                h = cosmo_params_for_all_runs[run_num_zero_based, 5],
+                n_s = cosmo_params_for_all_runs[run_num_zero_based, 6],
+                m_ncdm = cosmo_params_for_all_runs[run_num_zero_based, 7],
                 P_k_max=100.0)
                 
         except Exception as err:
@@ -1556,6 +1576,7 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, list_of_jobs_st
             change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', 'DELETE')
             change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', 'DELETE')
             change_one_value_in_ini_file(this_control_file_name, 'w0              = ', 'DELETE')
+            change_one_value_in_ini_file(this_control_file_name, 'wa              = ', 'DELETE')
             change_one_value_in_ini_file(this_control_file_name, 'h               = ', 'DELETE')
         else:
             OmegaDE = cosmology_object.Ode0
@@ -1572,15 +1593,14 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, list_of_jobs_st
             change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(1.0-OmegaDE) + "    # 1-dOmegaDE")
             change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(OmegaDE) + "    # Equal to Omega_fld in transfer function")
             change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 1]))
-            # Work around pkdgrav3 ini file parsing bug - doesn't like negative numbers.
-            acos_w_string = "2.0*math.cos({})  # {}".format(math.acos(cosmo_params_for_all_runs[run_num_zero_based, 2] / 2.0), cosmo_params_for_all_runs[run_num_zero_based, 2])
-            change_one_value_in_ini_file(this_control_file_name, 'w0              = ', acos_w_string)
-            change_one_value_in_ini_file(this_control_file_name, 'h               = ', str(cosmo_params_for_all_runs[run_num_zero_based, 4]))
+            change_one_value_in_ini_file(this_control_file_name, 'w0              = ', encode_number_if_necessary(cosmo_params_for_all_runs[run_num_zero_based, 2]))
+            change_one_value_in_ini_file(this_control_file_name, 'wa              = ', encode_number_if_necessary(cosmo_params_for_all_runs[run_num_zero_based, 3]))
+            change_one_value_in_ini_file(this_control_file_name, 'h               = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
             
             make_specific_cosmology_transfer_function_from_cosmology_object(transfer_function_file_name, linear_power_file_name, cosmology_object)
             
             
-        change_one_value_in_ini_file(this_control_file_name, 'dSpectral        = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
+        change_one_value_in_ini_file(this_control_file_name, 'dSpectral        = ', str(cosmo_params_for_all_runs[run_num_zero_based, 6]))
         change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "        # Random seed")
         change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "{}       # Mpc/h".format(500 if small_run else 1250))
         change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "{}       # Simulation has nGrid^3 particles".format(1000 if small_run else 1350))
@@ -2008,9 +2028,9 @@ def fof_file_format_experiment():
 ###
 ###
 #### output_filename may be NULL to mean 'don't save to file.
-###def make_specific_cosmology_new(output_filename, Omega0_m, sigma8, w, Omega0_b, h, n_s, m_ncdm, P_k_max, A_s_guess = 5e-08):
+###def make_specific_cosmology_new(output_filename, Omega0_m, sigma8, w0, wa, Omega0_b, h, n_s, m_ncdm, P_k_max, A_s_guess = 5e-08):
 ###
-###    params = classy_params_from_sigma_8(Omega0_m, sigma8, w, Omega0_b, h, n_s, m_ncdm, P_k_max, A_s_guess)
+###    params = classy_params_from_sigma_8(Omega0_m, sigma8, w0, wa, Omega0_b, h, n_s, m_ncdm, P_k_max, A_s_guess)
 ###
 ###    # TODO: Check that all this yields the expected Omega0_m:
 ###    # assert abs(cosmology_object.Omega0_m/Omega0_m - 1.0) < 2e-6, "Failed to match input Omega0_m when creating cosmology object: target = {}, actual = {}".format(Omega0_m, cosmology_object.Omega0_m)
@@ -2033,7 +2053,7 @@ def fof_file_format_experiment():
 ###    P_k_max = 100.0
 ###    for run_num_zero_based in range(num_runs):
 ###        run_number_one_based = run_num_zero_based + 1
-###        (Omega0_m, sigma8, w, Omega0_b, h, n_s, m_ncdm) = params[run_num_zero_based,:]
+###        (Omega0_m, sigma8, w0, wa, Omega0_b, h, n_s, m_ncdm) = params[run_num_zero_based,:]
 ###        run_directory = os.path.join(runs_directory, "run{}".format(zfilled_run_num(run_number_one_based)))
 ###        old_nbodykit_cosmology_filename = os.path.join(run_directory, "nbodykit_cosmology.txt")
 ###        new_nbodykit_cosmology_filename = os.path.join(run_directory, "nbodykit_cosmology.new.txt")
@@ -2043,7 +2063,7 @@ def fof_file_format_experiment():
 ###            else:
 ###                os.makedirs(run_directory)
 ###                A_s_guess = 5e-08
-###            make_specific_cosmology_new(new_nbodykit_cosmology_filename, Omega0_m, sigma8, w, Omega0_b, h, n_s, m_ncdm, P_k_max, A_s_guess)
+###            make_specific_cosmology_new(new_nbodykit_cosmology_filename, Omega0_m, sigma8, w0, wa, Omega0_b, h, n_s, m_ncdm, P_k_max, A_s_guess)
 ###        else:
 ###            if os.path.isfile(old_nbodykit_cosmology_filename):
 ###
@@ -2064,14 +2084,15 @@ def fof_file_format_experiment():
 ###    output_filename = "./foo.txt"
 ###    Omega0_m = 0.259392303187264528
 ###    sigma8 = 0.869670449008197455 # 0.8696704491485232
-###    w = -0.798665362080696828
+###    w0 = -0.798665362080696828
+###    wa = 0.0
 ###    Omega0_b = 0.039503462891505275
 ###    h = 0.752877535687452970
 ###    n_s = 0.925923061266028968
 ###    m_ncdm = 0.121055631370947922
 ###    z_max_pk = 100.0
 ###    A_s_guess = 2.75e-9
-###    make_specific_cosmology_new(output_filename, Omega0_m, sigma8, w, Omega0_b, h, n_s, m_ncdm, z_max_pk, A_s_guess)
+###    make_specific_cosmology_new(output_filename, Omega0_m, sigma8, w0, wa, Omega0_b, h, n_s, m_ncdm, z_max_pk, A_s_guess)
 ###
 ###
 #### ===================== End of code (October 2024) for calling class directly rather than via nbodykit =====================
@@ -2100,10 +2121,11 @@ if __name__ == '__main__':
     #get_parameter_from_text_file_test_harness()
     #gower_street_run_times()
     #plot_two_lightcone_files()
-    #create_input_files_for_multiple_runs('T', True, '201-210')
     #fof_file_format_experiment()
     #encode_list_of_job_strings_test_harness()
     #sigma8_from_A_s_test_harness()
-     
+    
     pass
+    
+    
     
