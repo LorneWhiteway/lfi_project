@@ -1014,16 +1014,21 @@ def short_status_of_run_directory(run_directory, output_from_squeue):
         return (StatusCode.AWAITING_ARCHIVING, "Finished; awaiting archiving")
 
 
+
+def archive_directory(runs_name):
+    extra_path = "/foo" if False else ""
+    return os.path.join("/mnt/lustre/tursafs1/archive/dp327/", "runs{}{}".format(runs_name, extra_path))
+
+
 def move_to_archive(runs_name, list_of_run_nums_one_based):
     location = project_location()
     assert(location == "tursa")
     runs_directory = os.path.join(project_directory(location), "runs{}".format(runs_name))
-    archive_directory = os.path.join("/mnt/lustre/tursafs1/archive/dp327/", "runs{}".format(runs_name))
     for run_num_one_based in list_of_run_nums_one_based:
         run_num_str = zfilled_run_num(run_num_one_based)
         for file_name_base in ["run{}.fof.tar.gz".format(run_num_str), "run{}.tar.gz".format(run_num_str)]:
             source_file = os.path.join(runs_directory, file_name_base)
-            target_file = os.path.join(archive_directory, file_name_base)
+            target_file = os.path.join(archive_directory(runs_name), file_name_base)
             if os.path.isfile(source_file):
                 print("Moving {} to {}".format(source_file, target_file))
                 shutil.move(source_file, target_file)
@@ -1133,7 +1138,7 @@ def runs_directory_status(runs_name):
         print("1. Refresh")
         num_runs_awaiting_archiving = len(runs_awaiting_archiving)
         if len(runs_awaiting_archiving) > 0:
-            print("2. Move the {} finished run{} to the archive area".format(num_runs_awaiting_archiving, "" if num_runs_awaiting_archiving == 1 else "s"))
+            print("2. Move the {} finished run{} to the archive area {}".format(num_runs_awaiting_archiving, "" if num_runs_awaiting_archiving == 1 else "s", archive_directory(runs_name)))
             
         inval = get_int_from_input("? ")
         if inval == 0:
