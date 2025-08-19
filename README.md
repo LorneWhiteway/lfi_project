@@ -260,7 +260,7 @@ The script operates on 'directory' as well as recursively on all subdirectories 
 
 ### expand_shell_script.py
 
-This script creates shell scripts. Specify the name of a 'template' shell script; this script may contain the special string "{}" in various places, in which case a new shell script will be created containing repeats of the template with "{}" replaced by specified integers (zero padded to length three). 
+This script creates shell scripts. Specify the name of a 'template' shell script; this script may contain the special string "{}" in various places, in which case a new shell script will be created containing repeats of the template with "{}" replaced by specified integers (zero padded to length three). Additionally "{+1}" and "{-1}" may appear in the template script in which case offsets (by one or minus one) from the specified integers will be used.
 
 Syntax: 
 ```
@@ -432,4 +432,3 @@ Here are the steps to step up a new runs directory (using the _runs_name_`U` as 
 | Wsm | Non-CONCEPT runs on Tursa as part of the Gower Street extended runs, but with a smaller box and fewer particles. Same cosmological parameters and random seeds as runsW. |
 | X | Non-CONCEPT runs on Tursa as part of the Gower Street extended runs. |
 | 3A | Non-CONCEPT runs on Tursa as part of the Gower Street 3 runs (i.e. w0wa). |
-

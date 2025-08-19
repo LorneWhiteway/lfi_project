@@ -1813,7 +1813,10 @@ def expand_shell_script(original_shell_script_file_name, new_shell_script_file_n
         for job in decoded_list_of_jobs:
             with open(original_shell_script_file_name, 'r') as in_file:
                 for line in in_file:
-                    out_file.write(line.replace("{}", str(job).zfill(3)))
+                    line = line.replace("{+1}", str(job+1).zfill(3))
+                    line = line.replace("{-1}", str(job-1).zfill(3))
+                    line = line.replace("{}", str(job).zfill(3))
+                    out_file.write(line)
     make_file_executable(new_shell_script_file_name)
 
         
