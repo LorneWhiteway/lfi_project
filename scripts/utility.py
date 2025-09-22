@@ -21,7 +21,6 @@ import stat
 import time
 import pickle
 import subprocess
-import readline
 from enum import Enum
 
 
@@ -712,7 +711,7 @@ def compare_two_time_spacings():
     plt.legend(loc="upper left")
     
     plt.xlabel('z')
-    plt.ylabel('$\Delta z$')
+    plt.ylabel(r'$\Delta z$')
     
     plt.xlim(0.0, 10.0)
     
@@ -1566,6 +1565,7 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, high_priority, 
         except Exception as err:
             write_status_file(os.path.join(this_run_directory, "error_creating_job_files.txt"), "Unable to create cosmology object")
             print("    FAILED: unable to create cosmology object for {}".format(this_run_directory))
+            print("    ERROR WAS: {}".format(err))
             continue
             
         # Control file
