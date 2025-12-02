@@ -384,7 +384,7 @@ Output files are stored:
 
 Gower St sims [here](https://docs.google.com/spreadsheets/d/1lfNehrNxl7ggto7P6gNRRfGNA4YKRRgE8VzDfqTWOqQ/edit#gid=0).
 
-Gower St 2 sims [here](https://docs.google.com/spreadsheets/d/18devCbHxK_jniigCTaHK51XTMPVmQ8h34pQGfkbowIQ/edit?gid=0#gid=0).
+Gower St 2 sims and Gower St 3 sims [here](https://docs.google.com/spreadsheets/d/18devCbHxK_jniigCTaHK51XTMPVmQ8h34pQGfkbowIQ/edit?gid=0#gid=0).
 
 
 ## Adding a new runs directory
