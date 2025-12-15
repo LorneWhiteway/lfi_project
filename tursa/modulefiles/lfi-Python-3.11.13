@@ -1,0 +1,9 @@
+#%Module -*- tcl -*-
+##
+##
+module-whatis   Module file created by LW to install Python version 3.11.13
+prepend-path    PATH              /mnt/lustre/tursafs1/home/dp327/dp327/shared/Python-3.11.13/install/bin
+prepend-path    LD_LIBRARY_PATH   /mnt/lustre/tursafs1/home/dp327/dp327/shared/Python-3.11.13/install/lib
+prepend-path    LIBPATH           /mnt/lustre/tursafs1/home/dp327/dp327/shared/Python-3.11.13/install/lib
+prepend-path    MANPATH           /mnt/lustre/tursafs1/home/dp327/dp327/shared/Python-3.11.13/install/share/man
+prepend-path    INCLUDE           /mnt/lustre/tursafs1/home/dp327/dp327/shared/Python-3.11.13/install/include/python3.11
