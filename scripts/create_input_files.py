@@ -21,7 +21,7 @@ def item_is_in_command_line(command_line_array, short_option, long_option):
 
 
 def show_help():
-    print("Usage: {} runs_name use_concept_string priority_string list_of_jobs_string".format(os.path.basename(__file__)))
+    print("Usage: {} runs_name use_concept_string priority_string create_control_file_string list_of_jobs_string".format(os.path.basename(__file__)))
 
 
 
@@ -53,10 +53,19 @@ if __name__ == '__main__':
             high_priority = True
         else:
             raise AssertionError("priority_string should be 'normal_priority' or 'high_priority'")
+            
+        create_control_file_string = command_line_array[4]
+        if create_control_file_string == "create_control_file":
+            create_control_file = True
+        elif create_control_file_string == "do_not_create_control_file":
+            create_control_file = False
+        else:
+            raise AssertionError("create_control_file_string should be 'create_control_file' or 'do_not_create_control_file'")
         
-        list_of_jobs_string = " ".join(command_line_array[4:])
+        
+        list_of_jobs_string = " ".join(command_line_array[5:])
 
-        utility.create_input_files_for_multiple_runs(runs_name, use_concept, high_priority, list_of_jobs_string)
+        utility.create_input_files_for_multiple_runs(runs_name, use_concept, high_priority, create_control_file, list_of_jobs_string)
         
     except Exception as err:
         print(traceback.format_exc())

@@ -931,10 +931,9 @@ class StatusCode(Enum):
     BAD_LAST_LINE_IN_SLURM_OUTPUT_FILE = 14
     MISSING_Z_VALUES_OUTPUT_FILE = 15
     FINISHED_BUT_MARKED_AS_NOT_TO_BE_ARCHIVED = 16
-    MOVED_TO_UCL = 17
-    ARCHIVED = 18
-    COMPRESSED_FILES_STILL_HOT = 19
-    AWAITING_ARCHIVING = 20
+    ARCHIVED = 17
+    COMPRESSED_FILES_STILL_HOT = 18
+    AWAITING_ARCHIVING = 19
     
 
 
@@ -997,12 +996,6 @@ def short_status_of_run_directory(run_directory, output_from_squeue):
 
     if os.path.isfile(os.path.join(run_directory, "do_not_archive.txt")):
         return (StatusCode.FINISHED_BUT_MARKED_AS_NOT_TO_BE_ARCHIVED, "Finished but marked as not to be archived")
-
-    if os.path.isfile(os.path.join(run_directory, "do_not_archive.txt")):
-        return (StatusCode.FINISHED_BUT_MARKED_AS_NOT_TO_BE_ARCHIVED, "Finished but marked as not to be archived")
-
-    if os.path.isfile(os.path.join(run_directory, "moved_to_ucl.txt")):
-        return (StatusCode.MOVED_TO_UCL, "Moved to UCL")
 
     compressed_files_status_code = status_of_compressed_files(run_directory)
     if compressed_files_status_code == 0:
@@ -1107,7 +1100,6 @@ def runs_directory_status_core(runs_name, runs_directory, num_runs, do_print):
         report_one_status_code(StatusCode.BAD_LAST_LINE_IN_SLURM_OUTPUT_FILE, "{} runs had an unexpected last line in the Slurm output file (possible problem): {}", code_runs)
         report_one_status_code(StatusCode.MISSING_Z_VALUES_OUTPUT_FILE, "{} runs are missing the z_values.txt file (possible problem): {}", code_runs)
         report_one_status_code(StatusCode.FINISHED_BUT_MARKED_AS_NOT_TO_BE_ARCHIVED, "{} runs have finished but are marked as not to be archived: {}", code_runs)
-        report_one_status_code(StatusCode.MOVED_TO_UCL, "{} runs have finished and have been moved to UCL: {}", code_runs)
         report_one_status_code(StatusCode.ARCHIVED, "{} runs have finished and have been archived: {}", code_runs)
         report_one_status_code(StatusCode.COMPRESSED_FILES_STILL_HOT, "{} runs have finished but the compressed files are still 'hot': {}", code_runs)
         report_one_status_code(StatusCode.AWAITING_ARCHIVING, "{} runs have finished and are awaiting archiving: {}", code_runs)
@@ -1438,7 +1430,7 @@ def cosmo_params_filename_from_runs_directory(runs_directory):
 def cosmo_params_from_runs_directory(runs_directory, verbose):
     cosmo_params_for_all_runs_file_name = cosmo_params_filename_from_runs_directory(runs_directory)
     if verbose:
-        print("Cosmo parameters file          = {}".format(cosmo_params_for_all_runs_file_name))
+        print("Cosmo parameters file                    = {}".format(cosmo_params_for_all_runs_file_name))
     return np.loadtxt(cosmo_params_for_all_runs_file_name, delimiter=',').reshape([-1,8]) # The 'reshape' handles the num_runs=1 case.
     
 
@@ -1457,18 +1449,18 @@ def encode_number_if_necessary(v):
     
     
 
-def create_input_files_for_multiple_runs(runs_name, use_concept, high_priority, list_of_jobs_string):
+def create_input_files_for_multiple_runs(runs_name, use_concept, high_priority, create_control_file, list_of_jobs_string):
     
     location = project_location()
-    print("Project location               = {}".format(location))
+    print("Project location                         = {}".format(location))
     
-    print("Project directory              = {}".format(project_directory(location)))
+    print("Project directory                        = {}".format(project_directory(location)))
     
     script_directory = os.path.join(project_directory(location), "scripts")
-    print("Script directory               = {}".format(script_directory))
+    print("Script directory                         = {}".format(script_directory))
 
     runs_directory = os.path.join(project_directory(location), "runs{}".format(runs_name))
-    print("Runs directory                 = {}".format(runs_directory))
+    print("Runs directory                           = {}".format(runs_directory))
     
     runs_directory_data_file = os.path.join(script_directory, "runs_directory_data.txt")
     if not os.path.isfile(runs_directory_data_file):
@@ -1476,10 +1468,10 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, high_priority, 
     
     if use_concept:
         source_hdf5_file_name_base = os.path.join(runs_directory, "hdf5/", data_from_runs_directory_data_file(runs_directory_data_file, runs_name, 2))
-        print("Source hdf file name base      = {}".format(source_hdf5_file_name_base))
+        print("Source hdf file name base                = {}".format(source_hdf5_file_name_base))
     
     random_seed_offset = int(data_from_runs_directory_data_file(runs_directory_data_file, runs_name, 1))
-    print("Random seed offset             = {}".format(str(random_seed_offset)))
+    print("Random seed offset                       = {}".format(str(random_seed_offset)))
     
     cosmo_params_for_all_runs = cosmo_params_from_runs_directory(runs_directory, True) #eight columns: Omega_m, sigma_8, w0, wa, Omega_b, little_h, n_s, m_nu
     num_runs = cosmo_params_for_all_runs.shape[0]
@@ -1489,18 +1481,28 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, high_priority, 
     elif num_cols != 8:
         raise AssertionError("Parameters file in {} has unexpected number of columns".format(runs_directory))
         
-    print("    Num data rows in this file = {}".format(num_runs))
+    print("    Num data rows in this file           = {}".format(num_runs))
     
     prototype_job_script_file_name = os.path.join(runs_directory, job_script_file_name_no_path(location))
     if not os.path.isfile(prototype_job_script_file_name):
         raise AssertionError("Unable to find prototype job script {}".format(prototype_job_script_file_name))
-    print("Prototype job script           = {}".format(prototype_job_script_file_name))
+    print("Prototype job script                     = {}".format(prototype_job_script_file_name))
     
-    control_file_name_no_path = 'control.par'
-    prototype_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
-    if not os.path.isfile(prototype_control_file_name):
-        raise AssertionError("Unable to find prototype PKDGRAV3 control file {}".format(prototype_control_file_name))
-    print("Prototype control file         = {}".format(prototype_control_file_name))
+    if create_control_file:
+        control_file_name_no_path = 'control.par'
+        prototype_control_file_name = os.path.join(runs_directory, control_file_name_no_path)
+        if not os.path.isfile(prototype_control_file_name):
+            raise AssertionError("Unable to find prototype PKDGRAV3 control file {}".format(prototype_control_file_name))
+        print("Prototype control file                   = {}".format(prototype_control_file_name))
+        
+        
+    post_rundirectory_creation_script_name_no_path = "post_rundirectory_creation.sh"
+    post_rundirectory_creation_script_name = os.path.join(runs_directory, post_rundirectory_creation_script_name_no_path)
+    post_rundirectory_creation_script_exists = os.path.isfile(post_rundirectory_creation_script_name)
+    print("post_rundirectory_creation_script exists = {}".format(post_rundirectory_creation_script_exists))
+    if post_rundirectory_creation_script_exists:
+        print("post_rundirectory_creation_script_name   = {}".format(str(post_rundirectory_creation_script_name)))
+
     
     
     for run_num_one_based in decode_list_of_jobs_string(list_of_jobs_string):
@@ -1514,9 +1516,7 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, high_priority, 
         this_run_directory = os.path.join(runs_directory, "run" + run_string)
         
         this_job_script_file_name = os.path.join(this_run_directory, job_script_file_name_no_path(location))
-        this_control_file_name = os.path.join(this_run_directory, control_file_name_no_path)
         run_script_name = os.path.join(this_run_directory, "pkdgrav3_and_post_process_{}.sh".format(location))
-        
     
         # Delete any existing directory (and all its contents), make a new (empty) directory and set permissions
         # to include 'writable by group'
@@ -1524,8 +1524,6 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, high_priority, 
         shutil.rmtree(this_run_directory, ignore_errors = True)
         os.makedirs(this_run_directory, exist_ok = False)
         make_writable_by_group(this_run_directory)
-        
-        
         
         if use_concept:
             # Copy Concept file.
@@ -1549,69 +1547,75 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, high_priority, 
             change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --account=', 'DP327-high')
             change_one_value_in_ini_file(this_job_script_file_name, '#SBATCH --qos=', 'high')
 
-        # Cosmology object
-        try:
-            cosmology_object = make_specific_cosmology(this_run_directory,
-                Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
-                sigma8 = cosmo_params_for_all_runs[run_num_zero_based, 1],
-                w0 = cosmo_params_for_all_runs[run_num_zero_based, 2],
-                wa = cosmo_params_for_all_runs[run_num_zero_based, 3],
-                Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 4],
-                h = cosmo_params_for_all_runs[run_num_zero_based, 5],
-                n_s = cosmo_params_for_all_runs[run_num_zero_based, 6],
-                m_ncdm = cosmo_params_for_all_runs[run_num_zero_based, 7],
-                P_k_max=100.0)
-                
-        except Exception as err:
-            write_status_file(os.path.join(this_run_directory, "error_creating_job_files.txt"), "Unable to create cosmology object")
-            print("    FAILED: unable to create cosmology object for {}".format(this_run_directory))
-            print("    ERROR WAS: {}".format(err))
-            continue
             
-        # Control file
-        shutil.copyfile(prototype_control_file_name, this_control_file_name)
-        if use_concept:
-            change_one_value_in_ini_file(this_control_file_name, 'dNormalization   = ', "{} # calculated from sigma_8 = {}".format(cosmology_object.A_s, cosmology_object.sigma8))
-            change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', '"./' + target_hdf5_file_base_name + '"')
-            change_one_value_in_ini_file(this_control_file_name, 'achLinSpecies    = ', '"g+ncdm[0]+fld+metric" # these species are considered in the evolution')
-            change_one_value_in_ini_file(this_control_file_name, 'achPkSpecies     = ', '"g+ncdm[0]+fld"        # these species are considered in the power computation')
-            change_one_value_in_ini_file(this_control_file_name, 'bClass           = ', '1 # In the bClass=1 mode the cosmology is entirely read from the HDF5 file specified in achClassFilename.')
-            change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', 'DELETE')
-            change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', '0.0    # This is a dummy parameter, just to have the parameter defined')
-            change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', 'DELETE')
-            change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', 'DELETE')
-            change_one_value_in_ini_file(this_control_file_name, 'w0              = ', 'DELETE')
-            change_one_value_in_ini_file(this_control_file_name, 'wa              = ', 'DELETE')
-            change_one_value_in_ini_file(this_control_file_name, 'h               = ', 'DELETE')
-        else:
-            OmegaDE = cosmology_object.Ode0
-            transfer_function_base_file_name = "transfer_function_{}_{}.txt".format(runs_name, run_string)
-            transfer_function_file_name = os.path.join(this_run_directory, transfer_function_base_file_name)
-            linear_power_file_name = transfer_function_file_name.replace("transfer_function", "linear_power")
+        # Start of control file handling
+        if create_control_file:
 
-            change_one_value_in_ini_file(this_control_file_name, 'dNormalization   = ', 'DELETE')
-            change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', 'DELETE')
-            change_one_value_in_ini_file(this_control_file_name, 'achLinSpecies    = ', 'DELETE')
-            change_one_value_in_ini_file(this_control_file_name, 'achPkSpecies     = ', 'DELETE')
-            change_one_value_in_ini_file(this_control_file_name, 'bClass           = ', 'DELETE')
-            change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./{}"'.format(transfer_function_base_file_name))
-            change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(1.0-OmegaDE) + "    # 1-dOmegaDE")
-            change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(OmegaDE) + "    # Equal to Omega_fld in transfer function")
-            change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 1]))
-            change_one_value_in_ini_file(this_control_file_name, 'w0              = ', encode_number_if_necessary(cosmo_params_for_all_runs[run_num_zero_based, 2]))
-            change_one_value_in_ini_file(this_control_file_name, 'wa              = ', encode_number_if_necessary(cosmo_params_for_all_runs[run_num_zero_based, 3]))
-            change_one_value_in_ini_file(this_control_file_name, 'h               = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
-            
-            make_specific_cosmology_transfer_function_from_cosmology_object(transfer_function_file_name, linear_power_file_name, cosmology_object)
-            
-            
-        change_one_value_in_ini_file(this_control_file_name, 'dSpectral        = ', str(cosmo_params_for_all_runs[run_num_zero_based, 6]))
-        change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "        # Random seed")
-        change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "{}       # Mpc/h".format(500 if small_run else 1250))
-        change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "{}       # Simulation has nGrid^3 particles".format(1000 if small_run else 1350))
-        change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "4096 # NSide for output lightcone healpix maps.")
-        change_one_value_in_ini_file(this_control_file_name, 'nMinMembers     = ', "10")
-        change_one_value_in_ini_file(this_control_file_name, 'nGridLin         = ', "337")
+            # Cosmology object
+            try:
+                cosmology_object = make_specific_cosmology(this_run_directory,
+                    Omega0_m = cosmo_params_for_all_runs[run_num_zero_based, 0],
+                    sigma8 = cosmo_params_for_all_runs[run_num_zero_based, 1],
+                    w0 = cosmo_params_for_all_runs[run_num_zero_based, 2],
+                    wa = cosmo_params_for_all_runs[run_num_zero_based, 3],
+                    Omega0_b = cosmo_params_for_all_runs[run_num_zero_based, 4],
+                    h = cosmo_params_for_all_runs[run_num_zero_based, 5],
+                    n_s = cosmo_params_for_all_runs[run_num_zero_based, 6],
+                    m_ncdm = cosmo_params_for_all_runs[run_num_zero_based, 7],
+                    P_k_max=100.0)
+                    
+            except Exception as err:
+                write_status_file(os.path.join(this_run_directory, "error_creating_job_files.txt"), "Unable to create cosmology object")
+                print("    FAILED: unable to create cosmology object for {}".format(this_run_directory))
+                print("    ERROR WAS: {}".format(err))
+                continue
+
+            this_control_file_name = os.path.join(this_run_directory, control_file_name_no_path)
+            shutil.copyfile(prototype_control_file_name, this_control_file_name)
+            if use_concept:
+                change_one_value_in_ini_file(this_control_file_name, 'dNormalization   = ', "{} # calculated from sigma_8 = {}".format(cosmology_object.A_s, cosmology_object.sigma8))
+                change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', '"./' + target_hdf5_file_base_name + '"')
+                change_one_value_in_ini_file(this_control_file_name, 'achLinSpecies    = ', '"g+ncdm[0]+fld+metric" # these species are considered in the evolution')
+                change_one_value_in_ini_file(this_control_file_name, 'achPkSpecies     = ', '"g+ncdm[0]+fld"        # these species are considered in the power computation')
+                change_one_value_in_ini_file(this_control_file_name, 'bClass           = ', '1 # In the bClass=1 mode the cosmology is entirely read from the HDF5 file specified in achClassFilename.')
+                change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', 'DELETE')
+                change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', '0.0    # This is a dummy parameter, just to have the parameter defined')
+                change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', 'DELETE')
+                change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', 'DELETE')
+                change_one_value_in_ini_file(this_control_file_name, 'w0              = ', 'DELETE')
+                change_one_value_in_ini_file(this_control_file_name, 'wa              = ', 'DELETE')
+                change_one_value_in_ini_file(this_control_file_name, 'h               = ', 'DELETE')
+            else:
+                OmegaDE = cosmology_object.Ode0
+                transfer_function_base_file_name = "transfer_function_{}_{}.txt".format(runs_name, run_string)
+                transfer_function_file_name = os.path.join(this_run_directory, transfer_function_base_file_name)
+                linear_power_file_name = transfer_function_file_name.replace("transfer_function", "linear_power")
+
+                change_one_value_in_ini_file(this_control_file_name, 'dNormalization   = ', 'DELETE')
+                change_one_value_in_ini_file(this_control_file_name, 'achClassFilename = ', 'DELETE')
+                change_one_value_in_ini_file(this_control_file_name, 'achLinSpecies    = ', 'DELETE')
+                change_one_value_in_ini_file(this_control_file_name, 'achPkSpecies     = ', 'DELETE')
+                change_one_value_in_ini_file(this_control_file_name, 'bClass           = ', 'DELETE')
+                change_one_value_in_ini_file(this_control_file_name, 'achTfFile       = ', '"./{}"'.format(transfer_function_base_file_name))
+                change_one_value_in_ini_file(this_control_file_name, 'dOmega0         = ', str(1.0-OmegaDE) + "    # 1-dOmegaDE")
+                change_one_value_in_ini_file(this_control_file_name, 'dOmegaDE        = ', str(OmegaDE) + "    # Equal to Omega_fld in transfer function")
+                change_one_value_in_ini_file(this_control_file_name, 'dSigma8         = ', str(cosmo_params_for_all_runs[run_num_zero_based, 1]))
+                change_one_value_in_ini_file(this_control_file_name, 'w0              = ', encode_number_if_necessary(cosmo_params_for_all_runs[run_num_zero_based, 2]))
+                change_one_value_in_ini_file(this_control_file_name, 'wa              = ', encode_number_if_necessary(cosmo_params_for_all_runs[run_num_zero_based, 3]))
+                change_one_value_in_ini_file(this_control_file_name, 'h               = ', str(cosmo_params_for_all_runs[run_num_zero_based, 5]))
+                
+                make_specific_cosmology_transfer_function_from_cosmology_object(transfer_function_file_name, linear_power_file_name, cosmology_object)
+                
+                
+            change_one_value_in_ini_file(this_control_file_name, 'dSpectral        = ', str(cosmo_params_for_all_runs[run_num_zero_based, 6]))
+            change_one_value_in_ini_file(this_control_file_name, 'iSeed           = ', str(run_num_one_based + random_seed_offset) + "        # Random seed")
+            change_one_value_in_ini_file(this_control_file_name, 'dBoxSize        = ', "{}       # Mpc/h".format(500 if small_run else 1250))
+            change_one_value_in_ini_file(this_control_file_name, 'nGrid           = ', "{}       # Simulation has nGrid^3 particles".format(1000 if small_run else 1350))
+            change_one_value_in_ini_file(this_control_file_name, 'nSideHealpix    = ', "4096 # NSide for output lightcone healpix maps.")
+            change_one_value_in_ini_file(this_control_file_name, 'nMinMembers     = ', "10")
+            change_one_value_in_ini_file(this_control_file_name, 'nGridLin         = ', "337")
+        # End of control file handling
+        
         
         
         if location == 'wilkes':
@@ -1623,11 +1627,25 @@ def create_input_files_for_multiple_runs(runs_name, use_concept, high_priority, 
             set_environment_commands = ["module load python/3.6.4\n", "source {}/env/bin/activate\n".format(project_directory(location))]
      
         write_run_script(location, runs_name, run_string, run_script_name, set_environment_commands)
-        
 
         # Make all the files in directory be writable by the group
         for file_name in glob.glob(os.path.join(this_run_directory, "*")):
             make_writable_by_group(file_name)
+            
+        # Run any post_rundirectory_creation.sh script.
+        # Such a script should begin with the bash shebang (typically '#!/usr/bin/env bash'), and the script should be executable.
+        # The script will receive as command line inputs:
+        # $1: the run directory e.g. /mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/runs3B/run007
+        # $2: the run string e.g. 007
+        # The script should set an exit code of zero for success and non-zero otherwise.
+        if post_rundirectory_creation_script_exists:
+            ret = subprocess.run([post_rundirectory_creation_script_name, this_run_directory, run_string])
+            if ret.returncode != 0:
+                write_status_file(os.path.join(this_run_directory, "error_creating_job_files.txt"), "post_rundirectory_creation.sh did not run properly")
+                print("    FAILED: failure while running post_rundirectory_creation.sh for {}".format(this_run_directory))
+                print("    EXITCODE WAS: {}".format(ret.returncode))
+                continue
+                
 
 
 

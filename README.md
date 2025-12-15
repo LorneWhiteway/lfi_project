@@ -315,12 +315,12 @@ This script creates directories and input files for multiple pkdgrav3 runs.
 
 Syntax:
 ```
-create_input_files.py runs_name use_concept_string priority_string list_of_jobs_string
+create_input_files.py runs_name use_concept_string priority_string create_control_file_string list_of_jobs_string
 ```
 
 Example:
 ```
-create_input_files.py T concept normal_priority 201-220 x213
+create_input_files.py T concept normal_priority create_control_file 201-220 x213
 ```
 This will create directories run201 through run220 (excluding run213) as subdirectories of runsT (in turn a subdirectory of the project directory).
 
@@ -328,9 +328,11 @@ The input argument 'use_concept_string' should be either 'concept' or 'noconcept
 
 The input argument 'priority_string' should be either 'normal_priority' or 'high_priority' to determine which priority queue is used by SLURM. Note that 'high_priority' is avaiable only on tursa.
 
+The input argument 'create_control_file' should be either 'create_control_file' or 'do_not_create_control_file' to determine whether the script will create the control file. If it is set to not create the control file, then the user must use some other mechanism to ensure tat the control file exists (e.g. by using a post_rundirectory_creation.sh script to copy a control file from som eother location).
+
 See expand_shell_script.py for the format of list_of_jobs_string.
 
-The subdirectories created will be populated with a pkdgrav3 control file, a hdf5 Concept cosmology file, script files to call pkdgrav3 and to compress the output, and Slurm job scripts.
+Each subdirectory created will be populated with a pkdgrav3 control file, a hdf5 Concept cosmology file, a script file to call pkdgrav3 and to compress the output, and a Slurm job script.
 
 
 ### utility.py
@@ -397,8 +399,9 @@ Here are the steps to step up a new runs directory (using the _runs_name_`U` as 
 4. Update the data file `runs_directory_data.txt` in the scripts directory. This is a comma-delimited text file with one row per runs directory. Each row should have a) the name of the runs (e.g. "U"), followed by b) an integer to be used as an offset for the random seeds for these runs, followed by c) the pattern for the naming convention for the hdf5 files (see step 3), but the run number string replaced by `{}`. For the random seed offset use the number from the previous set of runs, plus the number of runs in that previous set. Example line: `U,1394,class_processed_gs2_batch2_{}.hdf5`; note that set `T` used a random seed offset of 882, and set `T` had 512 runs.
 5. In the runs directory create a prototype PKDGRAV3 control file with name `control.par`. It is safe to copy a version from the previous set of runs. This file will be copied into each run directory, and some entries will be modified to be specific to that run. Entries which are not run-specific will not be modified and hence should be checked for correctness.
 6. In the runs directory create a prototype SLURM job file with name `cuda_job_script_[cluster]` where `[cluster]` is one of `tursa`, `wilkes` or `hypatia` as appropriate. It is safe to copy a version from the previous set of runs. This file will be copied into each run directory, and some entries will be modified to be specific to that run. Entries which are not run-specific will not be modified and hence should be checked for correctness.
-7. Run the script `create_input_files.py` (found in the `scripts` directory) with the command line parameters a) the runs_name, b) 'concept' ot 'noconcept', c) 'normal_priority' or 'high_priority' and d) the run directories to be created. Example: `./create_input_files.py U concept normal_priority 1-100`.
-8. For tursa only: go to the tape archive staging area `/mnt/lustre/tursafs1/archive/dp327` and create a subdirectory with name `runs` + runs_name. Give group members write access to this new directory (see step 1).
+7. Run the script `create_input_files.py` (found in the `scripts` directory) with the command line parameters a) the runs_name, b) 'concept' ot 'noconcept', c) 'normal_priority' or 'high_priority', d) 'create_control_file' or 'do_not_create_control_file' and e) the run directories to be created. Example: `./create_input_files.py U concept normal_priority create_control_file 1-100`.
+8. If desired, create a post-processing macro script to be run once for each run directory immediately after `create_input_files.py` has finished setting up that directory. Such a macro should be in the runs_directory, and should have the name `post_rundirectory_creation.sh`. It should be a bash script, and the first line should be a bash script shebang (e.g. "#!/usr/bin/env bash"). The script should be made executable (by `chmod +x post_rundirectory_creation.sh`). The script will receive two command line parameters (which can be accessed within the script as $1 and $2): 1) the full path name for the run directory for this run, and 2) the run string (a three character string such as `007` that identifies the run). The script can do any required operation in aid of setting up the directory properly (e.g. copying files). Note that `sed` can be used in the script to make edits to any file. The script should return an error code: zero for success and non-zero for failure.
+9. For tursa only: go to the tape archive staging area `/mnt/lustre/tursafs1/archive/dp327` and create a subdirectory with name `runs` + runs_name. Give group members write access to this new directory (see step 1).
 
 ## Description of runs
 
