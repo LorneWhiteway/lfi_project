@@ -33,6 +33,7 @@ MPI_MODULE=openmpi/4.1.5-cuda12.3
 GSL_MODULE=/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/tursa/modulefiles/lfi-gsl-2.7
 FFTW_MODULE=/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/tursa/modulefiles/lfi-fftw-3.3.10
 HDF5_MODULE=/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/tursa/modulefiles/lfi-hdf5-1.14.4-2
+PYTHON_MODULE=/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/tursa/modulefiles/lfi-Python-3.11.13
 CMAKE_MODULE=cmake/3.27.4
 
 module purge
@@ -43,6 +44,7 @@ module load $MPI_MODULE
 module load $GSL_MODULE
 module load $FFTW_MODULE
 module load $HDF5_MODULE
+#module load $PYTHON_MODULE
 
 	
 if [[ $BUILD_MODE == $TRUE ]]; then
@@ -50,5 +52,4 @@ if [[ $BUILD_MODE == $TRUE ]]; then
 fi
 
 source /mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/env/bin/activate
-
 
