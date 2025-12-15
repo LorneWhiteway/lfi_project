@@ -20,4 +20,4 @@ Vsm,1906,class_processed_gs2_batch3_{}.hdf5
 Wsm,3000,unneeded_{}.hdf5
 X,4000,unneeded_{}.hdf5
 3A,4576,unneeded_{}.hdf5
-3B,-1,class_processed_gs3_batch2_{}.hdf5
+3B,-1,class_processed_runsB_w0wa_run{}.hdf5
