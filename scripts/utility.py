@@ -1385,11 +1385,11 @@ def write_run_script(location, runs_name, run_string, run_script_file_name, list
         # Go to the parent directory
         out_file.write("cd {}/runs{}/\n".format(format(project_directory(location)), runs_name))
         # Zip up all the fof files in the fof subdirectory of the run directory
-        out_file.write("tar -czvf run{}.fof.tar.gz ./run{}/fof/\n".format(run_string, run_string))
+        out_file.write("tar --sort=name -czvf run{}.fof.tar.gz ./run{}/fof/\n".format(run_string, run_string))
         # If the zip worked OK, then delete the fof subdirectory and all its contents
         out_file.write("test -f ./run{}.fof.tar.gz && rm -rfv ./run{}/fof/\n".format(run_string, run_string))
         # Zip up all the other files
-        out_file.write("tar -czvf run{}.tar.gz ./run{}/\n".format(run_string, run_string))
+        out_file.write("tar --sort=name -czvf run{}.tar.gz ./run{}/\n".format(run_string, run_string))
         # If the zip worked OK, then delete most of the files in the run directory
         out_file.write("test -f ./run{}.tar.gz && rm -v ./run{}/run*\n".format(run_string, run_string))
     make_file_executable(run_script_file_name)
