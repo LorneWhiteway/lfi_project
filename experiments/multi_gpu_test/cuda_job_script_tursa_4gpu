@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Based on information at https://epcced.github.io/dirac-docs/tursa-user-guide/scheduler/
+# 4-GPU test based on run140 configuration
+
+# Slurm job options
+#SBATCH --job-name=4gpu_test
+#SBATCH --time=02:00:00
+#SBATCH --account=DP327-high
+#SBATCH --mail-user=lorne.whiteway@star.ucl.ac.uk
+#SBATCH --mail-type=FAIL
+#SBATCH --export=none
+
+#SBATCH --nodes=1
+#SBATCH --ntasks=4
+#SBATCH --ntasks-per-node=4
+#SBATCH --cpus-per-task=12
+#SBATCH --partition=gpu-a100-80
+#SBATCH --qos=high
+#SBATCH --gres=gpu:4
+#SBATCH --mem=480000
+#SBATCH --hint=multithread
+
+export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
+
+source /mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/set_environment_tursa.sh USE
+
+# Change to the test directory
+cd /mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/experiments/multi_gpu_test/
+
+# Run pkdgrav3 with 4 MPI ranks (one per GPU)
+echo "Starting 4-GPU run at $(date)"
+echo "Using $SLURM_NTASKS MPI tasks with $OMP_NUM_THREADS threads each"
+
+srun /mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/pkdgrav3/build_tursa/pkdgrav3 ./control.par > ./output_4gpu.txt 2>&1
+
+echo "Finished 4-GPU run at $(date)"
+
