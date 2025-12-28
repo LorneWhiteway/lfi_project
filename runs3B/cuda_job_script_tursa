@@ -29,4 +29,3 @@ application="/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/runs{}/run
 options=""
 CMD="$application $options"
 eval $CMD
-
