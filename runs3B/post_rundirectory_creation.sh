@@ -8,10 +8,14 @@ sed -e 's/class_processed_runsA/class_processed_runsB/g' -e 's/ # calculated fro
 if [ $? -ne 0 ]; then
     exit 1
 fi
-cp $1/../marco_files/class-param_runsA_w0wa_run$2 $1/class-param_runsB_w0wa_run$2
-if [ $? -ne 0 ]; then
-    exit 2
+
+if [ -f $1/../marco_files/class-param_runsA_w0wa_run$2 ]; then
+    cp $1/../marco_files/class-param_runsA_w0wa_run$2 $1/class-param_runsB_w0wa_run$2
+    if [ $? -ne 0 ]; then
+        exit 2
+    fi
 fi
+
 cp $1/../marco_files/class_processed_runsA_w0wa_run$2.hdf5 $1/class_processed_runsB_w0wa_run$2.hdf5
 if [ $? -ne 0 ]; then
     exit 3
