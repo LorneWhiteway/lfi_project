@@ -21,3 +21,4 @@ Wsm,3000,unneeded_{}.hdf5
 X,4000,unneeded_{}.hdf5
 3A,4576,unneeded_{}.hdf5
 3B,-1,class_processed_runsB_w0wa_run{}.hdf5
+3BT,-1,class_processed_runsB_w0wa_run{}.hdf5
