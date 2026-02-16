@@ -2166,6 +2166,42 @@ def add_wa_column_to_parameters_file(runs_name):
     
 # ======================== End of one-time code to add a 'wa' column to all the params files. Used once, presumably no longer needed. 26 June 2025 ========================
 
+
+
+
+# ======================== Start of code to deal with Marco's runs3B_part2 input files. ========================
+
+# Used on 16 Feb 2026; prresumably won't be needed again.
+
+def deal_with_marco_runs3B_part2_input_files():
+
+    source_dir = "/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/runs3B/marco_files/runs3B_part2/"
+    target_dir = "/mnt/lustre/tursafs1/home/dp327/dp327/shared/lfi_project/runs3B/marco_files/"
+    for run_num in range(500, 1000):
+        run_num_string = str(run_num)
+        this_source_dir = source_dir + "run" + run_num_string + "/"
+        this_source_control_file = this_source_dir + "control.par"
+        if os.path.isfile(this_source_control_file):
+            source_hdf5_file = this_source_dir + "class_processed_runsB_w0wa_run" + run_num_string + ".hdf5"
+            if not os.path.isfile(source_hdf5_file):
+                source_hdf5_file = this_source_dir + "class_processed.hdf5"
+            if os.path.isfile(source_hdf5_file):
+                this_target_dir = target_dir + "run" + run_num_string + "/"
+                this_target_control_file = this_target_dir + "control.par"
+                os.makedirs(this_target_dir, exist_ok = True)
+                print("Copying {} to {}...".format(this_source_control_file, this_target_control_file))
+                shutil.copyfile(this_source_control_file, this_target_control_file)
+                make_file_executable(this_target_control_file)
+                target_hdf5_file = target_dir + "class_processed_runsA_w0wa_run" + run_num_string + ".hdf5" #The "A" is correct
+                print("Copying {} to {}...".format(source_hdf5_file, target_hdf5_file))
+                shutil.copyfile(source_hdf5_file, target_hdf5_file)
+                make_file_executable(target_hdf5_file)
+
+# ======================== End of code to deal with Marco's runs3B_part2 input files. ========================
+
+
+
+
 if __name__ == '__main__':
     
     #show_one_shell_example()
@@ -2189,6 +2225,7 @@ if __name__ == '__main__':
     #encode_list_of_job_strings_test_harness()
     #sigma8_from_A_s_test_harness()
     #add_wa_column_to_parameters_file_caller()
+    #deal_with_marco_runs3B_part2_input_files()
     
     pass
     
