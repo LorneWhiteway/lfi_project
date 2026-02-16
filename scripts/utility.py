@@ -921,10 +921,10 @@ class StatusCode(Enum):
     QUEUED = 4
     ASSIGNED = 5
     UNASSIGNED = 6
-    UNEXPECTEDLY_UNABLE_TO_FIND_SLURM_OUTPUT_FILE = 7
-    OUT_OF_TIME = 8
-    OUT_OF_DISK_SPACE = 9
-    OUT_OF_MEMORY = 10
+    OUT_OF_TIME = 7
+    OUT_OF_DISK_SPACE = 8
+    OUT_OF_MEMORY = 9
+    HDF5_FILE_ERROR = 10
     UNKNOWN_PKDGRAV3_RUNTIME_ERROR = 11
     RUNNING = 12
     COMPLETING = 13
@@ -955,7 +955,9 @@ def short_status_of_run_directory(run_directory, output_from_squeue):
     if os.path.isfile(os.path.join(run_directory, "out_of_time_too_often.txt")):
         return (StatusCode.DO_NOT_RUN_AS_OUT_OF_TIME_TOO_OFTEN, "Job disabled as it has previously run out of time too often")
         
-    if not os.path.isfile(os.path.join(run_directory, ".lockfile")):
+    
+    slurm_out_file = slurm_out_file_name(run_directory)
+    if slurm_out_file == "":
         # Hasn't started
         if run_number_one_based in output_from_squeue:
             return (StatusCode.QUEUED, "Queued by {}".format(output_from_squeue[run_number_one_based][0]))
@@ -963,13 +965,9 @@ def short_status_of_run_directory(run_directory, output_from_squeue):
             return (StatusCode.ASSIGNED, last_line_of_file(os.path.join(run_directory, "assigned_to.txt")))
         else:
             return (StatusCode.UNASSIGNED, "Unassigned")
-            
-            
+        
+    
     # Underway
-    slurm_out_file = slurm_out_file_name(run_directory)
-    if slurm_out_file == "":
-        return (StatusCode.UNEXPECTEDLY_UNABLE_TO_FIND_SLURM_OUTPUT_FILE, "Unexpectedly unable to find slurm output file")
-
     if file_contains_substring(slurm_out_file, "DUE TO TIME LIMIT"):
         return (StatusCode.OUT_OF_TIME, "FAILED - out of time; pkdgrav {}% complete".format(percentage_completed(run_directory)))
     
@@ -978,6 +976,9 @@ def short_status_of_run_directory(run_directory, output_from_squeue):
         
     if file_contains_substring(slurm_out_file, "Cannot allocate memory"):
         return (StatusCode.OUT_OF_MEMORY, "FAILED - out of memory")
+
+    if file_contains_substring(slurm_out_file, "Error detected in HDF5"):
+        return (StatusCode.HDF5_FILE_ERROR, "FAILED - HDF5 file error (see slurm output file for details)")
 
     if file_contains_substring(slurm_out_file, "Frame"):
         return (StatusCode.UNKNOWN_PKDGRAV3_RUNTIME_ERROR, "FAILED - unknown pkdgrav3 runtime error (see slurm output file for details)")
@@ -1090,10 +1091,10 @@ def runs_directory_status_core(runs_name, runs_directory, num_runs, do_print):
         report_one_status_code(StatusCode.QUEUED, "{} runs are queued: {}", code_runs)
         report_one_status_code(StatusCode.ASSIGNED, "{} runs have been assigned but have not yet been launched: {}", code_runs)
         report_one_status_code(StatusCode.UNASSIGNED, "{} runs are unassigned: {}", code_runs)
-        report_one_status_code(StatusCode.UNEXPECTEDLY_UNABLE_TO_FIND_SLURM_OUTPUT_FILE, "{} runs are unexpectedly missing the Slurm output file: {}", code_runs)
         report_one_status_code(StatusCode.OUT_OF_TIME, "{} runs failed due to being out of time: {}", code_runs)
         report_one_status_code(StatusCode.OUT_OF_DISK_SPACE, "ALERT: {} runs failed due to being out of disk space: {}", code_runs)
         report_one_status_code(StatusCode.OUT_OF_MEMORY, "{} runs failed due to being out of memory: {}", code_runs)
+        report_one_status_code(StatusCode.HDF5_FILE_ERROR, "{} runs failed due to HDF5 file errors: {}", code_runs)
         report_one_status_code(StatusCode.UNKNOWN_PKDGRAV3_RUNTIME_ERROR, "{} runs failed due to unknown PKDGRAV3 runtime errors: {}", code_runs)
         report_one_status_code(StatusCode.RUNNING, "{} runs are underway: {}", code_runs)
         report_one_status_code(StatusCode.COMPLETING, "{} runs are in the process of completing: {}", code_runs)
