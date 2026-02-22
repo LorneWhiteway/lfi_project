@@ -842,8 +842,11 @@ def print_disk_space_report(runs_directory):
     if location == "tursa":
         this_id = run_command(["id", "-g"])[0]
         command = ["lfs", "quota", "-hp", this_id, runs_directory]
-        for el in run_command(command):
-            print(el)
+        rc = run_command(command)
+        print(rc[0])
+        for a, b in zip(rc[1].split(), rc[2].split()):
+            if a == "used" or a == "blimit":
+                print("{}:\t{}".format(a, b))
         print("--------------------------------------------------")
     
     
@@ -1084,26 +1087,26 @@ def runs_directory_status_core(runs_name, runs_directory, num_runs, do_print):
             
     if do_print:
         print("--------------------------------------------------")
-        report_one_status_code(StatusCode.DIRECTORY_DOES_NOT_EXIST, "{} runs do not have a run directory: {}", code_runs)
-        report_one_status_code(StatusCode.ERROR_CREATING_JOB_FILES, "{} runs are missing job files for one of the standard reasons: {}", code_runs)
-        report_one_status_code(StatusCode.JOB_FILES_DO_NOT_EXIST_FOR_UNEXPLAINED_REASON, "{} runs are missing job files for some unexplained reason: {}", code_runs)
-        report_one_status_code(StatusCode.DO_NOT_RUN_AS_OUT_OF_TIME_TOO_OFTEN, "{} runs have been disabled as they have previously run out of time too often: {}", code_runs)
-        report_one_status_code(StatusCode.QUEUED, "{} runs are queued: {}", code_runs)
-        report_one_status_code(StatusCode.ASSIGNED, "{} runs have been assigned but have not yet been launched: {}", code_runs)
-        report_one_status_code(StatusCode.UNASSIGNED, "{} runs are unassigned: {}", code_runs)
-        report_one_status_code(StatusCode.OUT_OF_TIME, "{} runs failed due to being out of time: {}", code_runs)
-        report_one_status_code(StatusCode.OUT_OF_DISK_SPACE, "ALERT: {} runs failed due to being out of disk space: {}", code_runs)
-        report_one_status_code(StatusCode.OUT_OF_MEMORY, "{} runs failed due to being out of memory: {}", code_runs)
-        report_one_status_code(StatusCode.HDF5_FILE_ERROR, "{} runs failed due to HDF5 file errors: {}", code_runs)
-        report_one_status_code(StatusCode.UNKNOWN_PKDGRAV3_RUNTIME_ERROR, "{} runs failed due to unknown PKDGRAV3 runtime errors: {}", code_runs)
-        report_one_status_code(StatusCode.RUNNING, "{} runs are underway: {}", code_runs)
-        report_one_status_code(StatusCode.COMPLETING, "{} runs are in the process of completing: {}", code_runs)
-        report_one_status_code(StatusCode.BAD_LAST_LINE_IN_SLURM_OUTPUT_FILE, "{} runs had an unexpected last line in the Slurm output file (possible problem): {}", code_runs)
-        report_one_status_code(StatusCode.MISSING_Z_VALUES_OUTPUT_FILE, "{} runs are missing the z_values.txt file (possible problem): {}", code_runs)
-        report_one_status_code(StatusCode.FINISHED_BUT_MARKED_AS_NOT_TO_BE_ARCHIVED, "{} runs have finished but are marked as not to be archived: {}", code_runs)
-        report_one_status_code(StatusCode.ARCHIVED, "{} runs have finished and have been archived: {}", code_runs)
-        report_one_status_code(StatusCode.COMPRESSED_FILES_STILL_HOT, "{} runs have finished but the compressed files are still 'hot': {}", code_runs)
-        report_one_status_code(StatusCode.AWAITING_ARCHIVING, "{} runs have finished and are awaiting archiving: {}", code_runs)
+        report_one_status_code(StatusCode.DIRECTORY_DOES_NOT_EXIST, "- {} runs do not have a run directory: {}", code_runs)
+        report_one_status_code(StatusCode.ERROR_CREATING_JOB_FILES, "- {} runs are missing job files for one of the standard reasons: {}", code_runs)
+        report_one_status_code(StatusCode.JOB_FILES_DO_NOT_EXIST_FOR_UNEXPLAINED_REASON, "- {} runs are missing job files for some unexplained reason: {}", code_runs)
+        report_one_status_code(StatusCode.DO_NOT_RUN_AS_OUT_OF_TIME_TOO_OFTEN, "- {} runs have been disabled as they have previously run out of time too often: {}", code_runs)
+        report_one_status_code(StatusCode.QUEUED, "- {} runs are queued: {}", code_runs)
+        report_one_status_code(StatusCode.ASSIGNED, "- {} runs have been assigned but have not yet been launched: {}", code_runs)
+        report_one_status_code(StatusCode.UNASSIGNED, "- {} runs are unassigned: {}", code_runs)
+        report_one_status_code(StatusCode.OUT_OF_TIME, "- {} runs failed due to being out of time: {}", code_runs)
+        report_one_status_code(StatusCode.OUT_OF_DISK_SPACE, "- ALERT: {} runs failed due to being out of disk space: {}", code_runs)
+        report_one_status_code(StatusCode.OUT_OF_MEMORY, "- {} runs failed due to being out of memory: {}", code_runs)
+        report_one_status_code(StatusCode.HDF5_FILE_ERROR, "- {} runs failed due to HDF5 file errors: {}", code_runs)
+        report_one_status_code(StatusCode.UNKNOWN_PKDGRAV3_RUNTIME_ERROR, "- {} runs failed due to unknown PKDGRAV3 runtime errors: {}", code_runs)
+        report_one_status_code(StatusCode.RUNNING, "- {} runs are underway: {}", code_runs)
+        report_one_status_code(StatusCode.COMPLETING, "- {} runs are in the process of completing: {}", code_runs)
+        report_one_status_code(StatusCode.BAD_LAST_LINE_IN_SLURM_OUTPUT_FILE, "- {} runs had an unexpected last line in the Slurm output file (possible problem): {}", code_runs)
+        report_one_status_code(StatusCode.MISSING_Z_VALUES_OUTPUT_FILE, "- {} runs are missing the z_values.txt file (possible problem): {}", code_runs)
+        report_one_status_code(StatusCode.FINISHED_BUT_MARKED_AS_NOT_TO_BE_ARCHIVED, "- {} runs have finished but are marked as not to be archived: {}", code_runs)
+        report_one_status_code(StatusCode.ARCHIVED, "- {} runs have finished and have been archived: {}", code_runs)
+        report_one_status_code(StatusCode.COMPRESSED_FILES_STILL_HOT, "- {} runs have finished but the compressed files are still 'hot': {}", code_runs)
+        report_one_status_code(StatusCode.AWAITING_ARCHIVING, "- {} runs have finished and are awaiting archiving: {}", code_runs)
         print("--------------------------------------------------")
         print_user_report(output_from_squeue)
         print_disk_space_report(runs_directory)
