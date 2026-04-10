@@ -18,7 +18,7 @@
 #SBATCH --partition=gpu-a100-80
 #SBATCH --qos=standard
 #SBATCH --gres=gpu:1
-#SBATCH --mem=30000
+#SBATCH --mem=480000
 #SBATCH --hint=multithread
 
 export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
